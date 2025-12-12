@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адмін панель - Навчальні плани</title>
+    <link rel="stylesheet" href="../shared.css">
+    <link rel="stylesheet" href="study-plan.css">
+</head>
+<body>
+    <div id="sidebar-container"></div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Навчальні плани (Study Plans)</h1>
+            <button class="btn btn-primary" onclick="openAddModal()">
+                ➕ Додати план
+            </button>
+        </div>
+
+        <div class="filters-bar card">
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>📅 Семестр</label>
+                    <select id="filterSemester" class="form-input form-select-sm">
+                        <option value="">Усі семестри</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>👥 Група</label>
+                    <select id="filterGroup" class="form-input form-select-sm">
+                        <option value="">Усі групи</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>👨‍🏫 Викладач</label>
+                    <select id="filterTeacher" class="form-input form-select-sm">
+                        <option value="">Усі викладачі</option>
+                    </select>
+                </div>
+                
+                <div class="filter-actions">
+                    <button id="resetFiltersBtn" class="btn btn-secondary btn-sm">
+                        🔄 Скинути
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div id="tableContainer">
+                <div class="loading">Завантаження...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="planModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Додати навчальний план</h2>
+                <button class="btn-close" onclick="hideModal('planModal')">&times;</button>
+            </div>
+            <form id="planForm">
+                
+                <div class="target-selector">
+                    <label class="radio-label active">
+                        <input type="radio" name="targetType" value="group" checked>
+                        <span>👥 Для Групи</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="targetType" value="stream">
+                        <span>🌊 Для Потоку</span>
+                    </label>
+                </div>
+
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Семестр</label>
+                        <select id="planSemester" class="form-input" required></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Предмет</label>
+                        <select id="planSubject" class="form-input" required></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Викладач</label>
+                        <select id="planTeacher" class="form-input" required></select>
+                    </div>
+                </div>
+                
+                <div class="form-grid-3">
+                    <div class="form-group" id="groupSelectContainer">
+                        <label class="form-label">Група</label>
+                        <select id="planGroup" class="form-input"></select>
+                    </div>
+    
+                    <div class="form-group hidden" id="streamSelectContainer">
+                        <label class="form-label">Потік</label>
+                        <select id="planStream" class="form-input"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Тип заняття</label>
+                        <select id="planClassType" class="form-input" required></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Необхідна аудиторія (опціонально)</label>
+                        <select id="planRoomType" class="form-input"></select>
+                    </div>
+                </div>
+
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Кількість занять</label>
+                        <input type="number" id="planAmount" class="form-input" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Тривалість (годин)</label>
+                        <input type="number" id="planDuration" class="form-input" min="1" value="1" required>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="hideModal('planModal')">Скасувати</button>
+                    <button type="submit" class="btn btn-save">Зберегти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Підтвердження</h2>
+                <button class="btn-close" onclick="hideModal('deleteModal')">&times;</button>
+            </div>
+            <p style="padding: 20px 0;">Ви впевнені, що хочете видалити цей навчальний план?</p>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="hideModal('deleteModal')">Ні</button>
+                <button class="btn btn-confirm" onclick="confirmDelete()">Так, видалити</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../common.js"></script>
+    <script src="../sidebar.js"></script>
+    <script src="study-plan.js"></script>
+</body>
+</html>

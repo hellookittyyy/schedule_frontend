@@ -1,0 +1,52 @@
+.filters-bar { 
+    margin-bottom: 20px; 
+    padding: 15px; 
+    background: white; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+}
+.filters-row { 
+    display: flex; 
+    gap: 15px; 
+    align-items: flex-end; 
+    flex-wrap: wrap; 
+}
+.filter-group { 
+    flex: 1; 
+    min-width: 200px; 
+}
+.subject-cell { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 4px; 
+}
+.subject-name { 
+    font-weight: 600; 
+    color: var(--text-main); 
+}
+
+.teacher-name { 
+    font-size: 0.85em; 
+    color: var(--text-muted); 
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.badge-group {
+    background-color: #e0f2fe;
+    color: #0284c7;
+    border: 1px solid #bae6fd;
+}
+
+.badge-stream {
+    background-color: #f3e8ff;
+    color: #9333ea;
+    border: 1px solid #e9d5ff;
+}

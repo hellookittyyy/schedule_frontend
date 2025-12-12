@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управління Розкладом | UniScheduler</title>
+    <link rel="stylesheet" href="../shared.css">
+    <link rel="stylesheet" href="schedule.css">
+</head>
+<body>
+    
+    <div id="generationLoader" class="overlay-loader hidden">
+        <div class="loader-content">
+            <div class="spinner">⚡</div>
+            <h3>Генерація розкладу...</h3>
+            <p>Алгоритм шукає оптимальні варіанти.</p>
+            <div id="generationLog" class="generation-log">
+                > Ініціалізація...
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <div id="sidebar-container"></div>
+
+        <main class="main-content full-height">
+            <header class="schedule-header">
+                <div class="header-left">
+                    <h1>Інтерактивний Розклад</h1>
+                    <div class="semester-selector">
+                        <select id="semesterSelect">
+                            <option value="">-- Завантаження --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button id="btnGenerate" class="btn btn-warning">
+                        ⚡ Авто-генерація
+                    </button>
+                    <button id="btnRefresh" class="btn btn-secondary" title="Оновити дані">
+                        🔄
+                    </button>
+                </div>
+            </header>
+
+            <div class="schedule-workspace">
+                <div class="schedule-container">
+                    <div class="week-grid" id="scheduleGrid">
+                        </div>
+                </div>
+
+                <aside class="unscheduled-bin">
+                    <div class="bin-header">
+                        <h3>Нерозподілені</h3>
+                        <span class="badge" id="unscheduledCount" style="background:var(--danger)">0</span>
+                    </div>
+                    <div id="unscheduledList" class="bin-list" data-type="unscheduled">
+                        </div>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <div id="lessonModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Деталі заняття</h3>
+                <button class="btn-close" onclick="hideModal('lessonModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="lessonDetailsBody" style="padding-top: 20px;">
+                </div>
+            <div class="modal-actions" style="margin-top:20px;">
+                <button class="btn btn-primary" onclick="hideModal('lessonModal')">ОК</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../common.js"></script>
+    <script src="../sidebar.js"></script>
+    <script src="schedule.js"></script>
+</body>
+</html>

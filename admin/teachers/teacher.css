@@ -1,0 +1,168 @@
+.subjects-section {
+    margin-top: 25px;
+    padding: 20px;
+    background: var(--gray-light);
+    border-radius: 10px;
+    border: 1px solid var(--gray-border);
+}
+
+.subjects-section h3 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.subject-list {
+    margin-bottom: 15px;
+}
+
+.subject-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: white;
+    border: 1px solid var(--gray-border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+.subject-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.subject-item span {
+    font-size: 14px;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.no-subjects {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 14px;
+    background: white;
+    border-radius: 6px;
+    border: 2px dashed var(--gray-border);
+}
+
+.add-subject-section {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--gray-border);
+}
+
+.add-subject-section select {
+    flex: 1;
+    padding: 10px 12px;
+    border: 2px solid var(--gray-border);
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.add-subject-section select:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.btn-add-subject {
+    padding: 10px 20px;
+    background: var(--success);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-add-subject:hover {
+    background: var(--success-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+}
+
+.btn-add-subject:active {
+    transform: translateY(0);
+}
+
+.subject-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.subject-tag {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid #bbdefb;
+    transition: all 0.2s;
+    display: inline-block;
+}
+
+.subject-tag:hover {
+    background-color: #bbdefb;
+    transform: scale(1.05);
+}
+
+.no-subjects-tag {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 14px;
+}
+
+.table-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+.table-actions .btn {
+    padding: 8px 14px;
+    font-size: 14px;
+    min-width: 40px;
+}
+
+.btn-small {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    min-width: auto !important;
+}
+
+.delete-message {
+    padding: 20px;
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    color: #856404;
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 20px 0;
+}
+
+.delete-teacher-name {
+    font-weight: bold;
+    color: var(--danger);
+}

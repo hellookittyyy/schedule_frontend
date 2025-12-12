@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адмін панель - Семестри</title>
+    <link rel="stylesheet" href="../shared.css">
+    <link rel="stylesheet" href="semester.css">
+</head>
+<body>
+    <div id="sidebar-container"></div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Графік навчання (Семестри)</h1>
+            <button class="btn-add" onclick="openAddModal()">
+                ➕ Додати семестр
+            </button>
+        </div>
+
+        <div class="card">
+            <div id="tableContainer">
+                </div>
+        </div>
+    </div>
+
+    <div class="modal" id="semesterModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 id="modalTitle">Додати семестр</h2>
+                <button class="btn-close" onclick="hideModal('semesterModal')">&times;</button>
+            </div>
+            <form id="semesterForm">
+                <div class="form-group">
+                    <label for="semesterName">Назва семестру *</label>
+                    <input type="text" id="semesterName" required placeholder="Наприклад: Осінній 2025">
+                </div>
+                
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="startDate">Дата початку *</label>
+                        <input type="date" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">Дата завершення *</label>
+                        <input type="date" id="endDate" required>
+                    </div>
+                </div>
+
+                <div class="generation-config">
+                    <div class="config-toggle" onclick="document.getElementById('enableGeneration').click()">
+                        <input type="checkbox" id="enableGeneration" onchange="toggleConfig()">
+                        <strong>Згенерувати часові слоти</strong>
+                    </div>
+                    
+                    <div class="config-content" id="configContent">
+                        <h4>📅 Вихідні дні</h4>
+                        <div class="weekends-grid">
+                            <label class="checkbox-label"><input type="checkbox" name="weekend" value="Monday"> Понеділок</label>
+                            <label class="checkbox-label"><input type="checkbox" name="weekend" value="Tuesday"> Вівторок</label>
+                            <label class="checkbox-label"><input type="checkbox" name="weekend" value="Wednesday"> Середа</label>
+                            <label class="checkbox-label"><input type="checkbox" name="weekend" value="Thursday"> Четвер</label>
+                            <label class="checkbox-label"><input type="checkbox" name="weekend" value="Friday"> П'ятниця</label>
+                            <label class="checkbox-label"><input type="checkbox" name="weekend" value="Saturday" checked> Субота</label>
+                            <label class="checkbox-label"><input type="checkbox" name="weekend" value="Sunday" checked> Неділя</label>
+                        </div>
+
+                        <h4>⏰ Розклад дзвінків</h4>
+                        <div class="time-slots-container" id="timeSlotsList">
+                            </div>
+                        <button type="button" class="btn-add btn-small" onclick="addTimeSlot()">+ Додати пару</button>
+
+                        <div class="form-grid" style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <h4>🚫 Виключити дати (свята)</h4>
+                                <p class="help-text" style="font-size: 0.8rem; color: #666;">Кожна дата з нового рядка (YYYY-MM-DD)</p>
+                                <textarea id="excludedDates" class="dates-field" placeholder="2025-12-25"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <h4>✅ Включити дати (відпрацювання)</h4>
+                                <p class="help-text" style="font-size: 0.8rem; color: #666;">Кожна дата з нового рядка (YYYY-MM-DD)</p>
+                                <textarea id="includedDates" class="dates-field" placeholder="2025-12-28"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="hideModal('semesterModal')">Скасувати</button>
+                    <button type="submit" class="btn btn-save">💾 Зберегти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Видалення семестру</h2>
+                <button class="btn-close" onclick="hideModal('deleteModal')">&times;</button>
+            </div>
+            <div class="delete-message">
+                Ви впевнені, що хочете видалити семестр <span class="delete-name" id="deleteSemesterName" style="font-weight: bold;"></span>?
+                <br><br>
+                <span style="color: var(--danger)">⚠️ Це призведе до видалення ВСІХ слотів та занять цього семестру!</span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="hideModal('deleteModal')">Скасувати</button>
+                <button class="btn btn-confirm" onclick="confirmDelete()">🗑️ Видалити</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../common.js"></script>
+    <script src="../sidebar.js"></script>
+    <script src="semester.js"></script>
+</body>
+</html>

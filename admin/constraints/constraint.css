@@ -1,0 +1,167 @@
+.target-selector {
+    display: flex; 
+    gap: 15px; 
+    margin-bottom: 20px; 
+    background: var(--gray-light);
+    padding: 10px; 
+    border-radius: 8px; 
+    border: 1px solid var(--gray-border);
+}
+
+.radio-label {
+    flex: 1; 
+    text-align: center; 
+    padding: 8px; 
+    cursor: pointer; 
+    border-radius: 6px; 
+    font-weight: 500; 
+    color: var(--text-muted);
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.radio-label:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.radio-label.active { 
+    background: white; 
+    color: var(--accent); 
+    border-color: var(--accent);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.radio-label input { display: none; }
+
+.config-builder { 
+    background: #f8f9fa; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 8px; 
+    padding: 20px; 
+    min-height: 100px; 
+}
+
+.config-builder-empty {
+    text-align: center;
+    color: #999;
+    padding: 20px;
+    font-style: italic;
+}
+
+.day-checkboxes { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); 
+    gap: 10px; 
+}
+
+.day-checkbox-item {
+    position: relative;
+}
+
+.day-checkbox-item input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.day-checkbox-item label {
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    padding: 10px; 
+    background: white;
+    border: 1px solid var(--gray-border); 
+    border-radius: 6px; 
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-main);
+    transition: all 0.2s;
+}
+
+.day-checkbox-item input:checked + label { 
+    background-color: #ffebee;
+    color: #c62828;
+    border-color: #ef5350;
+}
+
+.time-matrix-container { 
+    overflow-x: auto; 
+    margin-top: 10px; 
+    border: 1px solid var(--gray-border); 
+    border-radius: 6px;
+}
+.time-matrix { 
+    width: 100%; 
+    border-collapse: collapse; 
+    background: white;
+}
+.time-matrix th, .time-matrix td { 
+    text-align: center; 
+    padding: 8px; 
+    border: 1px solid #eee; 
+    font-size: 0.9em;
+}
+.time-matrix th { 
+    background: #f8f9fa; 
+    color: var(--text-muted);
+}
+.day-label { 
+    text-align: left !important; 
+    font-weight: 600;
+    background: #fcfcfc;
+}
+.time-cell:hover { 
+    background-color: #f5f5f5; 
+}
+
+.sequential-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.hint-text {
+    font-size: 0.85em;
+    color: #7f8c8d;
+    margin-top: 4px;
+    display: block;
+}
+
+.badge-target {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.badge-teacher { background: #e0f2fe; color: #0369a1; }
+.badge-group   { background: #dcfce7; color: #15803d; }
+.badge-room    { background: #f3e8ff; color: #7e22ce; }
+.badge-stream  { background: #ffedd5; color: #c2410c; }
+.badge-global  { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+.badge-type {
+    font-size: 0.85em;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background: #eee;
+    color: #333;
+}
+.type-day-off { background: #fee2e2; color: #991b1b; }
+.type-max-daily { background: #fef3c7; color: #92400e; }
+.type-time-block { background: #e0e7ff; color: #3730a3; }
+.type-sequential { background: #d1fae5; color: #065f46; }
+
+.seq-summary-item {
+    font-size: 0.9em;
+    margin-bottom: 4px;
+    color: #333;
+}
+.seq-arrow {
+    font-weight: bold;
+    color: #e67e22;
+    font-size: 0.8em;
+}

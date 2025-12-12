@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адмін панель - Аудиторії</title>
+    <link rel="stylesheet" href="../shared.css">
+    <link rel="stylesheet" href="rooms.css">
+</head>
+<body>
+    <div id="sidebar-container"></div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Аудиторії</h1>
+            <div class="header-actions">
+                <button class="btn btn-manage" onclick="openTypesModal()">
+                    ⚙️ Типи аудиторій
+                </button>
+                <button class="btn-add" onclick="openAddModal()">
+                    ➕ Додати аудиторію
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="search-bar">
+                <input type="text" class="search-input" id="searchInput" placeholder="🔍 Пошук аудиторій...">
+            </div>
+
+            <div id="tableContainer">
+                </div>
+        </div>
+    </div>
+
+    <div class="modal" id="roomModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Додати аудиторію</h2>
+                <button class="btn-close" onclick="hideModal('roomModal')">&times;</button>
+            </div>
+            <form id="roomForm">
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="roomTitle">Номер аудиторії *</label>
+                        <input type="text" id="roomTitle" required placeholder="101-A">
+                    </div>
+                    <div class="form-group">
+                        <label for="roomBuilding">Корпус *</label>
+                        <input type="text" id="roomBuilding" required placeholder="Головний">
+                    </div>
+                </div>
+                
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="roomCapacity">Місткість *</label>
+                        <input type="number" id="roomCapacity" required min="1" placeholder="30">
+                    </div>
+                    <div class="form-group">
+                        <label for="roomType">Тип аудиторії *</label>
+                        <select id="roomType" required>
+                            <option value="">-- Завантаження --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="roomNote">Примітка</label>
+                    <textarea id="roomNote" placeholder="Додаткова інформація..."></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="hideModal('roomModal')">Скасувати</button>
+                    <button type="submit" class="btn btn-save">💾 Зберегти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Видалення аудиторії</h2>
+                <button class="btn-close" onclick="hideModal('deleteModal')">&times;</button>
+            </div>
+            <div class="delete-message">
+                Ви впевнені, що хочете видалити аудиторію <span class="delete-room-name" id="deleteRoomName"></span>?
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="hideModal('deleteModal')">Скасувати</button>
+                <button class="btn btn-confirm" onclick="confirmDelete()">🗑️ Видалити</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="typesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Типи аудиторій</h2>
+                <button class="btn-close" onclick="hideModal('typesModal')">&times;</button>
+            </div>
+            
+            <div class="type-list" id="typesList" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #eee; border-radius: 8px;">
+                </div>
+
+            <div style="background: var(--bg-body); padding: 15px; border-radius: 8px;">
+                <h4 style="margin-bottom: 10px;">Додати новий тип</h4>
+                <div class="form-group">
+                    <input type="text" id="newTypeName" placeholder="Назва (напр. Лабораторна)" class="form-input">
+                </div>
+                <div class="form-group">
+                    <textarea id="newTypeDescription" placeholder="Опис типу" class="form-input" style="min-height: 60px;"></textarea>
+                </div>
+                <div style="text-align: right;">
+                    <button class="btn btn-save" onclick="addNewType()">➕ Додати</button>
+                </div>
+            </div>
+            
+            <div class="modal-actions" style="margin-top: 20px;">
+                <button class="btn btn-cancel" onclick="hideModal('typesModal')">Закрити</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../common.js"></script>
+    <script src="../sidebar.js"></script>
+    <script src="rooms.js"></script>
+</body>
+</html>
