@@ -5,13 +5,13 @@ function renderSidebar() {
     const currentPath = window.location.pathname;
 
     const menuItems = [
+        { href: '/admin/semesters', icon: '📅', text: 'Графік навчання' },
         { href: '/admin/', icon: '📊', text: 'Дашборд', exact: true },
-        { href: '/admin/teachers', icon: '👨‍🏫', text: 'Викладачі' },
         { href: '/admin/subjects', icon: '📖', text: 'Предмети' },
+        { href: '/admin/teachers', icon: '👨‍🏫', text: 'Викладачі' },
         { href: '/admin/groups', icon: '👥', text: 'Групи' },
         { href: '/admin/streams', icon: '🌊', text: 'Потоки' },
         { href: '/admin/rooms', icon: '🏛️', text: 'Аудиторії' },
-        { href: '/admin/semesters', icon: '📅', text: 'Графік навчання' },
         { href: '/admin/study-plans', icon: '📑', text: 'Навчальні плани' },
         { href: '/admin/constraints', icon: '🚫', text: 'Обмеження' },
         { href: '/admin/schedule', icon: '🗓️', text: 'Розклад' },
