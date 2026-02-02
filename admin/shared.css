@@ -80,6 +80,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: calc(100% - var(--sidebar-width) - 60px);
+    position: fixed;
 }
 .header h1 { color: var(--text-main); font-size: 28px; }
 
@@ -89,6 +91,7 @@ body {
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     margin-bottom: 20px;
+    margin-top: 80px;
 }
 
 .btn {
