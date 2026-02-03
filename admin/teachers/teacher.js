@@ -3,6 +3,7 @@ let teachers = [];
 let allSubjects = [];
 let currentEditId = null;
 let currentDeleteId = null;
+let newTeacherSubjects = []; 
 
 async function init() {
     await loadSubjects();
@@ -24,7 +25,7 @@ async function loadSubjects() {
     try {
         allSubjects = await apiRequest('/subjects/');
     } catch (error) {
-        console.error('Failed to load subjects:', error);
+        console.error('Не вдалося завантажити список предметів', error);
     }
 }
 
@@ -82,9 +83,13 @@ function renderTable(data) {
 
 function openAddModal() {
     currentEditId = null;
+    newTeacherSubjects = [];
     document.getElementById('modalTitle').textContent = 'Додати викладача';
     document.getElementById('teacherForm').reset();
-    document.getElementById('subjectsSection').style.display = 'none';
+    document.getElementById('subjectsSection').style.display = 'block';
+    
+    renderTeacherSubjects([]);
+    
     showModal('teacherModal');
 }
 
@@ -115,6 +120,12 @@ document.getElementById('teacherForm').addEventListener('submit', async (e) => {
 
     const payload = { name };
     
+    if (!currentEditId) {
+        if (newTeacherSubjects.length > 0) {
+            payload.subjects = newTeacherSubjects.map(s => s.id);
+        }
+    }
+    
     try {
         if (currentEditId) {
             await apiRequest(`/teachers/${currentEditId}/`, 'PUT', payload);
@@ -122,17 +133,15 @@ document.getElementById('teacherForm').addEventListener('submit', async (e) => {
             hideModal('teacherModal');
         } else {
             const result = await apiRequest('/teachers/', 'POST', payload);
-            showToast('Викладача створено. Додайте предмети.', 'success');
-            openEditModal(result.id); 
+            showToast('Викладача створено', 'success');
+            hideModal('teacherModal');
             loadTeachers();
-            return; 
         }
         loadTeachers();
     } catch (err) {
         showToast('Помилка: ' + err.message, 'error');
     }
 });
-
 async function confirmDelete() {
     if (!currentDeleteId) return;
     try {
@@ -171,14 +180,29 @@ function renderTeacherSubjects(subjects) {
 }
 
 async function manageSubject(subjectId, action) {
-    if (!currentEditId) return;
-    
     if (action === 'add') {
         const select = document.getElementById('subjectSelect');
         subjectId = parseInt(select.value);
         if (!subjectId) return showToast('Оберіть предмет зі списку', 'error');
+        
+        if (!currentEditId) {
+            const subject = allSubjects.find(s => s.id === subjectId);
+            if (subject && !newTeacherSubjects.find(s => s.id === subjectId)) {
+                newTeacherSubjects.push(subject);
+                renderTeacherSubjects(newTeacherSubjects);
+                showToast('Предмет додано', 'success');
+            }
+            return;
+        }
     } else if (action === 'remove') {
          if (!confirm('Видалити предмет у цього викладача?')) return;
+         
+         if (!currentEditId) {
+            newTeacherSubjects = newTeacherSubjects.filter(s => s.id !== subjectId);
+            renderTeacherSubjects(newTeacherSubjects);
+            showToast('Предмет видалено', 'success');
+            return;
+         }
     }
 
     try {
