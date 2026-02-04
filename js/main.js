@@ -46,7 +46,16 @@ async function fetchGroups(searchText) {
         const response = await fetch(`${API_BASE}/groups/?search=${encodeURIComponent(searchText)}`);
         if (!response.ok) throw new Error('Error');
         const data = await response.json();
-        const results = data.results || data; 
+        let results = data.results || data;
+
+        if (!results || results.length === 0) {
+            const fallback = await fetch(`${API_BASE}/groups/`);
+            if (fallback.ok) {
+                const full = await fallback.json();
+                results = full.results || full;
+            }
+        }
+
         displayGroups(results);
     } catch (error) {
         console.error(error);
@@ -60,8 +69,29 @@ function displayGroups(groups) {
         groupDropdown.classList.remove('show');
         return;
     }
+    // Simple behavior: show when input contains letters or digits and match by substring
+    const query = (groupInput.value || '').trim().toLowerCase();
+    if (!query) {
+        groupDropdown.classList.remove('show');
+        return;
+    }
 
-    groups.forEach(group => {
+    if (!/[\p{L}\p{N}]/u.test(query)) {
+        groupDropdown.classList.remove('show');
+        return;
+    }
+
+    const filtered = groups.filter(g => {
+        const name = (g.name || '').toLowerCase();
+        return name && name.includes(query);
+    });
+
+    if (!filtered.length) {
+        groupDropdown.classList.remove('show');
+        return;
+    }
+
+    filtered.forEach(group => {
         const item = document.createElement('div');
         item.className = 'dropdown-item';
         item.textContent = group.name;
@@ -106,7 +136,17 @@ async function fetchTeachers(searchText) {
         const response = await fetch(`${API_BASE}/teachers/?search=${encodeURIComponent(searchText)}`);
         if (!response.ok) throw new Error('Error');
         const data = await response.json();
-        const results = data.results || data; 
+        let results = data.results || data;
+
+        // If backend returned no matches, fetch full list and client-filter.
+        if (!results || results.length === 0) {
+            const fallback = await fetch(`${API_BASE}/teachers/`);
+            if (fallback.ok) {
+                const full = await fallback.json();
+                results = full.results || full;
+            }
+        }
+
         displayTeachers(results);
     } catch (error) {
         console.error(error);
@@ -120,8 +160,29 @@ function displayTeachers(teachers) {
         teacherDropdown.classList.remove('show');
         return;
     }
+    // Simple behavior: show when input contains letters or digits and match by substring
+    const query = (teacherInput.value || '').trim().toLowerCase();
+    if (!query) {
+        teacherDropdown.classList.remove('show');
+        return;
+    }
 
-    teachers.forEach(teacher => {
+    if (!/[\p{L}\p{N}]/u.test(query)) {
+        teacherDropdown.classList.remove('show');
+        return;
+    }
+
+    const filtered = teachers.filter(t => {
+        const name = (t.name || '').toLowerCase();
+        return name && name.includes(query);
+    });
+
+    if (!filtered.length) {
+        teacherDropdown.classList.remove('show');
+        return;
+    }
+
+    filtered.forEach(teacher => {
         const item = document.createElement('div');
         item.className = 'dropdown-item';
         item.textContent = teacher.name;
