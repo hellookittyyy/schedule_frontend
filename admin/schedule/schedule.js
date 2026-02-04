@@ -4,6 +4,7 @@ let timeSlotsMap = {};
 let lessons = [];
 let roomsCache = [];
 let draggedLessonId = null;
+let weekStartDate = null; // Monday of currently displayed week
 
 document.addEventListener('DOMContentLoaded', init);
 
@@ -20,6 +21,11 @@ async function init() {
     });
 
     document.getElementById('btnGenerate').addEventListener('click', generateSchedule);
+
+    const prev = document.getElementById('prevWeek');
+    const next = document.getElementById('nextWeek');
+    if (prev) prev.addEventListener('click', () => changeWeek(-1));
+    if (next) next.addEventListener('click', () => changeWeek(1));
 
     const bin = document.getElementById('unscheduledList');
     bin.addEventListener('dragover', handleDragOver);
@@ -69,6 +75,20 @@ async function loadSchedule(semesterId) {
         
         buildGrid(slotsData);
         lessons = lessonsData.results || lessonsData;
+        // Determine starting week: prefer earliest lesson occurrence date, otherwise current week
+        const occDates = lessons
+            .map(l => l.time_slot_details?.date)
+            .filter(Boolean)
+            .map(d => new Date(d));
+
+        if (occDates.length > 0) {
+            const minD = new Date(Math.min(...occDates.map(d=>d.getTime())));
+            weekStartDate = startOfWeek(minD);
+        } else {
+            weekStartDate = startOfWeek(new Date());
+        }
+
+        renderWeekLabel();
         renderLessons();
 
     } catch (error) {
@@ -123,17 +143,27 @@ function buildGrid(slots) {
 function renderLessons() {
     document.querySelectorAll('.grid-cell').forEach(cell => cell.innerHTML = '');
     document.getElementById('unscheduledList').innerHTML = '';
-    
+
     let unscheduledCount = 0;
 
     lessons.forEach(lesson => {
         const card = createLessonCard(lesson);
 
         if (lesson.time_slot && lesson.time_slot_details) {
-            const day = lesson.time_slot_details.day_of_week;
-            const period = lesson.time_slot_details.period_number;
+            const slotDetails = lesson.time_slot_details || {};
+
+            // If this lesson occurrence has an explicit date, only render it when it falls into the currently displayed week
+            if (slotDetails.date) {
+                if (!dateInWeek(slotDetails.date)) {
+                    // do not render occurrences outside current week
+                    return;
+                }
+            }
+
+            const day = slotDetails.day_of_week;
+            const period = slotDetails.period_number;
             const cell = document.querySelector(`.grid-cell[data-day="${day}"][data-period="${period}"]`);
-            
+
             if (cell) {
                 cell.appendChild(card);
             } else {
@@ -147,6 +177,45 @@ function renderLessons() {
     });
 
     document.getElementById('unscheduledCount').textContent = unscheduledCount;
+}
+
+function dateInWeek(dateStr) {
+    if (!weekStartDate) return true;
+    const d = new Date(dateStr);
+    const start = new Date(weekStartDate.getFullYear(), weekStartDate.getMonth(), weekStartDate.getDate());
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    return d >= start && d < end;
+}
+
+function startOfWeek(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = (day === 0) ? -6 : 1 - day; // shift to Monday
+    d.setHours(0,0,0,0);
+    d.setDate(d.getDate() + diff);
+    return d;
+}
+
+function formatDate(date) {
+    const d = new Date(date);
+    return d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function renderWeekLabel() {
+    const label = document.getElementById('weekLabel');
+    if (!label || !weekStartDate) return;
+    const start = weekStartDate;
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    label.textContent = `${formatDate(start)} — ${formatDate(end)}`;
+}
+
+function changeWeek(delta) {
+    if (!weekStartDate) weekStartDate = startOfWeek(new Date());
+    weekStartDate.setDate(weekStartDate.getDate() + (delta * 7));
+    renderWeekLabel();
+    renderLessons();
 }
 
 function createLessonCard(lesson) {
@@ -377,8 +446,8 @@ function showLessonDetails(lesson) {
         <div class="detail-row">
             <div style="text-align:left; width: 100%;">
                 <div class="detail-label">Час (змінюється перетягуванням)</div>
-                <div class="detail-value" style="margin-top: 5px;">
-                    ${slot.id ? `🗓️ ${dayNames[slot.day_of_week]}, Пара ${slot.period_number}` : '⏳ Не розклад'}
+                    <div class="detail-value" style="margin-top: 5px;">
+                    ${slot.id ? `🗓️ ${slot.date ? formatDate(slot.date) + ' — ' : ''}${dayNames[slot.day_of_week]}, Пара ${slot.period_number}` : '⏳ Не розклад'}
                 </div>
             </div>
         </div>

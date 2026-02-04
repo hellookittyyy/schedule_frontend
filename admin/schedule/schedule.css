@@ -170,3 +170,12 @@
     background: #334155;
     border-radius: 3px;
 }
+
+.week-controls{
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    margin: 15px 0 15px 0;
+    justify-content: center;
+    font-weight: 600;
+}
