@@ -252,6 +252,7 @@ function setupTargetSelector() {
     const radios = document.querySelectorAll('input[name="targetType"]');
     const groupSelect = document.getElementById('groupSelectContainer');
     const streamSelect = document.getElementById('streamSelectContainer');
+    const courseSelect = document.getElementById('courseSelectContainer');
     const labels = document.querySelectorAll('.radio-label');
 
     radios.forEach(radio => {
@@ -262,11 +263,21 @@ function setupTargetSelector() {
             if (e.target.value === 'group') {
                 groupSelect.classList.remove('hidden');
                 streamSelect.classList.add('hidden');
-                document.getElementById('planStream').value = ''; 
-            } else {
+                courseSelect.classList.add('hidden');
+                document.getElementById('planStream').value = '';
+                document.getElementById('planCourse').value = '';
+            } else if (e.target.value === 'stream') {
                 streamSelect.classList.remove('hidden');
                 groupSelect.classList.add('hidden');
+                courseSelect.classList.add('hidden');
                 document.getElementById('planGroup').value = '';
+                document.getElementById('planCourse').value = '';
+            } else if (e.target.value === 'course') {
+                courseSelect.classList.remove('hidden');
+                groupSelect.classList.add('hidden');
+                streamSelect.classList.add('hidden');
+                document.getElementById('planGroup').value = '';
+                document.getElementById('planStream').value = '';
             }
         });
     });
@@ -287,6 +298,9 @@ function openAddModal() {
         groupRadio.click();
         groupRadio.checked = true;
     }
+    
+    // Очистити курс селект
+    document.getElementById('planCourse').value = '';
     
     showModal('planModal');
 }
@@ -311,10 +325,14 @@ async function openEditModal(id) {
         const radio = document.querySelector('input[value="group"]');
         if (radio) radio.click();
         document.getElementById('planGroup').value = plan.group;
-    } else {
+    } else if (plan.stream) {
         const radio = document.querySelector('input[value="stream"]');
         if (radio) radio.click();
         document.getElementById('planStream').value = plan.stream;
+    } else if (plan.course_number) {
+        const radio = document.querySelector('input[value="course"]');
+        if (radio) radio.click();
+        document.getElementById('planCourse').value = plan.course_number;
     }
 
     showModal('planModal');
@@ -341,11 +359,13 @@ document.getElementById('planForm').addEventListener('submit', async (e) => {
         duration: parseInt(document.getElementById('planDuration').value),
         group: targetType === 'group' ? parseInt(document.getElementById('planGroup').value) : null,
         stream: targetType === 'stream' ? parseInt(document.getElementById('planStream').value) : null,
+        course_number: targetType === 'course' ? parseInt(document.getElementById('planCourse').value) : null,
         constraints: {}
     };
 
     if (targetType === 'group' && !data.group) return showToast('Оберіть групу!', 'error');
     if (targetType === 'stream' && !data.stream) return showToast('Оберіть потік!', 'error');
+    if (targetType === 'course' && !data.course_number) return showToast('Оберіть курс!', 'error');
 
     try {
         const btnSave = e.target.querySelector('.btn-save');
@@ -356,7 +376,16 @@ document.getElementById('planForm').addEventListener('submit', async (e) => {
             showToast('План оновлено', 'success');
         } else {
             await apiRequest('/study_plans/', 'POST', data);
-            showToast('План створено', 'success');
+            
+            // UI Feedback залежно від типу
+            if (targetType === 'course') {
+                const courseNum = data.course_number;
+                showToast(`✅ Успішно створено плани для ${courseNum}-го курсу`, 'success');
+            } else if (targetType === 'group') {
+                showToast('✅ План для групи створено', 'success');
+            } else {
+                showToast('✅ План для потоку створено', 'success');
+            }
         }
         
         hideModal('planModal');

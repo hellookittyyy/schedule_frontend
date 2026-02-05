@@ -72,6 +72,10 @@
                         <input type="radio" name="targetType" value="stream">
                         <span>🌊 Для Потоку</span>
                     </label>
+                    <label class="radio-label">
+                        <input type="radio" name="targetType" value="course">
+                        <span>📚 Для Курсу</span>
+                    </label>
                 </div>
 
                 <div class="form-grid-3">
@@ -100,6 +104,19 @@
                     <div class="form-group hidden" id="streamSelectContainer">
                         <label class="form-label">Потік</label>
                         <select id="planStream" class="form-input"></select>
+                    </div>
+
+                    <div class="form-group hidden" id="courseSelectContainer">
+                        <label class="form-label">Курс</label>
+                        <select id="planCourse" class="form-input">
+                            <option value="">-- Оберіть курс --</option>
+                            <option value="1">1 курс</option>
+                            <option value="2">2 курс</option>
+                            <option value="3">3 курс</option>
+                            <option value="4">4 курс</option>
+                            <option value="5">5 курс</option>
+                            <option value="6">6 курс</option>
+                        </select>
                     </div>
 
                     <div class="form-group">
