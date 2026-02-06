@@ -1,4 +1,8 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/';
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+const API_BASE_URL = isLocal
+    ? 'http://127.0.0.1:8000/api/'
+    : 'https://api.velab.space/schedule/api/';
 
 async function apiRequest(endpoint, method = 'GET', body = null) {
     const options = {
@@ -14,7 +18,7 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
 
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-        
+
         if (response.status === 204) return true;
 
         const data = await response.json();
@@ -80,7 +84,7 @@ function showToast(message, type = 'info') {
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     const icons = {
         success: '✅',
         error: '❌',

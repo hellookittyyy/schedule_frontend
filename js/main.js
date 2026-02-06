@@ -1,5 +1,5 @@
 const groupInput = document.getElementById('group');
-const groupIdInput = document.getElementById('groupId'); 
+const groupIdInput = document.getElementById('groupId');
 const groupDropdown = document.getElementById('groupDropdown');
 
 const teacherInput = document.getElementById('teacher');
@@ -8,7 +8,11 @@ const teacherDropdown = document.getElementById('teacherDropdown');
 let groupDebounceTimer;
 let teacherDebounceTimer;
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/';
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+const API_BASE = isLocal
+    ? 'http://127.0.0.1:8000/api/'
+    : 'https://api.velab.space/schedule/api/';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadActiveSemester();
@@ -25,12 +29,12 @@ const showGroupDropdownIfNeeded = () => {
 
 groupInput.addEventListener('focus', showGroupDropdownIfNeeded);
 
-groupInput.addEventListener('input', function() {
-    groupIdInput.value = ''; 
-    
+groupInput.addEventListener('input', function () {
+    groupIdInput.value = '';
+
     const searchText = this.value.trim();
     clearTimeout(groupDebounceTimer);
-    
+
     if (searchText.length === 0) {
         groupDropdown.classList.remove('show');
         return;
@@ -97,7 +101,7 @@ function displayGroups(groups) {
         item.textContent = group.name;
         item.addEventListener('click', () => {
             groupInput.value = group.name;
-            groupIdInput.value = group.id; 
+            groupIdInput.value = group.id;
             groupDropdown.classList.remove('show');
         });
         groupDropdown.appendChild(item);
@@ -117,10 +121,10 @@ const showTeacherDropdownIfNeeded = () => {
 
 teacherInput.addEventListener('focus', showTeacherDropdownIfNeeded);
 
-teacherInput.addEventListener('input', function() {
+teacherInput.addEventListener('input', function () {
     const searchText = this.value.trim();
     clearTimeout(teacherDebounceTimer);
-    
+
     if (searchText.length === 0) {
         teacherDropdown.classList.remove('show');
         return;
@@ -196,7 +200,7 @@ function displayTeachers(teachers) {
     teacherDropdown.classList.add('show');
 }
 
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     if (e.target !== groupInput && !groupDropdown.contains(e.target)) {
         groupDropdown.classList.remove('show');
     }
@@ -210,8 +214,8 @@ async function loadActiveSemester() {
         const response = await fetch(`${API_BASE}/semesters/`);
         if (response.ok) {
             const data = await response.json();
-            const activeSemester = data.find(s => s.is_current) || data[0]; 
-            
+            const activeSemester = data.find(s => s.is_current) || data[0];
+
             if (activeSemester) {
                 document.getElementById('dateFrom').value = activeSemester.start_date;
                 document.getElementById('dateTo').value = activeSemester.end_date;
@@ -239,7 +243,7 @@ async function showSchedule() {
     container.innerHTML = '<div class="loading-spinner">Searching...</div>';
 
     const params = new URLSearchParams();
-    
+
     if (groupId) {
         params.append('group_id', groupId);
     } else if (groupName) {
@@ -248,15 +252,15 @@ async function showSchedule() {
 
     if (teacherName) params.append('teacher_name', teacherName);
     if (course) params.append('course', course);
-    
+
     if (dateFrom) params.append('date_from', dateFrom);
     if (dateTo) params.append('date_to', dateTo);
 
     try {
         const response = await fetch(`${API_BASE}/lessons/?${params.toString()}`);
-        
+
         if (!response.ok) throw new Error('Server Error');
-        
+
         const data = await response.json();
         const lessons = data.results || data;
 
@@ -286,7 +290,7 @@ function renderSchedule(lessons) {
 
     const lessonsByDate = {};
     lessons.forEach(lesson => {
-        const dateKey = lesson.time_slot_details?.date || lesson.date || 'Unknown Date'; 
+        const dateKey = lesson.time_slot_details?.date || lesson.date || 'Unknown Date';
         if (!lessonsByDate[dateKey]) {
             lessonsByDate[dateKey] = [];
         }
@@ -300,11 +304,11 @@ function renderSchedule(lessons) {
         let displayDate = date;
         if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
             const d = new Date(date);
-            displayDate = d.toLocaleDateString('uk-UA', { 
-                weekday: 'long', 
-                day: 'numeric', 
-                month: 'long', 
-                year: 'numeric' 
+            displayDate = d.toLocaleDateString('uk-UA', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
             });
             displayDate = displayDate.charAt(0).toUpperCase() + displayDate.slice(1);
         }
