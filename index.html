@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Schedule</title>
-  <link rel="stylesheet" href="css/main.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule 1</title>
+    <link rel="stylesheet" href="css/main.css">
 </head>
+
 <body>
     <div class="container">
         <h1>Розклад занять</h1>
-        
+
         <form id="searchForm" onsubmit="event.preventDefault(); showSchedule();">
             <div class="form-group">
                 <label for="teacher">Ім'я викладача</label>
                 <div style="position: relative;">
-                    <input type="text" id="teacher" name="teacher" placeholder="Введіть ім'я викладача" autocomplete="off">
+                    <input type="text" id="teacher" name="teacher" placeholder="Введіть ім'я викладача"
+                        autocomplete="off">
                     <div id="teacherDropdown" class="dropdown"></div>
                 </div>
             </div>
@@ -61,4 +64,5 @@
 </body>
 
 <script src="js/main.js"></script>
+
 </html>

@@ -18,6 +18,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/schedule_frontend
-            sudo git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             sudo chown -R lody:www-data /var/www/schedule_frontend
             sudo chmod -R 755 /var/www/schedule_frontend
