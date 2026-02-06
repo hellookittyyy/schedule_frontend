@@ -1,0 +1,23 @@
+name: Deploy Frontend
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: 92.113.144.6
+          username: lody
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/schedule_frontend
+            sudo git pull origin main
+            sudo chown -R www-data:www-data /var/www/schedule_frontend
+            sudo chmod -R 755 /var/www/schedule_frontend
