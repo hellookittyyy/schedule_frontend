@@ -19,5 +19,5 @@ jobs:
           script: |
             cd /var/www/schedule_frontend
             sudo git pull origin main
-            sudo chown -R www-data:www-data /var/www/schedule_frontend
+            sudo chown -R lody:www-data /var/www/schedule_frontend
             sudo chmod -R 755 /var/www/schedule_frontend
