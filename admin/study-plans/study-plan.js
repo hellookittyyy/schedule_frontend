@@ -5,7 +5,7 @@ let currentDeleteId = null;
 const cache = {
     semesters: [],
     subjects: [],
-    allTeachers: [],  
+    allTeachers: [],
     groups: [],
     streams: [],
     roomTypes: [],
@@ -29,11 +29,11 @@ const CLASS_TYPES_FALLBACK = [
 
 async function init() {
     await loadAllDropdowns();
-    
+
     setupFilterListeners();
     setupTargetSelector();
     setupCascadingSelects();
-    
+
     loadStudyPlans();
 }
 
@@ -47,9 +47,9 @@ async function loadAllDropdowns() {
             apiRequest('/groups/'),
             apiRequest('/streams/'),
             apiRequest('/room_types/'),
-            apiRequest('/class_types/').catch(() => CLASS_TYPES_FALLBACK) 
+            apiRequest('/class_types/').catch(() => CLASS_TYPES_FALLBACK)
         ]);
-        
+
         cache.semesters = semesters;
         cache.subjects = subjects;
         cache.allTeachers = teachersData.results || teachersData;
@@ -119,10 +119,10 @@ async function loadStudyPlans() {
         if (currentFilters.semester) params.append('semester', currentFilters.semester);
         if (currentFilters.group) params.append('group', currentFilters.group);
         if (currentFilters.teacher) params.append('teacher', currentFilters.teacher);
-        params.append('ordering', '-id'); 
+        params.append('ordering', '-id');
 
         const data = await apiRequest(`/study_plans/?${params.toString()}`);
-        
+
         studyPlans = data.results || data;
         renderTable(studyPlans);
 
@@ -135,7 +135,7 @@ async function loadStudyPlans() {
 
 function renderTable(data) {
     const container = document.getElementById('tableContainer');
-    
+
     if (data.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
@@ -162,15 +162,15 @@ function renderTable(data) {
             </thead>
             <tbody>
                 ${data.map(plan => {
-                    const fullSemester = getSemesterName(plan.semester);
-                    const semesterHtml = truncateText(fullSemester, 25);
-                    const semesterTitle = fullSemester.length > 25 ? `title="${fullSemester}"` : '';
+        const fullSemester = getSemesterName(plan.semester);
+        const semesterHtml = truncateText(fullSemester, 25);
+        const semesterTitle = fullSemester.length > 25 ? `title="${fullSemester}"` : '';
 
-                    const targetBadge = plan.group 
-                        ? `<span class="badge badge-group">👥 ${plan.group_name || getGroupName(plan.group)}</span>`
-                        : `<span class="badge badge-stream">🌊 ${plan.stream_name || getStreamName(plan.stream)}</span>`;
+        const targetBadge = plan.group
+            ? `<span class="badge badge-group">👥 ${plan.group_name || getGroupName(plan.group)}</span>`
+            : `<span class="badge badge-stream">🌊 ${plan.stream_name || getStreamName(plan.stream)}</span>`;
 
-                    return `
+        return `
                     <tr>
                         <td>#${plan.id}</td>
                         <td ${semesterTitle}>${semesterHtml}</td>
@@ -199,7 +199,7 @@ function renderTable(data) {
             </tbody>
         </table>
     `;
-    
+
     container.innerHTML = table;
 }
 
@@ -221,19 +221,19 @@ function setupCascadingSelects() {
 
 async function loadTeachersBySubject(subjectId, selectedTeacherId = null) {
     const teacherSelect = document.getElementById('planTeacher');
-    
+
     try {
         teacherSelect.innerHTML = '<option value="">⏳ Завантаження...</option>';
         teacherSelect.disabled = true;
 
         const data = await apiRequest(`/teachers/?subjects=${subjectId}`);
         const teachers = data.results || data;
-        
+
         let html = '<option value="">-- Оберіть викладача --</option>';
         teachers.forEach(teacher => {
             html += `<option value="${teacher.id}">${teacher.name}</option>`;
         });
-        
+
         teacherSelect.innerHTML = html;
         teacherSelect.disabled = false;
 
@@ -288,20 +288,20 @@ function openAddModal() {
     currentEditId = null;
     document.getElementById('modalTitle').textContent = 'Додати навчальний план';
     document.getElementById('planForm').reset();
-    
+
     const teacherSelect = document.getElementById('planTeacher');
     teacherSelect.innerHTML = '<option value="">-- Спочатку оберіть предмет --</option>';
     teacherSelect.disabled = true;
-    
+
     const groupRadio = document.querySelector('input[value="group"]');
     if (groupRadio) {
         groupRadio.click();
         groupRadio.checked = true;
     }
-    
+
     // Очистити курс селект
     document.getElementById('planCourse').value = '';
-    
+
     showModal('planModal');
 }
 
@@ -311,7 +311,7 @@ async function openEditModal(id) {
 
     currentEditId = id;
     document.getElementById('modalTitle').textContent = 'Редагувати навчальний план';
-    
+
     document.getElementById('planSemester').value = plan.semester;
     document.getElementById('planClassType').value = plan.class_type;
     document.getElementById('planRoomType').value = plan.required_room_type || '';
@@ -348,7 +348,7 @@ document.getElementById('planForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const targetType = document.querySelector('input[name="targetType"]:checked').value;
-    
+
     const data = {
         semester: parseInt(document.getElementById('planSemester').value),
         subject: parseInt(document.getElementById('planSubject').value),
@@ -357,15 +357,24 @@ document.getElementById('planForm').addEventListener('submit', async (e) => {
         required_room_type: document.getElementById('planRoomType').value ? parseInt(document.getElementById('planRoomType').value) : null,
         amount: parseInt(document.getElementById('planAmount').value),
         duration: parseInt(document.getElementById('planDuration').value),
-        group: targetType === 'group' ? parseInt(document.getElementById('planGroup').value) : null,
-        stream: targetType === 'stream' ? parseInt(document.getElementById('planStream').value) : null,
-        course_number: targetType === 'course' ? parseInt(document.getElementById('planCourse').value) : null,
         constraints: {}
     };
 
-    if (targetType === 'group' && !data.group) return showToast('Оберіть групу!', 'error');
-    if (targetType === 'stream' && !data.stream) return showToast('Оберіть потік!', 'error');
-    if (targetType === 'course' && !data.course_number) return showToast('Оберіть курс!', 'error');
+    if (targetType === 'group') {
+        const groupId = parseInt(document.getElementById('planGroup').value);
+        if (!groupId) return showToast('Оберіть групу!', 'error');
+        data.group = groupId;
+    } else if (targetType === 'stream') {
+        const streamId = parseInt(document.getElementById('planStream').value);
+        if (!streamId) return showToast('Оберіть потік!', 'error');
+        data.stream = streamId;
+    } else if (targetType === 'course') {
+        const courseNum = parseInt(document.getElementById('planCourse').value);
+        if (!courseNum) return showToast('Оберіть курс!', 'error');
+        data.course_number = courseNum;
+    } else {
+        return showToast('Оберіть тип призначення!', 'error');
+    }
 
     try {
         const btnSave = e.target.querySelector('.btn-save');
@@ -376,7 +385,7 @@ document.getElementById('planForm').addEventListener('submit', async (e) => {
             showToast('План оновлено', 'success');
         } else {
             await apiRequest('/study_plans/', 'POST', data);
-            
+
             // UI Feedback залежно від типу
             if (targetType === 'course') {
                 const courseNum = data.course_number;
@@ -387,7 +396,7 @@ document.getElementById('planForm').addEventListener('submit', async (e) => {
                 showToast('✅ План для потоку створено', 'success');
             }
         }
-        
+
         hideModal('planModal');
         loadStudyPlans();
         btnSave.disabled = false;
