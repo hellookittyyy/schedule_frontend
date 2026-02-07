@@ -32,7 +32,7 @@
 
 .week-grid {
     display: grid;
-    grid-template-columns: 70px repeat(5, 1fr);
+    grid-template-columns: 70px repeat(7, 1fr);
     background-color: #cbd5e1; 
     gap: 1px; 
     border: 1px solid #cbd5e1;

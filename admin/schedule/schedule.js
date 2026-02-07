@@ -44,13 +44,13 @@ async function loadRooms() {
 async function loadSemesters() {
     try {
         const data = await apiRequest('/semesters/');
-        
+
         const select = document.getElementById('semesterSelect');
         select.innerHTML = '<option value="">-- Оберіть семестр --</option>' +
             data.map(sem => `<option value="${sem.id}">${sem.name}</option>`).join('');
 
         const activeSemester = data.find(s => s.is_current);
-    
+
         if (activeSemester) {
             select.value = activeSemester.id;
             loadSchedule(activeSemester.id);
@@ -66,13 +66,13 @@ async function loadSemesters() {
 async function loadSchedule(semesterId) {
     currentSemesterId = semesterId;
     const gridContainer = document.getElementById('scheduleGrid');
-    
+
     try {
         const [slotsData, lessonsData] = await Promise.all([
             apiRequest(`/timeslots/?semester=${semesterId}`),
             apiRequest(`/lessons/?semester=${semesterId}`)
         ]);
-        
+
         buildGrid(slotsData);
         lessons = lessonsData.results || lessonsData;
         // Determine starting week: prefer earliest lesson occurrence date, otherwise current week
@@ -82,7 +82,7 @@ async function loadSchedule(semesterId) {
             .map(d => new Date(d));
 
         if (occDates.length > 0) {
-            const minD = new Date(Math.min(...occDates.map(d=>d.getTime())));
+            const minD = new Date(Math.min(...occDates.map(d => d.getTime())));
             weekStartDate = startOfWeek(minD);
         } else {
             weekStartDate = startOfWeek(new Date());
@@ -99,12 +99,12 @@ async function loadSchedule(semesterId) {
 
 function buildGrid(slots) {
     const grid = document.getElementById('scheduleGrid');
-    grid.innerHTML = ''; 
+    grid.innerHTML = '';
 
     timeSlotsMap = {};
 
-    grid.appendChild(createDiv('grid-header-cell', '')); 
-    ['Пн', 'Вт', 'Ср', 'Чт', 'Пт'].forEach(day => grid.appendChild(createDiv('grid-header-cell', day)));
+    grid.appendChild(createDiv('grid-header-cell', ''));
+    ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'].forEach(day => grid.appendChild(createDiv('grid-header-cell', day)));
 
     slots.forEach(slot => {
         if (!timeSlotsMap[slot.day_of_week]) timeSlotsMap[slot.day_of_week] = {};
@@ -114,12 +114,12 @@ function buildGrid(slots) {
     for (let p = 1; p <= 8; p++) {
         grid.appendChild(createDiv('grid-time-cell', `${p}`));
 
-        for (let d = 1; d <= 5; d++) {
+        for (let d = 1; d <= 7; d++) {
             const cell = document.createElement('div');
             cell.className = 'grid-cell';
             cell.dataset.day = d;
             cell.dataset.period = p;
-            
+
             const slotId = timeSlotsMap[d]?.[p];
             if (slotId) {
                 cell.dataset.slotId = slotId;
@@ -192,7 +192,7 @@ function startOfWeek(date) {
     const d = new Date(date);
     const day = d.getDay();
     const diff = (day === 0) ? -6 : 1 - day; // shift to Monday
-    d.setHours(0,0,0,0);
+    d.setHours(0, 0, 0, 0);
     d.setDate(d.getDate() + diff);
     return d;
 }
@@ -221,12 +221,12 @@ function changeWeek(delta) {
 function createLessonCard(lesson) {
     const div = document.createElement('div');
     div.className = `lesson-card ${lesson.is_locked ? 'locked' : ''}`;
-    
+
     const typeName = lesson.study_plan_details?.class_type || '';
     if (typeName.includes('Лекція')) div.classList.add('type-lecture');
     else if (typeName.includes('Лабораторна')) div.classList.add('type-lab');
     else if (typeName.includes('Практична')) div.classList.add('type-practice');
-    
+
     div.draggable = true;
     div.dataset.id = lesson.id;
 
@@ -265,7 +265,7 @@ function createLessonCard(lesson) {
         e.target.classList.remove('dragging');
         draggedLessonId = null;
     });
-    
+
     div.addEventListener('click', (e) => {
         if (e.target.tagName !== 'BUTTON') {
             showLessonDetails(lesson);
@@ -285,14 +285,14 @@ function createDiv(className, text) {
 
 async function toggleLock(id, event) {
     event.stopPropagation();
-    
+
     const lesson = lessons.find(l => l.id === id);
     if (!lesson) return;
 
     const newState = !lesson.is_locked;
-    
+
     lesson.is_locked = newState;
-    renderLessons(); 
+    renderLessons();
 
     try {
         await apiRequest(`/lessons/${id}/`, 'PATCH', { is_locked: newState });
@@ -305,9 +305,9 @@ async function toggleLock(id, event) {
 }
 
 function handleDragOver(e) {
-    e.preventDefault(); 
+    e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    
+
     if (e.currentTarget.classList.contains('grid-cell') || e.currentTarget.id === 'unscheduledList') {
         e.currentTarget.classList.add('drag-over');
     }
@@ -337,7 +337,7 @@ function handleDropUnscheduled(e) {
 async function moveLesson(id, slotId) {
     const lesson = lessons.find(l => l.id === id);
     if (!lesson) return;
-    
+
     if (lesson.is_locked) {
         showToast("🔒 Заняття закріплене!", "warning");
         return;
@@ -345,29 +345,29 @@ async function moveLesson(id, slotId) {
 
     const oldSlot = lesson.time_slot;
     const oldDetails = lesson.time_slot_details;
-    
+
     if (slotId) {
         let foundDay, foundPeriod;
-        for(let d in timeSlotsMap) {
-            for(let p in timeSlotsMap[d]) {
+        for (let d in timeSlotsMap) {
+            for (let p in timeSlotsMap[d]) {
                 if (timeSlotsMap[d][p] == slotId) {
                     foundDay = d; foundPeriod = p;
                 }
             }
         }
-        
+
         lesson.time_slot = slotId;
-        lesson.time_slot_details = { 
-            id: slotId, 
-            day_of_week: parseInt(foundDay), 
-            period_number: parseInt(foundPeriod) 
+        lesson.time_slot_details = {
+            id: slotId,
+            day_of_week: parseInt(foundDay),
+            period_number: parseInt(foundPeriod)
         };
     } else {
         lesson.time_slot = null;
         lesson.time_slot_details = null;
     }
-    
-    renderLessons(); 
+
+    renderLessons();
 
     try {
         await apiRequest(`/lessons/${id}/`, 'PATCH', { time_slot: slotId });
@@ -385,7 +385,7 @@ async function generateSchedule() {
 
     const loader = document.getElementById('generationLoader');
     const logBox = document.getElementById('generationLog');
-    
+
     loader.classList.remove('hidden');
     logBox.textContent = "🚀 Запуск алгоритму...";
 
@@ -396,7 +396,7 @@ async function generateSchedule() {
             logBox.textContent = data.logs ? data.logs.join('\n') : "Готово!";
             setTimeout(() => {
                 loader.classList.add('hidden');
-                loadSchedule(currentSemesterId); 
+                loadSchedule(currentSemesterId);
                 showToast(`Генерацію завершено! Створено: ${data.created}`, 'success');
             }, 1000);
         } else {
@@ -414,9 +414,9 @@ function showLessonDetails(lesson) {
     const sp = lesson.study_plan_details || {};
     const currentRoomId = lesson.room || null;
     const slot = lesson.time_slot_details || {};
-    const dayNames = {1:'Понеділок', 2:'Вівторок', 3:'Середа', 4:'Четвер', 5:'П\'ятниця'};
-    
-    const roomOptions = roomsCache.map(r => 
+    const dayNames = { 1: 'Понеділок', 2: 'Вівторок', 3: 'Середа', 4: 'Четвер', 5: 'П\'ятниця', 6: 'Субота', 7: 'Неділя' };
+
+    const roomOptions = roomsCache.map(r =>
         `<option value="${r.id}" ${r.id === currentRoomId ? 'selected' : ''}>${r.title} (${r.capacity} місць)</option>`
     ).join('');
 
@@ -452,7 +452,7 @@ function showLessonDetails(lesson) {
             </div>
         </div>
     `;
-    
+
     showModal('lessonModal');
 }
 
@@ -471,7 +471,7 @@ async function updateLessonRoom(lessonId, newRoomId) {
     } else {
         lesson.room_details = { title: '???' };
     }
-    
+
     renderLessons();
 
     try {
