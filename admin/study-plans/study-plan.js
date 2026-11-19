@@ -93,10 +93,12 @@
     });
   }
 
-  function load() {
+  function load(lc) {
     return loadRef().then(function () {
       if (!semId) { plans = []; return []; }
-      return apiRequest('/study_plans/?semester=' + encodeURIComponent(semId)).then(function (d) {
+      var sem = semId;
+      return apiRequest('/study_plans/?semester=' + encodeURIComponent(sem)).then(function (d) {
+        if (sem !== semId || (lc && !lc.isCurrent())) return []; // stale: a newer load owns plans
         plans = list(d);
         learnClassTypes();
         var items = [];
@@ -365,6 +367,11 @@
       if (p._tmp) {
         st.drafts = st.drafts.filter(function (d) { return d !== p; });
         plans.push(saved);
+        if (!tr.isConnected) { // re-rendered meanwhile: patching the old row would be lost
+          md.refresh(st.it);
+          if (ctx.alive()) { renderPlan(st); ctx.status('saved'); }
+          return;
+        }
         tr.setAttribute('data-k', saved.id);
         tr.classList.remove('sp-draft');
         var act = tr.querySelector('td.act');
@@ -569,8 +576,8 @@
     emptyText: 'Груп і потоків поки немає',
     selectText: 'Оберіть групу або потік зі списку',
     countLabel: function (n) { return plural(n, 'група чи потік', 'групи чи потоки', 'груп чи потоків'); },
-    load: function () {
-      return load().then(function (items) {
+    load: function (lc) {
+      return load(lc).then(function (items) {
         if (!semId) UI.toast('Семестрів ще немає — створіть семестр', { type: 'warn' });
         return items;
       });
