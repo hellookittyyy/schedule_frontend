@@ -1,0 +1,37 @@
+/* Розклад (admin/schedule): toolbar, week grid wrapper, unscheduled bin, lesson drawer. */
+.sch-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.sch-sem{width:auto;min-width:240px;max-width:380px}
+.sch-week{display:flex;align-items:center;gap:8px}
+.sch-week-label{min-width:220px;text-align:center;font-weight:600;font-size:13.5px}
+.sch-filter{display:flex;align-items:center;gap:8px;margin-left:auto}
+.sch-view-value{width:auto;min-width:180px;max-width:280px}
+
+.sch-gen-confirm{margin:0 0 16px}
+.sch-gen-confirm:not(.is-confirm){display:none}
+.sch-gen-confirm .confirm{padding-top:0;border-top:0}
+
+.sch-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:20px;align-items:start}
+.sch-scroll{overflow-x:auto;min-width:0;border-radius:var(--radius)}
+.sch-scroll .wk{min-width:calc(64px + var(--days,6) * 150px);grid-template-columns:64px repeat(var(--days,6),minmax(150px,1fr))}
+.sch-scroll .wk[hidden]{display:none}
+.wk .cell{display:flex;flex-direction:column;gap:4px}
+.wk .cell .ls{height:auto}
+
+.ls.sch-other{background:var(--surface-2);border-left-color:var(--faint)}
+.ls.sch-other .tp{color:var(--muted)}
+.ls b{padding-right:20px}
+.ls:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+.sch-layout .ls.is-locked{cursor:pointer}
+.ls .sch-lock{position:absolute;top:5px;right:5px;width:22px;height:22px;display:grid;place-items:center;padding:0;border:0;border-radius:6px;background:none;color:var(--muted);opacity:.55;cursor:pointer}
+.ls .sch-lock:hover{opacity:1;background:var(--surface)}
+.ls .sch-lock.is-on{opacity:1;color:var(--text)}
+.ls .sch-lock:focus-visible{outline:2px solid var(--text);opacity:1}
+
+.sch-bin{position:sticky;top:20px}
+.sch-bin .card-head{margin-bottom:10px}
+.sch-bin-list{min-height:120px;max-height:calc(100vh - 220px);overflow-y:auto;border-radius:var(--radius-sm);padding:2px}
+.sch-bin-empty{color:var(--muted);font-size:12.5px;padding:8px 2px}
+
+.sch-dl{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px 14px;margin:0 0 20px;font-size:13.5px}
+.sch-dl dt{color:var(--muted)}
+.sch-dl dd{margin:0}
