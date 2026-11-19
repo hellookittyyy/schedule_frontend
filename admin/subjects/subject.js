@@ -71,7 +71,14 @@
     name.addEventListener('input', function () {
       el.querySelector('#s-title').textContent = name.value.trim() || 'Новий предмет';
     });
-    if (ctx.isDraft) return;
+    if (ctx.isDraft) {
+      // Hold draft autosave until the name is filled; save() then reads both fields.
+      var fields = el.querySelector('.fields');
+      var hold = function (e) { if (!ctx.item.id && name.value.trim() === '') e.stopPropagation(); };
+      ['change', 'focusout'].forEach(function (t) { fields.addEventListener(t, hold, true); });
+      fields.addEventListener('keydown', function (e) { if (e.key === 'Enter') hold(e); }, true);
+      return;
+    }
     apiRequest('/study_plans/?subject=' + encodeURIComponent(s.id)).then(function (plans) {
       if (!ctx.alive()) return;
       plans = list(plans);
@@ -129,7 +136,12 @@
     mount: mount,
     onCreate: function () { return { name: '', description: '' }; },
     save: function (s, ch) {
-      if (s.id == null) return apiRequest('/subjects/', 'POST', { name: ch.name, description: ch.description || '' });
+      if (s.id == null) {
+        var q = function (k) { return document.querySelector('#subjects [data-md-field="' + k + '"]'); };
+        var name = q('name') ? q('name').value.trim() : (ch.name || '');
+        if (!name) return Promise.reject(new Error('Вкажіть назву предмета'));
+        return apiRequest('/subjects/', 'POST', { name: name, description: q('description') ? q('description').value.trim() : (ch.description || '') });
+      }
       return apiRequest('/subjects/' + s.id + '/', 'PUT', {
         name: ch.name != null ? ch.name : s.name,
         description: ch.description != null ? ch.description : (s.description || '')
