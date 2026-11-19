@@ -9,6 +9,7 @@
 
   // Raw data used by the checks; also reused by pages (plans per group, counts).
   function data(semesterId) {
+    if (semesterId && typeof semesterId === 'object' && semesterId.id != null) semesterId = semesterId.id;
     var key = String(semesterId);
     if (!cache[key]) {
       var p = Promise.all([
