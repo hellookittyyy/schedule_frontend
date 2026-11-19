@@ -105,6 +105,8 @@
     var s = Checks.summary(st.list);
     var total = st.list.length;
     var pct = total ? Math.round(s.ok / total * 100) : 0;
+    var capped = s.block > 0 && pct > 50;
+    if (capped) pct = 50;
     var items = { block: 0, warn: 0, tip: 0 };
     st.list.forEach(function (c) { if (items[c.severity] != null) items[c.severity] += c.count || 0; });
 
@@ -113,7 +115,8 @@
       '<div class="hero-row"><span class="hero-value">' + pct + '<small>%</small></span>' +
       '<span class="hero-note">' + (s.block ? 'Блокерів: ' + s.block : 'Блокерів немає') + '</span></div>' +
       '<div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></div>' +
-      '<div class="hero-cap">Пройдено ' + s.ok + ' з ' + total + ' перевірок семестру</div>' +
+      '<div class="hero-cap">Пройдено ' + s.ok + ' з ' + total + ' перевірок семестру' +
+        (capped ? '; поки є блокери, готовність не перевищує 50%' : '') + '</div>' +
       '<a class="btn btn-hero" href="/admin/semesters/?id=' + encodeURIComponent(st.sid) + '">Відкрити семестр ' + ic('arrow') + '</a></div>';
 
     var kpis = ['block', 'warn', 'tip'].map(function (k) {
@@ -263,6 +266,7 @@
 
   function loadNow() {
     var today = iso(new Date());
+    st.todayIso = today;
     apiRequest('/lessons/?date_from=' + today + '&date_to=' + today).then(function (list) {
       st.today = list || [];
       renderNow();
@@ -273,6 +277,7 @@
     var box = document.getElementById('tkNow');
     if (!box) return;
     var now = new Date();
+    if (st.todayIso && iso(now) !== st.todayIso) { loadNow(); return; }
     var t = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
     var cur = st.today.filter(function (l) {
       var s = l.time_slot_details || {};
