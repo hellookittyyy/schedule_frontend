@@ -247,7 +247,7 @@ tr:hover .row-actions,tr:focus-within .row-actions{opacity:1}
 .md-row.is-draft .name{color:var(--muted)}
 .md-add{margin:0 14px 10px}
 .md-none .empty{padding-top:28px}
-.md-detail .section-title .select{width:auto;margin-left:auto}
+.md-detail .section-title .select{width:auto;max-width:300px;margin-left:auto}
 .combo.inline{width:260px}
 
 /* ---------- day × pair grid (availability, room load, constraints) ---------- */

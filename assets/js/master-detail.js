@@ -36,7 +36,7 @@
     if (!filters.length || filters[0].id !== 'all') filters.unshift({ id: 'all', label: 'Усі', test: function () { return true; } });
 
     var items = [], loaded = false, query = '', filterId = 'all';
-    var selectedId = null, draft = null, ctx = null, renderToken = 0;
+    var selectedId = null, beforeDraft = null, draft = null, ctx = null, renderToken = 0;
     var saveChain = Promise.resolve();
     var timers = {};
 
@@ -335,7 +335,12 @@
     // Keep focus in the field so «Скасувати» does not blur-save the draft first.
     detailEl.addEventListener('mousedown', function (e) { if (e.target.closest('[data-md-discard]')) e.preventDefault(); });
     detailEl.addEventListener('click', function (e) {
-      if (e.target.closest('[data-md-discard]')) { discardDraft(); select(null, { replace: true }); return; }
+      if (e.target.closest('[data-md-discard]')) {
+        discardDraft();
+        var back = byId(beforeDraft) || visibleItems()[0];
+        select(back ? String(getId(back)) : null, { replace: true });
+        return;
+      }
       var trig = e.target.closest('[data-md-danger] [data-confirm]');
       if (trig && ctx) {
         var c = ctx;
@@ -419,6 +424,7 @@
       if (!opts.onCreate || !loaded) return;
       if (!draft) {
         flushPending();
+        beforeDraft = selectedId;
         draft = opts.onCreate() || {};
         selectedId = DRAFT;
         setUrl(null, false);
