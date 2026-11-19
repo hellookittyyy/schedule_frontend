@@ -84,16 +84,16 @@
       count: d.plans.length ? 0 : 1, items: [],
       action: { label: 'Заповнити', href: '/admin/study-plans/' } });
 
-    if (d.groups.length) {
+    {
       var per = plansPerGroup(d);
       var noPlan = d.groups.filter(function (g) { return !per[g.id]; });
       add({ id: 'groups-without-plan', severity: noPlan.length ? 'warn' : 'ok',
         title: noPlan.length ? 'Груп без навчального плану: ' + noPlan.length : 'Усі групи мають навчальний план',
         items: noPlan.map(function (g) { return { id: g.id, label: g.name }; }),
-        action: { label: 'Заповнити', href: '/admin/study-plans/' } });
+        action: { label: 'Заповнити', href: '/admin/groups/?filter=no-plan' } });
     }
 
-    if (d.plans.length) {
+    {
       var noRoom = d.plans.filter(function (p) {
         var need = audienceSize(p, d);
         return !d.rooms.some(function (r) {
@@ -112,8 +112,8 @@
         var t = tById[p.teacher];
         return t && subjectIds(t).indexOf(p.subject) === -1;
       });
-      if (mismatch.length) add({ id: 'teacher-not-on-subject', severity: 'warn',
-        title: 'Викладач у плані не веде цей предмет: ' + mismatch.length,
+      add({ id: 'teacher-not-on-subject', severity: mismatch.length ? 'warn' : 'ok',
+        title: mismatch.length ? 'Викладач у плані не веде цей предмет: ' + mismatch.length : 'Викладачі в планах ведуть свої предмети',
         items: mismatch.map(function (p) { return { id: p.id, label: planLabel(p) + ' — ' + (p.teacher_name || '') }; }),
         action: { label: 'Плани', href: '/admin/study-plans/' } });
     }
@@ -121,14 +121,14 @@
     var taught = {};
     d.teachers.forEach(function (t) { subjectIds(t).forEach(function (s) { taught[s] = 1; }); });
     var subjNoTeacher = d.subjects.filter(function (s) { return !taught[s.id]; });
-    if (subjNoTeacher.length) add({ id: 'subjects-without-teacher', severity: 'tip',
-      title: 'Предметів без викладача: ' + subjNoTeacher.length,
+    add({ id: 'subjects-without-teacher', severity: subjNoTeacher.length ? 'tip' : 'ok',
+      title: subjNoTeacher.length ? 'Предметів без викладача: ' + subjNoTeacher.length : 'Кожен предмет має викладача',
       items: subjNoTeacher.map(function (s) { return { id: s.id, label: s.name }; }),
       action: { label: 'Показати', href: '/admin/subjects/?filter=no-teacher' } });
 
     var teachNoSubj = d.teachers.filter(function (t) { return !subjectIds(t).length; });
-    if (teachNoSubj.length) add({ id: 'teachers-without-subjects', severity: 'tip',
-      title: 'Викладачів без предметів: ' + teachNoSubj.length,
+    add({ id: 'teachers-without-subjects', severity: teachNoSubj.length ? 'tip' : 'ok',
+      title: teachNoSubj.length ? 'Викладачів без предметів: ' + teachNoSubj.length : 'Кожен викладач веде предмети',
       items: teachNoSubj.map(function (t) { return { id: t.id, label: t.name }; }),
       action: { label: 'Показати', href: '/admin/teachers/?filter=no-subjects' } });
 
