@@ -1,0 +1,41 @@
+/* Навчальні плани (plan 0001 phase 5). Section colour: --c4. Tokens only. */
+
+.sp-sem{display:inline-flex;align-items:center;gap:8px}
+.sp-sem .select{width:auto;max-width:320px}
+
+.sp-tools{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+
+.sp-copy{margin-bottom:14px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface-2)}
+.sp-copy-body{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sp-copy .combo.inline{width:220px}
+.sp-copy-preview{min-width:0}
+
+.sp-tbl{table-layout:fixed;min-width:640px}
+.sp-tbl col.c-subj{width:auto}
+.sp-tbl col.c-type{width:118px}
+.sp-tbl col.c-teach{width:170px}
+.sp-tbl col.c-n{width:64px}
+.sp-tbl col.c-room{width:112px}
+.sp-tbl col.c-act{width:44px}
+.sp-tbl th,.sp-tbl td{padding-left:4px;padding-right:4px}
+.sp-tbl td{padding-top:6px;padding-bottom:6px}
+.sp-tbl .select,.sp-tbl .input{border-color:transparent;background-color:transparent;padding-left:8px}
+.sp-tbl .select{padding-right:24px;text-overflow:ellipsis}
+.sp-tbl tr:hover .select,.sp-tbl tr:hover .input,.sp-tbl .select:focus,.sp-tbl .input:focus{border-color:var(--line);background-color:var(--surface)}
+.sp-tbl .select:focus,.sp-tbl .input:focus{border-color:var(--text)}
+.sp-tbl .select.is-err,.sp-tbl .input.is-err{border-color:var(--high)}
+.sp-tbl .input.num{text-align:right;padding-right:6px;font-variant-numeric:tabular-nums}
+.sp-tbl .select:disabled{color:var(--muted);cursor:default}
+
+.sp-tbl tr.sp-draft td{background:var(--tint-row)}
+.sp-tbl tr.sp-draft .select,.sp-tbl tr.sp-draft .input{border-color:var(--line);background-color:var(--surface)}
+.sp-tbl tr.sp-scope td{font-size:13px;background:var(--tint-row)}
+.sp-tbl tr.sp-scope label{display:inline-flex;align-items:center;gap:8px;margin-right:12px}
+.sp-tbl tr.sp-scope .select{width:auto;border-color:var(--line);background-color:var(--surface)}
+
+/* per-row delete: a compact .danger host for UI.confirmInline */
+.sp-del.danger{margin:0;padding:0;border:0;background:none;flex-wrap:nowrap;justify-content:flex-end;gap:6px}
+.sp-del.danger .confirm{width:auto;padding:0;border:0;white-space:nowrap;gap:6px}
+.sp-tbl td.act{overflow:visible;position:relative}
+.sp-del.danger.is-confirm{position:absolute;right:4px;top:50%;transform:translateY(-50%);z-index:2;padding:4px 6px;border:1px solid color-mix(in srgb,var(--high) 45%,var(--line));border-radius:var(--radius-sm);background:var(--surface);box-shadow:var(--shadow)}
+.sp-tbl tr:has(.sp-del.is-confirm) td{background:color-mix(in srgb,var(--high) 5%,var(--surface))}
