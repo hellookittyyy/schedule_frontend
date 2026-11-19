@@ -1,7 +1,7 @@
 /* =====================================================================
    «Мозаїка» app shell: nav column, top bar, mobile drawer. Needs tokens.css.
-   Every class is prefixed sh- and styled in full here, so the shell also works
-   on old pages next to admin/shared.css (no reliance on base/components).
+   Every class is prefixed sh- and styled in full here (no reliance on
+   base/components), so the shell renders the same on every page.
    ===================================================================== */
 
 /* root: wraps the nav (+ scrim); may also wrap the whole page */
