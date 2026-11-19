@@ -8,7 +8,7 @@
 - `assets/css/components.css` — кнопки, форми, таблиці, бейджі, тости, drawer.
 - `assets/css/shell.css` — каркас сторінки (сайдбар, топбар), усі класи з префіксом `sh-`.
 - `assets/js/api.js` — `Api.request` / `apiRequest` та `API_BASE_URL`.
-- `assets/js/ui.js` — `UI.toast` (з дією «Скасувати»), `UI.confirmInline` (inline «Так/Ні» замість модалок видалення), `UI.drawer`, `UI.state` (loading/empty/error), `UI.escapeHtml`, `UI.dnd` (drag & drop для тижневої сітки; додається). Модалок за дизайном немає; `showToast/showModal/hideModal` — тимчасові аліаси до фази 9.
+- `assets/js/ui.js` — `UI.toast` (з дією «Скасувати»), `UI.confirmInline` (inline «Так/Ні» замість модалок видалення), `UI.drawer`, `UI.state` (loading/empty/error), `UI.escapeHtml`, `UI.dnd(root,{draggable,dropzone,canDrop,onDrop}) → {destroy()}` (drag & drop для тижневої сітки; throw/reject в `onDrop` відкочує переміщення). Модалок за дизайном немає; `showToast/showModal/hideModal` — тимчасові аліаси до фази 9.
 - `assets/js/icons.js` — `Icons.svg` / `ic` (набір іконок).
 - `assets/js/shell.js` — `Shell.render/setTitle/setCrumbs/actionsEl` (сайдбар, топбар, активний пункт).
 - `assets/js/theme-boot.js` — `Theme.get/set/toggle`; тема в `localStorage` під ключем `theme`, застосовується до першого малювання (у `<head>`).

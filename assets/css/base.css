@@ -9,14 +9,14 @@ button,input,select,textarea{font:inherit;color:inherit}
 a{color:inherit}
 h1,h2,h3,h4,p{margin:0}
 :focus-visible{outline:2px solid var(--text);outline-offset:2px}
-kbd{font-size:11px;color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:inherit}
+kbd{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:inherit}
 
 /* icons from the sprite (assets/js/icons.js) */
 .icon{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .icon.xs{width:14px;height:14px}.icon.lg{width:22px;height:22px}
 
 /* text */
-.muted{color:var(--muted)}.faint{color:var(--faint)}
+.muted{color:var(--muted)}.faint{color:var(--muted)}
 .sm{font-size:12px}.xs-t{font-size:11px}
 .num{font-variant-numeric:tabular-nums}
 .t-ok{color:var(--ok)}.t-warn{color:var(--mid)}.t-err{color:var(--high)}
