@@ -95,9 +95,29 @@
       '<a class="btn btn-sm" href="/admin/study-plans/?group=' + esc(g.id) + '">' + ic('chevR', 14) + 'Навчальний план групи</a>';
   }
 
+  // Shown only for a saved group (also inserted in place after a draft's first save).
+  function courseHtml(g) {
+    return '<span class="f-label">Поточний курс</span><div class="f-value" id="g-course">' + esc(courseLabel(course(g))) + '</div>';
+  }
+  function savedHtml(g) {
+    var streams = streamsOf[g.id] || [];
+    return '<div class="section"><div class="section-title">Потоки</div>' +
+        (streams.length
+          ? '<div class="chips">' + streams.map(function (s) {
+              return '<a class="chip link" href="/admin/streams/?id=' + esc(s.id) + '">' + esc(s.name) + ic('chevR', 12) + '</a>';
+            }).join('') + '</div><p class="muted sm mt">Склад потоку змінюється на сторінці потоку.</p>'
+          : '<span class="muted sm">Група не входить до жодного потоку</span>') +
+      '</div>' +
+      '<div class="section"><div class="section-title">Навчальний план' + (curSem ? ' <span class="muted sm">' + esc(curSem.name) + '</span>' : '') + '</div>' +
+        planBlock(g) + '</div>' +
+      '<div class="section"><div class="section-title">Розклад</div><div class="row wrap">' +
+        '<a class="btn btn-sm" href="/?g=' + esc(g.id) + '">' + ic('chevR', 14) + 'Розклад групи</a>' +
+        '<a class="btn btn-sm" href="/admin/schedule/">' + ic('chevR', 14) + 'Редактор розкладу</a>' +
+      '</div></div>';
+  }
+
   function renderDetail(g, ctx) {
     var draft = ctx.isDraft;
-    var streams = streamsOf[g.id] || [];
     return '' +
       '<div class="detail-head">' +
         '<div class="grow"><h2 class="detail-name" id="g-title">' + esc(g.name || 'Нова група') + '</h2>' +
@@ -111,22 +131,9 @@
         '<div class="f-value"><input class="input" id="g-amount" type="number" min="0" data-md-field="amount" data-md-type="number" required value="' + esc(g.amount == null ? '' : g.amount) + '"></div>' +
         '<label class="f-label" for="g-year">Рік вступу</label>' +
         '<div class="f-value"><input class="input" id="g-year" type="number" min="1990" max="2100" data-md-field="start_year" data-md-type="number" required value="' + esc(g.start_year == null ? '' : g.start_year) + '"></div>' +
-        (draft ? '' : '<span class="f-label">Поточний курс</span><div class="f-value" id="g-course">' + esc(courseLabel(course(g))) + '</div>') +
+        (draft ? '' : courseHtml(g)) +
       '</div></div>' +
-      (draft ? '' :
-        '<div class="section"><div class="section-title">Потоки</div>' +
-          (streams.length
-            ? '<div class="chips">' + streams.map(function (s) {
-                return '<a class="chip link" href="/admin/streams/?id=' + esc(s.id) + '">' + esc(s.name) + ic('chevR', 12) + '</a>';
-              }).join('') + '</div><p class="muted sm mt">Склад потоку змінюється на сторінці потоку.</p>'
-            : '<span class="muted sm">Група не входить до жодного потоку</span>') +
-        '</div>' +
-        '<div class="section"><div class="section-title">Навчальний план' + (curSem ? ' <span class="muted sm">' + esc(curSem.name) + '</span>' : '') + '</div>' +
-          planBlock(g) + '</div>' +
-        '<div class="section"><div class="section-title">Розклад</div><div class="row wrap">' +
-          '<a class="btn btn-sm" href="/?g=' + esc(g.id) + '">' + ic('chevR', 14) + 'Розклад групи</a>' +
-          '<a class="btn btn-sm" href="/admin/schedule/">' + ic('chevR', 14) + 'Редактор розкладу</a>' +
-        '</div></div>') +
+      (draft ? '' : savedHtml(g)) +
       ctx.danger({ title: 'Видалити групу', text: 'Разом із групою буде видалено її навчальні плани й заняття в розкладі.' });
   }
 
@@ -136,6 +143,7 @@
       // Hold autosave until all required fields are filled (API needs them together).
       var fields = el.querySelector('.fields');
       var hold = function (e) {
+        if (!ctx.isDraft) return;
         var empty = Array.prototype.some.call(fields.querySelectorAll('input[required]'), function (i) { return i.value.trim() === ''; });
         if (empty) e.stopPropagation();
       };
@@ -181,6 +189,15 @@
     renderDetail: renderDetail,
     mount: mount,
     onCreate: function () { return { name: '', amount: null, start_year: null }; },
+    onCreated: function (g, ctx) {
+      var el = ctx.el;
+      var sub = el.querySelector('#g-sub');
+      if (sub) sub.textContent = subText(g);
+      var fields = el.querySelector('.fields');
+      if (fields && !el.querySelector('#g-course')) fields.insertAdjacentHTML('beforeend', courseHtml(g));
+      var anchor = el.querySelector('[data-md-danger]');
+      if (anchor) anchor.insertAdjacentHTML('beforebegin', savedHtml(g)); else el.insertAdjacentHTML('beforeend', savedHtml(g));
+    },
     save: function (g, ch) {
       if (g.id == null) {
         // Draft: the API requires all three fields, so read them from the form.
