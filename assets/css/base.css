@@ -37,3 +37,4 @@ kbd{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius
 @media (max-width:1180px){.split{grid-template-columns:1fr}}
 @media (max-width:980px){.grid-2{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+[hidden]{display:none!important}
