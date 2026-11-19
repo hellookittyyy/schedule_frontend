@@ -229,9 +229,9 @@
       '<div class="section" id="cn-editor-sec"><div class="section-title" id="cn-editor-title">Параметри</div>' +
         '<div id="cn-editor"></div></div>' +
       '<div class="section"><div class="fields">' +
-        (ctx.isDraft ? '' :
-          '<label class="f-label" for="cn-sem">Семестр</label>' +
-          '<div class="f-value"><select class="select" id="cn-sem">' + semOptions + '</select></div>') +
+        // Shown once the draft is saved (MasterDetail does not re-render then).
+        '<label class="f-label" for="cn-sem" data-cn-saved' + (ctx.isDraft ? ' hidden' : '') + '>Семестр</label>' +
+        '<div class="f-value" data-cn-saved' + (ctx.isDraft ? ' hidden' : '') + '><select class="select" id="cn-sem">' + semOptions + '</select></div>' +
         '<span class="f-label" id="cn-active-l">Активне</span>' +
         '<div class="f-value"><button type="button" class="switch" id="cn-active" role="switch" aria-labelledby="cn-active-l"></button>' +
           '<span class="muted sm cn-active-t" id="cn-active-t"></span></div>' +
@@ -277,6 +277,13 @@
         if (ok && String(w.semester) !== String(semId)) switchSemester(String(w.semester), true);
       });
     });
+    if (ctx.isDraft) {
+      var first = el.querySelector('#cn-cats [data-cat]');
+      if (first) first.focus();
+    }
+  }
+  function onCreated(item, ctx) {
+    ctx.el.querySelectorAll('[data-cn-saved]').forEach(function (n) { n.hidden = false; });
   }
 
   function paintHead(ctx) {
@@ -434,7 +441,6 @@
     box.innerHTML = '<div class="row cn-step">' + stepper('cn-max', w.cfg.value, 'Максимум пар на день') + '<span class="muted" id="cn-max-t"></span></div>';
     function label() { box.querySelector('#cn-max-t').textContent = plural(Number(w.cfg.value), 'пара', 'пари', 'пар') + ' на день'; }
     label();
-    var t = null;
     box.onclick = function (e) {
       var b = e.target.closest('[data-step]');
       if (!b) return;
@@ -442,9 +448,8 @@
       if (v === Number(w.cfg.value)) return;
       w.cfg.value = v;
       box.querySelector('#cn-max').textContent = v;
-      label(); paintHead(ctx);
-      clearTimeout(t);
-      t = setTimeout(function () { if (ctx.alive()) commit(ctx); }, 400);
+      label();
+      commit(ctx); // saves are serialised, so each step goes out at once and none is lost on leave
     };
   }
 
@@ -560,7 +565,6 @@
         if (follow.value) v._snapshot_follower = snap(follow); else delete v._snapshot_follower;
         paintHead(ctx); commit(ctx);
       });
-      var t = null;
       box.onclick = function (e) {
         var b = e.target.closest('[data-step]');
         if (!b) return;
@@ -568,9 +572,7 @@
         if (g === Number(v.time_gap)) return;
         v.time_gap = g;
         box.querySelector('#cn-gap').textContent = g;
-        paintHead(ctx);
-        clearTimeout(t);
-        t = setTimeout(function () { if (ctx.alive()) commit(ctx); }, 400);
+        commit(ctx);
       };
     }, function (err) {
       if (!ctx.alive()) return;
@@ -592,18 +594,34 @@
   }
 
   /* ---------- semester switch (top bar select, ?semester=) ---------- */
-  function setSemParam(id) {
+  // A user switch is a history step (pushState); moving a record to another semester only replaces it.
+  function semUrl(id, dropId) {
     var u = new URL(window.location.href);
     u.searchParams.set('semester', id);
-    if (u.href !== window.location.href) history.replaceState(history.state, '', u.href);
+    if (dropId) u.searchParams.delete('id');
+    return u.href;
   }
   function switchSemester(id, keepSelection) {
     semId = String(id);
     if (semSelect) semSelect.value = semId;
-    setSemParam(semId);
+    var href = semUrl(semId, !keepSelection);
+    if (href !== window.location.href) history[keepSelection ? 'replaceState' : 'pushState'](history.state, '', href);
     if (!keepSelection) md.select(null);
     md.reload();
   }
+  function defaultSem() {
+    var cur = semesters.find(function (s) { return s.is_current; }) || semesters[0];
+    return cur ? String(cur.id) : null;
+  }
+  window.addEventListener('popstate', function () {
+    if (!semesters.length) return;
+    var want = new URLSearchParams(window.location.search).get('semester');
+    if (!want || !semName(want)) want = defaultSem();
+    if (want == null || String(want) === String(semId)) return;
+    semId = String(want);
+    if (semSelect) semSelect.value = semId;
+    md.reload();
+  });
   function buildSemSelect() {
     var host = Shell.actionsEl && Shell.actionsEl();
     if (!host || semSelect) return;
@@ -637,10 +655,7 @@
       ]).then(function (r) {
         semesters = list(r[0]);
         var want = new URLSearchParams(window.location.search).get('semester');
-        if (!want || !semName(want)) {
-          var cur = semesters.find(function (s) { return s.is_current; }) || semesters[0];
-          want = cur ? String(cur.id) : null;
-        }
+        if (!want || !semName(want)) want = defaultSem();
         semId = want;
         fillSemSelect();
       });
@@ -693,6 +708,7 @@
     },
     renderDetail: renderDetail,
     mount: mount,
+    onCreated: onCreated,
     onCreate: function () {
       return { semester: semId != null ? Number(semId) : null, teacher: null, group: null, stream: null, room: null, configuration: null, is_active: true };
     },
