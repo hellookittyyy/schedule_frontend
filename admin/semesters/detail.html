@@ -2,93 +2,15 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Адмін панель - Деталі Семестру</title>
-    <script src="/assets/js/theme-boot.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../shared.css">
-    <link rel="stylesheet" href="semester-detail.css">
-    <link rel="stylesheet" href="/assets/css/tokens.css">
-    <link rel="stylesheet" href="/assets/css/shell.css">
+    <title>Семестр</title>
+    <script>
+        (function () {
+            var id = new URLSearchParams(location.search).get('id');
+            location.replace('/admin/semesters/' + (id ? '?id=' + encodeURIComponent(id) : ''));
+        })();
+    </script>
 </head>
 <body>
-    <div id="sidebar-container"></div>
-
-    <div class="main-content">
-        <div class="header">
-            <div>
-                <div class="breadcrumb">
-                    <a href="/admin/semesters">← Назад до семестрів</a>
-                </div>
-                <h1 id="semesterName">Завантаження...</h1>
-            </div>
-        </div>
-
-        <div class="info-grid">
-            <div class="card info-card">
-                <h2>📋 Інформація</h2>
-                <div class="info-content" id="semesterInfo">
-                    <div class="loading">Завантаження...</div>
-                </div>
-            </div>
-
-            <div class="card stats-card">
-                <h2>📊 Статистика</h2>
-                <div class="stats-content" id="semesterStats">
-                    <div class="loading">Завантаження...</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card config-card" id="configCard" style="display: none;">
-            <h2>⚙️ Налаштування генерації</h2>
-            <div class="config-display" id="configDisplay"></div>
-        </div>
-
-        <div class="card calendar-card">
-            <div class="calendar-header-section">
-                <h2>📅 Календар часових слотів</h2>
-                <div class="calendar-controls">
-                    <button class="btn btn-small" onclick="changeMonth(-1)">← Попередній</button>
-                    <span id="currentMonth" class="current-month"></span>
-                    <button class="btn btn-small" onclick="changeMonth(1)">Наступний →</button>
-                </div>
-            </div>
-            <div id="calendarContainer">
-                <div class="loading">Завантаження календаря...</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="slot-sidebar" id="slotSidebar">
-        <div class="slot-sidebar-header">
-            <h2 id="sidebarDate">Дата</h2>
-            <button class="btn-close-sidebar" onclick="closeDayPanel()">&times;</button>
-        </div>
-        
-        <div class="slot-sidebar-content">
-            <h3>📋 Пари на цей день:</h3>
-            <div id="sidebarSlotsList" class="slots-list">
-                </div>
-            
-            <div class="add-slot-section-sidebar" id="addSlotSection" style="display: none;">
-                <h3>➕ Додати нову пару:</h3>
-                <select id="newSlotTime" class="form-control">
-                    <option value="">-- Оберіть час --</option>
-                </select>
-                <button class="btn btn-add" onclick="addSlotFromSidebar()">
-                    Додати пару
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script src="/assets/js/api.js"></script>
-    <script src="../common.js"></script>
-    <script src="/assets/js/icons.js"></script>
-    <script src="/assets/js/shell.js"></script>
-    <script src="semester-detail.js"></script>
+    <p><a href="/admin/semesters/">Перейти до семестру</a></p>
 </body>
 </html>
