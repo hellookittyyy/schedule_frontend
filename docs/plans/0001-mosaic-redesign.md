@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | In progress — phases 0–2 done 2026-11-19 (on `main`, not pushed); phases 3–9 not started |
+| Status | Done 2026-11-19 — phases 0–9 implemented on `main` (not pushed, not deployed); desktop only by user decision |
 | Date | 2026-11-19 |
 | Baseline | frontend `b5b7c2c` + uncommitted `admin/semesters/*` (branch `fix-change-semestr`); backend `2b6cd1a` + untracked data migration `0020_add_class_types.py` |
 | Design source | [design/final/mosaic.html](../../design/final/mosaic.html) (the approved screens), [design/final/pages/mosaic.css](../../design/final/pages/mosaic.css) (extracted styles, **not yet verified against the mockup**, see phase 1), [design/final/tokens.css](../../design/final/tokens.css) |
@@ -252,25 +252,51 @@ About 18–22 working days in total, sequential. With more than one person: afte
 
 ## 10. Progress
 
-- Phases 0–2 done 2026-11-19. Work was done directly on `main` instead of branch `redesign/mosaic` (orchestrator decision). Nothing is pushed or deployed (deploy happens on push to `main`).
+### Phases 0–2
+
+- Done 2026-11-19. Work was done directly on `main` instead of branch `redesign/mosaic` (orchestrator decision). Nothing is pushed or deployed (deploy happens on push to `main`).
 - Commits, implementation: `4bcc238`, `29a071f`, `84dc6b3`, `56f8dd7`, `dde8bb3`, `3f50779`, `d6cc6ce`, `97938e8`, `3d2596b`, `ff3856f`, `0cabb86`.
 - Commits, review round 1 fixes: `bfc380f`, `1f08505`, `b64fa0d`, `99ab03a`, `5236051`, `5bbff89`.
 - Commits, review round 2 fixes: `c8416eb`, `ca4a6bb`, `fb87fa3`.
 
-### Deviations
+Deviations (phases 0–2):
 
-- The «Задачі» nav item is in the config but hidden until phase 6 (`hidden: true` in `assets/js/shell.js`).
 - `UI.dnd` was ported in the phase 2 review fixes.
 - Old bodies are forced to `color-scheme: light` and `.header-fixed` is made sticky under the shell top bar (`admin/shared.css`).
-- Old in-body `<h1>` headings remain under the shell title on all 11 pages until each body is rebuilt.
+- Old in-body `<h1>` headings remained under the shell title until each body was rebuilt (all pages are rebuilt now).
 - `--faint` is never used for text (fails 4.5:1).
+- The per-page side-by-side baseline screenshots from the phase 2 «Done when» were done for teachers, semesters and schedule only.
+
+### Phases 3–9
+
+- Done 2026-11-19. User decision during the run: **desktop only**. No adaptive/responsive work; all mobile/640/375px items in phases 3–9 were dropped (the phase 2 mobile nav drawer was left in place as is).
+- Tested against a local backend running on a backed-up copy of the local SQLite DB (restored afterwards).
+- Commits, implementation: `50222aa`, `678222e` (master-detail + teachers), `0d7eb6a` (subjects), `4cb0c6f` (groups), `2807048` (streams), `a43a863` (rooms), `1ee35f9`, `7332ca3`, `8a50de6` (checks + semester), `e4b9a55` (study plans), `dbdd251` (constraints), `42df434` (home), `cd8543b`, `b34a6aa` (tasks + nav), `f748a5c` (schedule), `ba7f65d` (public), `8cc59c8`, `41b0fd0`, `46be802`, `fe92da5` (cross-page: `?filter=`, dynamic filters, `[hidden]`, checks), `7bfbc6e`, `42ee955`, `0b9439e` (phase 9 clean-up).
+- Commits, review round 1 fixes: `77a0c70`, `98bf16a`, `64ad175`, `5236cc5`, `d71a549`, `39fc54e`, `a358044`, `b9825f5`, `1e87f1d`, `b3cf82b`, `14b7ea6`, `06f9e13`, `745d73a`, `a3cc80a`, `037ebd2`, `a68740e`, `5343ca0`.
+- Commits, review round 2 fixes: `6da3b9c`, `3da9b66`, `97e01e8`, `89ed683`, `28d779a`, `cd669e9`.
+
+Deviations (phases 3–9):
+
+- Hidden per §6 (backend data missing): «Навантаження» / «Перевантажені» (no `max_hours`), «Останні зміни», «Історія генерацій», the «Публікація» step, semester archive.
+- The semester step bar has 5 steps.
+- The teacher list is not grouped (no department).
+- Room types are an inline panel.
+- The study plans list is groups/streams with URL `?item=g<N>|s<N>` (accepts `?group=N`); copy-plan key is subject + class_type + teacher.
+- Constraints «Опис» is dropped (no backend field).
+- Public page: the course filter only narrows group suggestions, the week is not in the shared link, 7-day strip, ICS is built client-side.
+- MasterDetail no longer re-renders after a draft's first save (pages use `onCreated`).
 
 ### Not done / open
 
-- Phases 3–9.
-- The per-page side-by-side baseline screenshots from the phase 2 «Done when» were done for teachers, semesters and schedule only.
-- The CRUD regression checklist (`docs/regression-checklist.md`) was not run because there is no local backend.
-- Backend dependency: the semester-edit warning from `4bcc238` never shows. The backend `SemesterSerializer` exposes neither `is_generated` nor `schedule`, ignores `confirm_schedule_deletion`, and `update()` calls `synchronize_slots()` without `force_delete`, so editing a semester with lessons returns 500. The backend needs to accept the flag and return 409 when lessons exist; then the frontend opens the modal on `err.status === 409`.
+- (a) Backend: semester edit with lessons returns 500. `update()` calls `synchronize_slots()` without `force_delete` and `confirm_schedule_deletion` is ignored; it needs a 409 plus the flag. The UI already handles 409 and shows a toast on 500.
+- (b) Backend: `/class_types/` returns 404 locally because migration `0020_add_class_types.py` is unapplied/untracked; study plans fall back to 5 built-in types.
+- (c) Backend: no stream filter on `/lessons/` and `study_plan_details.stream` is a name only, so the public page matches stream lessons by name (wrong if two streams share a name). Add a `study_plan__stream__groups` filter or a stream id.
+- (d) Backend: deleting a room type that is in use returns an HTML 500 (ProtectedError); it should be 409/400 with a detail message.
+- (e) Backend: `/lessons/` has no teacher-id filter; public `?t=` uses `teacher_name` with an exact client-side match.
+- (f) No cache-busting on script/style URLs: after deploy, users with cached old JS get errors until a hard reload; consider `?v=` query strings.
+- (g) Lighthouse accessibility audit not run (tool unavailable); keyboard focus ring checked on nav/buttons only.
+- (h) Nothing pushed; deploy happens on push to `main`. Run `docs/regression-checklist.md` against the real backend before pushing.
+- (i) The old in-body duplicate `<h1>` issue is gone (all pages rebuilt).
 
 ## Revision log
 
@@ -279,3 +305,4 @@ About 18–22 working days in total, sequential. With more than one person: afte
 | 2026-11-19 | — | First draft. |
 | 2026-11-19 | `b5b7c2c` (+ uncommitted `admin/semesters/*`), backend `2b6cd1a` | After review: classic scripts only and single declaration of the API base; phase 2 loads only tokens + `sh-` prefixed shell CSS and renames old `--accent`; explicit nav colour per item, group label «Планування»; three semester confirms listed separately, phase 4 depends on phase 0; backend gaps (`max_hours`, equipment, required room type, group↔stream many-to-many) marked; availability = `time_block`/`day_off`; phase 5 after phase 3; semester URLs `?id=N` with fallback and id-keeping redirect; tokens without `data-palette`, uppercase labels removed; §3 facts corrected; GitHub Pages ruled unused; phase 1 verifies `mosaic.css` against the mockup; phase 0 commits `design/`; exam lesson colour added. |
 | 2026-11-19 | `fb87fa3` | Phases 0–2 implemented and reviewed; status and progress recorded. |
+| 2026-11-19 | `cd669e9` | Phases 3–9 implemented (desktop only), reviewed twice, plan closed. |
