@@ -35,6 +35,19 @@
       '<span class="num">' + tt.length + '</span>';
   }
 
+  // Shown only for a saved subject (also inserted in place after a draft's first save).
+  function savedHtml(tt) {
+    return '<div class="section"><div class="section-title">Викладачі</div>' +
+        (tt.length
+          ? '<div class="chips">' + tt.map(function (t) {
+              return '<a class="chip link" href="/admin/teachers/?id=' + esc(t.id) + '">' + esc(t.name) + ic('chevR', 12) + '</a>';
+            }).join('') + '</div>'
+          : '<span class="muted sm">Жоден викладач не веде цей предмет</span>') +
+        '<p class="muted sm mt">Призначення змінюється на сторінці викладача.</p></div>' +
+      '<div class="section" id="s-plans-sec" hidden><div class="section-title">Де використовується</div>' +
+        '<div id="s-plans"></div></div>';
+  }
+
   function renderDetail(s, ctx) {
     var draft = ctx.isDraft;
     var tt = draft ? [] : teachersOf(s);
@@ -53,16 +66,7 @@
           '<div class="f-value"><textarea class="textarea" id="s-desc" rows="4" data-md-field="description" ' +
             'placeholder="Необов’язково">' + esc(s.description || '') + '</textarea></div>' +
         '</div></div>' +
-      (draft ? '' :
-        '<div class="section"><div class="section-title">Викладачі</div>' +
-          (tt.length
-            ? '<div class="chips">' + tt.map(function (t) {
-                return '<a class="chip link" href="/admin/teachers/?id=' + esc(t.id) + '">' + esc(t.name) + ic('chevR', 12) + '</a>';
-              }).join('') + '</div>'
-            : '<span class="muted sm">Жоден викладач не веде цей предмет</span>') +
-          '<p class="muted sm mt">Призначення змінюється на сторінці викладача.</p></div>' +
-        '<div class="section" id="s-plans-sec" hidden><div class="section-title">Де використовується</div>' +
-          '<div id="s-plans"></div></div>') +
+      (draft ? '' : savedHtml(tt)) +
       ctx.danger({ title: 'Видалити предмет', text: 'Разом із предметом буде видалено навчальні плани, що його використовують.' });
   }
 
@@ -79,6 +83,10 @@
       fields.addEventListener('keydown', function (e) { if (e.key === 'Enter') hold(e); }, true);
       return;
     }
+    loadPlans(el, s, ctx);
+  }
+
+  function loadPlans(el, s, ctx) {
     apiRequest('/study_plans/?subject=' + encodeURIComponent(s.id)).then(function (plans) {
       if (!ctx.alive()) return;
       plans = list(plans);
@@ -135,6 +143,14 @@
     renderDetail: renderDetail,
     mount: mount,
     onCreate: function () { return { name: '', description: '' }; },
+    onCreated: function (s, ctx) {
+      var el = ctx.el, tt = teachersOf(s);
+      var title = el.querySelector('#s-title');
+      if (title) title.insertAdjacentHTML('afterend', '<div class="muted">' + esc(teachersText(tt.length)) + '</div>');
+      var anchor = el.querySelector('[data-md-danger]');
+      if (anchor) anchor.insertAdjacentHTML('beforebegin', savedHtml(tt)); else el.insertAdjacentHTML('beforeend', savedHtml(tt));
+      loadPlans(el, s, ctx);
+    },
     save: function (s, ch) {
       if (s.id == null) {
         var q = function (k) { return document.querySelector('#subjects [data-md-field="' + k + '"]'); };
