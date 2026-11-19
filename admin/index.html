@@ -3,107 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Адмін панель - Дашборд</title>
+    <title>Головна — Адмін панель</title>
     <script src="/assets/js/theme-boot.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="shared.css">
-    <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="/assets/css/tokens.css">
+    <link rel="stylesheet" href="/assets/css/base.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/shell.css">
+    <link rel="stylesheet" href="/assets/css/pages/home.css">
 </head>
 <body>
     <div id="sidebar-container"></div>
 
-    <div class="main-content">
-        <div class="header">
-            <h1>Дашборд</h1>
-            <div class="user-info">
-                <span>👤 Адміністратор</span>
-            </div>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card blue">
-                <h3>Викладачі</h3>
-                <div class="number" id="teachersCount">42</div>
-            </div>
-            <div class="stat-card green">
-                <h3>Предмети</h3>
-                <div class="number" id="subjectsCount">87</div>
-            </div>
-            <div class="stat-card orange">
-                <h3>Групи</h3>
-                <div class="number" id="groupsCount">24</div>
-            </div>
-            <div class="stat-card purple">
-                <h3>Аудиторії</h3>
-                <div class="number" id="roomsCount">56</div>
-            </div>
-            <div class="stat-card teal">
-                <h3>Активних графіків</h3>
-                <div class="number" id="schedulesCount">3</div>
-            </div>
-        </div>
-
-        <div class="content-grid">
-            <div class="card">
-                <h2>📋 Поточний графік навчання</h2>
-                <div class="schedule-info" id="currentSemesterContainer">
-                    <div class="loading-state">Завантаження даних...</div>
-                </div>
-                
-                <div id="semesterTemplate" style="display: none;">
-                    <div class="schedule-item">
-                        <strong id="semName">Семестр не обрано</strong>
-                        <span id="semDates">-</span>
-                    </div>
-                    <div class="schedule-item">
-                        <strong>Тривалість:</strong>
-                        <span id="semDuration">- тижнів</span>
-                    </div>
-                    <div class="schedule-item">
-                        <strong>Сьогодні:</strong>
-                        <span id="currentWeekInfo">- тиждень</span>
-                    </div>
-                    <div class="schedule-item">
-                        <strong>Статус:</strong>
-                        <span id="semStatus" class="status-badge">Активний</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>📅 Календар</h2>
-                <div class="calendar-month">
-                    <button class="month-nav" onclick="changeMonth(-1)">◀</button>
-                    <h3 id="currentMonth">Грудень 2024</h3>
-                    <button class="month-nav" onclick="changeMonth(1)">▶</button>
-                </div>
-                <div class="calendar" id="calendar"></div>
-                <div class="calendar-legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #3498db;"></div>
-                        <span>Сьогодні</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #e8f8f5;"></div>
-                        <span>Робочий день</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #fee;"></div>
-                        <span>Вихідний</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <main class="sh-main">
+        <div id="homePage" class="home-page"></div>
+    </main>
 
     <script src="/assets/js/api.js"></script>
-    <script src="common.js"></script>
+    <script src="/assets/js/ui.js"></script>
     <script src="/assets/js/icons.js"></script>
     <script src="/assets/js/shell.js"></script>
-    <script src="script.js"></script>
+    <script src="/assets/js/checks.js"></script>
+    <script src="home.js"></script>
 </body>
 </html>
