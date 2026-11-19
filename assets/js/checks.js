@@ -29,7 +29,9 @@
   // groupId -> number of plans in the semester (own plans + plans of its streams).
   function plansPerGroup(d) {
     var streamGroups = {};
-    d.streams.forEach(function (s) { streamGroups[s.id] = s.groups || []; });
+    d.streams.forEach(function (s) {
+      streamGroups[s.id] = Array.isArray(s.groups) ? s.groups : (s.groups_details || []).map(function (g) { return g.id; });
+    });
     var n = {};
     d.groups.forEach(function (g) { n[g.id] = 0; });
     d.plans.forEach(function (p) {
@@ -46,6 +48,15 @@
     }
     var s = d.streams.find(function (x) { return x.id === p.stream; });
     return s ? (s.total_students || 0) : 0;
+  }
+
+  // The API returns teacher subjects / room type only as *_details objects.
+  function subjectIds(t) {
+    if (Array.isArray(t.subjects)) return t.subjects;
+    return (t.subjects_details || []).map(function (s) { return s.id; });
+  }
+  function roomTypeId(r) {
+    return r.room_type != null ? r.room_type : (r.room_type_details ? r.room_type_details.id : null);
   }
 
   function planLabel(p) {
@@ -86,7 +97,7 @@
       var noRoom = d.plans.filter(function (p) {
         var need = audienceSize(p, d);
         return !d.rooms.some(function (r) {
-          return (p.required_room_type == null || r.room_type === p.required_room_type) && (r.capacity || 0) >= need;
+          return (p.required_room_type == null || roomTypeId(r) === p.required_room_type) && (r.capacity || 0) >= need;
         });
       });
       add({ id: 'plans-without-room', severity: noRoom.length ? 'warn' : 'ok',
@@ -99,7 +110,7 @@
       d.teachers.forEach(function (t) { tById[t.id] = t; });
       var mismatch = d.plans.filter(function (p) {
         var t = tById[p.teacher];
-        return t && (t.subjects || []).indexOf(p.subject) === -1;
+        return t && subjectIds(t).indexOf(p.subject) === -1;
       });
       if (mismatch.length) add({ id: 'teacher-not-on-subject', severity: 'warn',
         title: 'Викладач у плані не веде цей предмет: ' + mismatch.length,
@@ -108,14 +119,14 @@
     }
 
     var taught = {};
-    d.teachers.forEach(function (t) { (t.subjects || []).forEach(function (s) { taught[s] = 1; }); });
+    d.teachers.forEach(function (t) { subjectIds(t).forEach(function (s) { taught[s] = 1; }); });
     var subjNoTeacher = d.subjects.filter(function (s) { return !taught[s.id]; });
     if (subjNoTeacher.length) add({ id: 'subjects-without-teacher', severity: 'tip',
       title: 'Предметів без викладача: ' + subjNoTeacher.length,
       items: subjNoTeacher.map(function (s) { return { id: s.id, label: s.name }; }),
       action: { label: 'Показати', href: '/admin/subjects/?filter=no-teacher' } });
 
-    var teachNoSubj = d.teachers.filter(function (t) { return !(t.subjects || []).length; });
+    var teachNoSubj = d.teachers.filter(function (t) { return !subjectIds(t).length; });
     if (teachNoSubj.length) add({ id: 'teachers-without-subjects', severity: 'tip',
       title: 'Викладачів без предметів: ' + teachNoSubj.length,
       items: teachNoSubj.map(function (t) { return { id: t.id, label: t.name }; }),
@@ -150,5 +161,6 @@
   function isBlocked(list) { return (list || []).some(function (c) { return c.severity === 'block'; }); }
 
   window.Checks = { run: run, data: data, plansPerGroup: plansPerGroup, invalidate: invalidate,
-    summary: summary, isBlocked: isBlocked };
+    summary: summary, isBlocked: isBlocked,
+    subjectIds: subjectIds, roomTypeId: roomTypeId };
 })();
