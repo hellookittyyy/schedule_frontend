@@ -1,35 +1,3 @@
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-const API_BASE_URL = isLocal
-    ? 'http://127.0.0.1:8000/api'
-    : 'https://api.velab.space/schedule/api';
-
-async function apiRequest(endpoint, method = 'GET', body = null) {
-    const options = {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-    };
-    if (body) options.body = JSON.stringify(body);
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-
-    // Перевірка на HTML (помилка сервера)
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.includes("text/html")) {
-        throw new Error("Сервер повернув помилку (HTML). Перевірте URL або маршрути в Django.");
-    }
-
-    if (response.status === 204) return true;
-    const data = await response.json();
-
-    if (!response.ok) {
-        const error = new Error(data.detail || 'Сталася помилка');
-        error.status = response.status; // Важливо для обробки 409 Conflict
-        throw error;
-    }
-    return data;
-}
-
 function showModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('show');

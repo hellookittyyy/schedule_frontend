@@ -8,12 +8,6 @@ const teacherDropdown = document.getElementById('teacherDropdown');
 let groupDebounceTimer;
 let teacherDebounceTimer;
 
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-const API_BASE = isLocal
-    ? 'http://127.0.0.1:8000/api'
-    : 'https://api.velab.space/schedule/api';
-
 document.addEventListener('DOMContentLoaded', () => {
     loadActiveSemester();
 });
@@ -47,13 +41,13 @@ groupInput.addEventListener('input', function () {
 
 async function fetchGroups(searchText) {
     try {
-        const response = await fetch(`${API_BASE}/groups/?search=${encodeURIComponent(searchText)}`);
+        const response = await fetch(`${API_BASE_URL}/groups/?search=${encodeURIComponent(searchText)}`);
         if (!response.ok) throw new Error('Error');
         const data = await response.json();
         let results = data.results || data;
 
         if (!results || results.length === 0) {
-            const fallback = await fetch(`${API_BASE}/groups/`);
+            const fallback = await fetch(`${API_BASE_URL}/groups/`);
             if (fallback.ok) {
                 const full = await fallback.json();
                 results = full.results || full;
@@ -137,14 +131,14 @@ teacherInput.addEventListener('input', function () {
 
 async function fetchTeachers(searchText) {
     try {
-        const response = await fetch(`${API_BASE}/teachers/?search=${encodeURIComponent(searchText)}`);
+        const response = await fetch(`${API_BASE_URL}/teachers/?search=${encodeURIComponent(searchText)}`);
         if (!response.ok) throw new Error('Error');
         const data = await response.json();
         let results = data.results || data;
 
         // If backend returned no matches, fetch full list and client-filter.
         if (!results || results.length === 0) {
-            const fallback = await fetch(`${API_BASE}/teachers/`);
+            const fallback = await fetch(`${API_BASE_URL}/teachers/`);
             if (fallback.ok) {
                 const full = await fallback.json();
                 results = full.results || full;
@@ -211,7 +205,7 @@ document.addEventListener('click', function (e) {
 
 async function loadActiveSemester() {
     try {
-        const response = await fetch(`${API_BASE}/semesters/`);
+        const response = await fetch(`${API_BASE_URL}/semesters/`);
         if (response.ok) {
             const data = await response.json();
             const activeSemester = data.find(s => s.is_current) || data[0];
@@ -257,7 +251,7 @@ async function showSchedule() {
     if (dateTo) params.append('date_to', dateTo);
 
     try {
-        const response = await fetch(`${API_BASE}/lessons/?${params.toString()}`);
+        const response = await fetch(`${API_BASE_URL}/lessons/?${params.toString()}`);
 
         if (!response.ok) throw new Error('Server Error');
 
