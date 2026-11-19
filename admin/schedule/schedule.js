@@ -208,7 +208,8 @@ function renderWeek() {
             if (s && s.is_available !== false) {
                 html += `<div class="cell${last}" data-slot-id="${esc(s.id)}" data-day="${d}" data-period="${esc(p)}"></div>`;
             } else {
-                html += `<div class="cell blocked${last}" title="Слот не активний"></div>`;
+                // Not a drop target (no data-slot-id), but lessons already in an inactive slot render here.
+                html += `<div class="cell blocked${last}" title="Слот не активний"${s ? ` data-off-slot-id="${esc(s.id)}"` : ''} data-day="${d}" data-period="${esc(p)}"></div>`;
             }
         }
     });
@@ -272,8 +273,9 @@ function renderLessons() {
         let cell = null;
         if (sd) {
             if (sd.date && !dateInWeek(sd.date)) return; // other week
-            cell = grid.querySelector(`.cell[data-slot-id="${CSS.escape(String(lesson.time_slot))}"]`) ||
-                grid.querySelector(`.cell[data-slot-id][data-day="${sd.day_of_week}"][data-period="${sd.period_number}"]`);
+            const id = CSS.escape(String(lesson.time_slot));
+            cell = grid.querySelector(`.cell[data-slot-id="${id}"], .cell[data-off-slot-id="${id}"]`) ||
+                grid.querySelector(`.cell[data-day="${sd.day_of_week}"][data-period="${sd.period_number}"]`);
         }
         const card = lessonCardHtml(lesson);
         if (cell) cell.insertAdjacentHTML('beforeend', card);
