@@ -61,7 +61,8 @@
   }
 
   function navHtml(path) {
-    var html = '<a class="sh-brand" href="/admin/"><span class="sh-brand-mark">Р</span>' +
+    var html = '<button type="button" class="sh-menu-btn sh-nav-close" aria-label="Закрити меню" style="align-self:flex-end">' +
+      icon('x') + '</button><a class="sh-brand" href="/admin/"><span class="sh-brand-mark">Р</span>' +
       '<span class="sh-brand-name">Розклад</span></a>';
     NAV.forEach(function (group) {
       var items = group.items.filter(function (it) { return !it.hidden; });
@@ -167,7 +168,8 @@
       state.nav = host.querySelector('.sh-nav');
       host.querySelector('.sh-scrim').addEventListener('click', function () { closeNav(true); });
       state.nav.addEventListener('click', function (e) {
-        if (e.target.closest && e.target.closest('a')) closeNav(false);
+        if (e.target.closest && e.target.closest('.sh-nav-close')) closeNav(true);
+        else if (e.target.closest && e.target.closest('a')) closeNav(false);
       });
     }
 
