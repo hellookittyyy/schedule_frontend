@@ -1,0 +1,55 @@
+/* Задачі page (plan 0001 phase 6). Section colour: --c1 (coral). Tokens only, desktop only. */
+
+.tasks-page{display:flex;flex-direction:column;gap:var(--gap)}
+
+/* hero + KPIs */
+.tk-top{display:grid;grid-template-columns:1.35fr repeat(3,minmax(0,1fr));gap:var(--gap)}
+.hero{background:var(--hero-bg);color:var(--hero-text);border-color:transparent;display:flex;flex-direction:column;gap:10px}
+.hero-label{font-size:13px;color:var(--hero-muted)}
+.hero-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.hero-value{font-size:44px;font-weight:600;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.hero-value small{font-size:22px;margin-left:2px}
+.hero-note,.hero-cap{font-size:13px;color:var(--hero-muted)}
+.hero-cap{font-size:12px}
+.hero .progress{background:var(--hero-track)}.hero .progress>i{background:var(--hero-bar)}
+.btn-hero{align-self:flex-start;margin-top:auto;background:transparent;color:var(--hero-text);border-color:var(--hero-track);height:32px;font-size:13px}
+.btn-hero:hover{border-color:var(--hero-text)}
+.kpi{display:flex;flex-direction:column;border-color:transparent}
+.kpi-block{background:var(--tint-1)}.kpi-warn{background:var(--tint-next)}.kpi-tip{background:var(--tint-3)}
+.kpi-label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.kpi-value{font-size:30px;font-weight:500;letter-spacing:-.02em;margin-top:8px;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi-note{font-size:12px;color:var(--muted);margin-top:auto;padding-top:8px}
+
+/* task list */
+.task-group+.task-group{margin-top:16px}
+.task-group-label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--muted);padding-bottom:6px}
+.task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.task-title{font-weight:500}.task-meta{font-size:12px;color:var(--muted)}
+.task-items{grid-column:2/-1;display:flex;flex-direction:column;margin-top:4px}
+.task-item{display:flex;align-items:center;gap:10px;min-height:32px;font-size:13px;border-top:1px dashed var(--line)}
+.task-item:first-child{border-top:0}
+.task-item.is-open{font-weight:500}
+.task-more{align-self:flex-start;margin-top:6px}
+.task-fix{margin:2px 0 8px;padding:12px;border-radius:var(--radius-sm);background:var(--surface-2)}
+.fix-label{font-size:12px;color:var(--muted);margin-bottom:6px}
+.fix-row{display:flex;align-items:center;gap:8px}
+.fix-row .select{height:32px;max-width:340px;font-size:13px}
+.task-ok{color:var(--muted)}
+.task-ok .check-ico{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+
+/* now in the building */
+.now-row{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.now-row:first-of-type{border-top:0}
+.now-row .room{font-weight:600;font-size:13px}
+.now-row .t{font-weight:500}
+
+/* room heatmap: rooms x days */
+.week-sw{display:flex;align-items:center;gap:6px;font-size:13px}
+.week-sw .lbl{min-width:96px;text-align:center;font-variant-numeric:tabular-nums}
+.heat{display:grid;gap:3px;align-items:center}
+.heat .hd{font-size:11px;color:var(--muted);text-align:center}
+.heat .rm{font-size:12px;font-weight:500;padding-right:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.heat i{display:block;height:22px;border-radius:4px}
+.heat i.h0{box-shadow:inset 0 0 0 1px var(--line)}
+.heat-cap{font-size:12px;color:var(--muted);margin-top:8px}
+.week-sw .icon-btn:disabled{opacity:.35;cursor:default}
