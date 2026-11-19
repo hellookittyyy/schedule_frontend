@@ -421,10 +421,11 @@
       });
       saveChain = p.then(null, function () {});
       return p.then(function (item) {
-        if (--c.pending === 0) setStatus(c, 'saved');
+        // A failed save earlier in this batch keeps the batch from ending as «Збережено».
+        if (--c.pending === 0) { setStatus(c, c.batchFailed ? 'error' : 'saved'); c.batchFailed = false; }
         return item;
       }, function (err) {
-        c.pending--;
+        c.batchFailed = --c.pending > 0;
         setStatus(c, 'error');
         UI.toast(errorText(err, 'Не вдалося зберегти'), { type: 'err' });
         throw err;
@@ -495,12 +496,14 @@
       UI.state(rowsEl, 'loading');
       UI.state(detailEl, 'loading');
       footEl.classList.add('hide');
-      return Promise.resolve().then(opts.load).then(function (list) {
+      // Pages get isCurrent() so a stale response does not overwrite their own globals.
+      var lc = { isCurrent: function () { return token === loadToken; } };
+      return Promise.resolve().then(function () { return opts.load(lc); }).then(function (list) {
         if (token !== loadToken) return; // a newer reload owns the list
         items = (list && list.results) || list || [];
         if (opts.sort) items.sort(opts.sort);
         loaded = true;
-        var want = selectedId && selectedId !== DRAFT ? selectedId : urlId();
+        var want = urlId() || (selectedId && selectedId !== DRAFT ? selectedId : null);
         if (want == null) {
           var first = visibleItems()[0];
           select(first ? String(getId(first)) : null, { replace: true });
