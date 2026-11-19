@@ -42,7 +42,7 @@
 
     var items = [], loaded = false, query = '', filterId = urlFilter() || 'all';
     function urlFilter() { return new URLSearchParams(window.location.search).get('filter'); }
-    var selectedId = null, beforeDraft = null, draft = null, ctx = null, renderToken = 0;
+    var selectedId = null, beforeDraft = null, draft = null, ctx = null, renderToken = 0, loadToken = 0;
     var saveChain = Promise.resolve();
     var timers = {};
 
@@ -254,12 +254,13 @@
         isDraft: item === draft,
         el: detailEl,
         sent: {},
+        pending: 0,
         alive: function () { return token === renderToken; },
         save: function (changes) { return doSave(c, changes); },
         status: function (kind) { setStatus(c, kind); },
         refresh: function (it) { return refresh(it || c.item); },
         rerender: function () { if (c.alive()) renderDetail(); },
-        danger: function (o) { return dangerHtml(c, o || {}); }
+        danger: function (o) { c.dangerOpts = o || {}; return dangerHtml(c, c.dangerOpts); }
       };
       return c;
     }
@@ -369,34 +370,61 @@
       }
     });
 
+    // Copy server fields, except keys the page changed locally while the request was in flight.
+    function merge(item, next, snap) {
+      Object.keys(next || {}).forEach(function (k) {
+        if (snap && Object.prototype.hasOwnProperty.call(snap, k) && json(item[k]) !== snap[k]) return;
+        item[k] = next[k];
+      });
+    }
+    function json(v) { try { return JSON.stringify(v); } catch (e) { return String(v); } }
+    function snapshot(item) {
+      var o = {};
+      Object.keys(item).forEach(function (k) { o[k] = json(item[k]); });
+      return o;
+    }
+
+    // A draft's first save: the same ctx becomes the saved record; the detail is NOT re-rendered.
+    function promote(c) {
+      c.isDraft = false;
+      items.push(c.item);
+      if (opts.sort) items.sort(opts.sort);
+      if (draft !== c.item) { renderRows(); return; }
+      draft = null;
+      if (selectedId === DRAFT) { selectedId = String(getId(c.item)); setUrl(selectedId, true); }
+      renderRows();
+      if (!c.alive()) return;
+      var block = detailEl.querySelector('[data-md-draft]');
+      if (block) {
+        block.insertAdjacentHTML('afterend', dangerHtml(c, c.dangerOpts || {}));
+        block.remove();
+      }
+      if (opts.onCreated) opts.onCreated(c.item, c);
+    }
+
     function doSave(c, changes) {
       if (!opts.save) return Promise.reject(new Error('MasterDetail: save is not configured'));
+      c.pending++;
       setStatus(c, 'saving');
-      var p = saveChain.then(function () { return opts.save(c.item, changes); });
-      saveChain = p.then(null, function () {});
-      return p.then(function (saved) {
-        var next = saved || changes;
-        Object.assign(c.item, next);
-        if (c.isDraft) {
-          c.isDraft = false;
-          items.push(c.item);
-          if (opts.sort) items.sort(opts.sort);
-          if (draft === c.item) {
-            draft = null;
-            selectedId = String(getId(c.item));
-            setUrl(selectedId, true);
-            renderRows();
-            if (c.alive()) { renderDetail(); setStatus(ctx, 'saved'); }
-          } else {
+      // Merge inside the chain so a queued save sees the id assigned by a draft's POST.
+      var p = saveChain.then(function () {
+        var snap = snapshot(c.item);
+        return Promise.resolve(opts.save(c.item, changes)).then(function (saved) {
+          merge(c.item, saved || changes, saved ? snap : null);
+          if (c.isDraft) promote(c);
+          else {
+            if (opts.sort) items.sort(opts.sort);
             renderRows();
           }
-        } else {
-          if (opts.sort) items.sort(opts.sort);
-          renderRows();
-          setStatus(c, 'saved');
-        }
-        return c.item;
+          return c.item;
+        });
+      });
+      saveChain = p.then(null, function () {});
+      return p.then(function (item) {
+        if (--c.pending === 0) setStatus(c, 'saved');
+        return item;
       }, function (err) {
+        c.pending--;
         setStatus(c, 'error');
         UI.toast(errorText(err, 'Не вдалося зберегти'), { type: 'err' });
         throw err;
@@ -410,7 +438,7 @@
         var idx = vis.indexOf(item);
         items = items.filter(function (x) { return x !== item; });
         var rest = vis.filter(function (x) { return x !== item; });
-        var nxt = rest[Math.min(idx, rest.length - 1)] || null;
+        var nxt = (idx < 0 ? rest[0] : rest[Math.min(idx, rest.length - 1)]) || null;
         UI.toast(opts.removedText || 'Видалено', { type: 'ok' });
         select(nxt ? String(getId(nxt)) : null, { replace: true });
       }, function (err) {
@@ -462,11 +490,13 @@
     }
 
     function reload() {
+      var token = ++loadToken;
       loaded = false;
       UI.state(rowsEl, 'loading');
       UI.state(detailEl, 'loading');
       footEl.classList.add('hide');
       return Promise.resolve().then(opts.load).then(function (list) {
+        if (token !== loadToken) return; // a newer reload owns the list
         items = (list && list.results) || list || [];
         if (opts.sort) items.sort(opts.sort);
         loaded = true;
@@ -478,6 +508,7 @@
           select(want, { push: false });
         }
       }, function (err) {
+        if (token !== loadToken) return;
         console.warn('MasterDetail load failed', err);
         UI.state(rowsEl, 'error', { text: 'Не вдалося завантажити', actionLabel: 'Спробувати ще', onAction: reload });
         detailEl.innerHTML = '';
