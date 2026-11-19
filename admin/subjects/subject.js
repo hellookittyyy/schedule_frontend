@@ -76,8 +76,11 @@
       el.querySelector('#s-title').textContent = name.value.trim() || 'Новий предмет';
     });
     if (ctx.isDraft) {
-      // Hold draft autosave until the name is filled; save() then reads both fields.
-      var fields = el.querySelector('.fields');
+      // Hold draft autosave until the name is filled; save() POSTs the values captured on the item.
+      var fields = el.querySelector('.fields'), desc = el.querySelector('#s-desc');
+      var sync = function () { s._form = { name: name.value.trim(), description: desc.value.trim() }; };
+      sync();
+      ['input', 'change'].forEach(function (t) { fields.addEventListener(t, sync, true); });
       var hold = function (e) { if (!ctx.item.id && name.value.trim() === '') e.stopPropagation(); };
       ['change', 'focusout'].forEach(function (t) { fields.addEventListener(t, hold, true); });
       fields.addEventListener('keydown', function (e) { if (e.key === 'Enter') hold(e); }, true);
@@ -153,10 +156,13 @@
     },
     save: function (s, ch) {
       if (s.id == null) {
-        var q = function (k) { return document.querySelector('#subjects [data-md-field="' + k + '"]'); };
-        var name = q('name') ? q('name').value.trim() : (ch.name || '');
-        if (!name) return Promise.reject(new Error('Вкажіть назву предмета'));
-        return apiRequest('/subjects/', 'POST', { name: name, description: q('description') ? q('description').value.trim() : (ch.description || '') });
+        // Never read the DOM here: by the chain's turn it may show another record.
+        var f = Object.assign({ name: '', description: '' }, ch, s._form);
+        if (!f.name) return Promise.reject(new Error('Вкажіть назву предмета'));
+        return apiRequest('/subjects/', 'POST', { name: f.name, description: f.description || '' }).then(function (saved) {
+          delete s._form;
+          return saved;
+        });
       }
       return apiRequest('/subjects/' + s.id + '/', 'PUT', {
         name: ch.name != null ? ch.name : s.name,

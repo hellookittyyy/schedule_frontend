@@ -142,6 +142,12 @@
     if (ctx.isDraft) {
       // Hold autosave until all required fields are filled (API needs them together).
       var fields = el.querySelector('.fields');
+      // Capture values on the item: save() must not read the DOM, which may show another record by then.
+      var sync = function () {
+        g._form = { name: name.value.trim(), amount: el.querySelector('#g-amount').value.trim(), start_year: el.querySelector('#g-year').value.trim() };
+      };
+      sync();
+      ['input', 'change'].forEach(function (t) { fields.addEventListener(t, sync, true); });
       var hold = function (e) {
         if (!ctx.isDraft) return;
         var empty = Array.prototype.some.call(fields.querySelectorAll('input[required]'), function (i) { return i.value.trim() === ''; });
@@ -200,14 +206,16 @@
     },
     save: function (g, ch) {
       if (g.id == null) {
-        // Draft: the API requires all three fields, so read them from the form.
-        var q = function (k) { return document.querySelector('#groups [data-md-field="' + k + '"]'); };
-        var p = { name: q('name').value.trim(), amount: q('amount').value, start_year: q('start_year').value };
+        // Draft: the API requires all three fields; use the values mount() captured on the item.
+        var p = Object.assign({ name: '', amount: '', start_year: '' }, g._form);
         if (!p.name || p.amount === '' || p.start_year === '') {
           return Promise.reject(new Error('Заповніть назву, кількість студентів і рік вступу'));
         }
         p.amount = Number(p.amount); p.start_year = Number(p.start_year);
-        return apiRequest('/groups/', 'POST', p);
+        return apiRequest('/groups/', 'POST', p).then(function (saved) {
+          delete g._form;
+          return saved;
+        });
       }
       var body = { name: g.name, amount: g.amount, start_year: g.start_year };
       Object.assign(body, ch);
