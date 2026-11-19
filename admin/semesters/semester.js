@@ -16,7 +16,7 @@ async function loadSemesters() {
 
 function renderTable(data) {
     const container = document.getElementById('tableContainer');
-    
+
     if (data.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
@@ -42,10 +42,10 @@ function renderTable(data) {
                 ${data.map(semester => `
                     <tr class="${semester.is_current ? 'active-row' : ''}">
                         <td style="text-align: center;">
-                            ${semester.is_current 
-                                ? '<span class="status-badge active" title="Поточний семестр">★</span>' 
-                                : `<button class="btn-icon-small" onclick="setAsCurrent(${semester.id})" title="Зробити поточним">☆</button>`
-                            }
+                            ${semester.is_current
+            ? '<span class="status-badge active" title="Поточний семестр">★</span>'
+            : `<button class="btn-icon-small" onclick="setAsCurrent(${semester.id})" title="Зробити поточним">☆</button>`
+        }
                         </td>
                         <td>
                             <strong>${semester.name || 'Без назви'}</strong>
@@ -88,7 +88,7 @@ async function setAsCurrent(id) {
 function toggleConfig() {
     const checkbox = document.getElementById('enableGeneration');
     const content = document.getElementById('configContent');
-    
+
     if (checkbox.checked) {
         content.classList.add('show');
     } else {
@@ -104,7 +104,7 @@ function addTimeSlot(start = '', end = '') {
     div.style.display = 'flex';
     div.style.gap = '10px';
     div.style.alignItems = 'center';
-    
+
     div.innerHTML = `
         <input type="time" class="slot-start form-input" value="${start}" required>
         <span>—</span>
@@ -118,10 +118,10 @@ function openAddModal() {
     currentEditId = null;
     document.getElementById('modalTitle').textContent = 'Додати семестр';
     document.getElementById('semesterForm').reset();
-    
+
     document.getElementById('enableGeneration').checked = false;
     document.getElementById('configContent').classList.remove('show');
-    
+
     document.getElementById('timeSlotsList').innerHTML = '';
     const defaultSlots = [
         ["08:30", "09:50"],
@@ -130,7 +130,7 @@ function openAddModal() {
         ["13:30", "14:50"]
     ];
     defaultSlots.forEach(slot => addTimeSlot(slot[0], slot[1]));
-    
+
     document.querySelectorAll('input[name="weekend"]').forEach(cb => {
         cb.checked = ['Saturday', 'Sunday'].includes(cb.value);
     });
@@ -147,12 +147,12 @@ function openEditModal(id) {
     document.getElementById('semesterName').value = semester.name || '';
     document.getElementById('startDate').value = semester.start_date || '';
     document.getElementById('endDate').value = semester.end_date || '';
-    
+
     document.getElementById('enableGeneration').checked = false;
     document.getElementById('configContent').classList.remove('show');
-    
+
     const config = semester.configuration || {};
-    
+
     document.getElementById('timeSlotsList').innerHTML = '';
     const slots = config.time_schedule || [
         ["08:30", "09:50"],
@@ -179,9 +179,10 @@ function openDeleteModal(id, name) {
     showModal('deleteModal');
 }
 
-document.getElementById('semesterForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
 
+let pendingSemesterData = null;
+
+function collectSemesterData() {
     const data = {
         name: document.getElementById('semesterName').value.trim(),
         start_date: document.getElementById('startDate').value,
@@ -201,7 +202,7 @@ document.getElementById('semesterForm').addEventListener('submit', async (e) => 
 
         const excludedDates = document.getElementById('excludedDates').value
             .split('\n').map(d => d.trim()).filter(d => d);
-        
+
         const includedDates = document.getElementById('includedDates').value
             .split('\n').map(d => d.trim()).filter(d => d);
 
@@ -210,17 +211,48 @@ document.getElementById('semesterForm').addEventListener('submit', async (e) => 
             time_schedule: timeSchedule,
             dates_excluded: excludedDates,
             dates_included: includedDates,
-            day_time_excluded: {}, 
+            day_time_excluded: {},
             date_time_excluded: {}
         };
     }
+    return data;
+}
+
+document.getElementById('semesterForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = collectSemesterData();
+
+    if (currentEditId) {
+        const semester = semesters.find(s => s.id === currentEditId);
+        // Check if semester has a generated schedule
+        if (semester && (semester.is_generated || semester.schedule)) {
+            pendingSemesterData = data;
+            showModal('confirmScheduleModal');
+            return;
+        }
+    }
+
+    await saveSemester(data);
+});
+
+async function confirmScheduleUpdate() {
+    if (!pendingSemesterData) return;
+
+    // Add confirmation flag
+    pendingSemesterData.confirm_schedule_deletion = true;
+
+    hideModal('confirmScheduleModal');
+    await saveSemester(pendingSemesterData);
+    pendingSemesterData = null;
+}
+
+async function saveSemester(data) {
+    const btnSave = document.querySelector('#semesterForm .btn-save');
+    const originalText = btnSave.textContent;
+    btnSave.textContent = '⏳ Збереження...';
+    btnSave.disabled = true;
 
     try {
-        const btnSave = e.target.querySelector('.btn-save');
-        const originalText = btnSave.textContent;
-        btnSave.textContent = '⏳ Збереження...';
-        btnSave.disabled = true;
-
         if (currentEditId) {
             await apiRequest(`/semesters/${currentEditId}/`, 'PUT', data);
             showToast('Семестр оновлено', 'success');
@@ -228,19 +260,18 @@ document.getElementById('semesterForm').addEventListener('submit', async (e) => 
             await apiRequest('/semesters/', 'POST', data);
             showToast('Семестр створено', 'success');
         }
-        
+
         hideModal('semesterModal');
         loadSemesters();
-        
-        btnSave.textContent = originalText;
-        btnSave.disabled = false;
 
     } catch (error) {
         showToast('Помилка: ' + error.message, 'error');
-        e.target.querySelector('.btn-save').disabled = false;
-        e.target.querySelector('.btn-save').textContent = '💾 Зберегти';
+    } finally {
+        btnSave.textContent = originalText;
+        btnSave.disabled = false;
     }
-});
+}
+
 
 async function confirmDelete() {
     if (!currentDeleteId) return;
@@ -259,7 +290,7 @@ async function generateSchedule(semesterId) {
     if (!confirm('⚠️ УВАГА: Це видалить поточний чорновик розкладу для цього семестру. Продовжити?')) {
         return;
     }
-    
+
     showToast('Генерація розпочата, зачекайте...', 'info');
 
     try {
@@ -268,7 +299,7 @@ async function generateSchedule(semesterId) {
         if (data.success) {
             let msg = `Розклад згенеровано! Створено: ${data.created}`;
             if (data.failed > 0) msg += `, Помилок: ${data.failed}`;
-            
+
             showToast(msg, data.failed > 0 ? 'warning' : 'success');
             console.log("Generation Logs:", data.logs);
         }
@@ -280,5 +311,6 @@ async function generateSchedule(semesterId) {
 
 window.setAsCurrent = setAsCurrent;
 window.generateSchedule = generateSchedule;
+window.confirmScheduleUpdate = confirmScheduleUpdate;
 
 loadSemesters();

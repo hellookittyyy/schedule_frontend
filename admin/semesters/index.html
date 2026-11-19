@@ -111,6 +111,24 @@
         </div>
     </div>
 
+    <div class="modal" id="confirmScheduleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚠️ Увага!</h2>
+                <button class="btn-close" onclick="hideModal('confirmScheduleModal')">&times;</button>
+            </div>
+            <div class="delete-message">
+                Цей семестр вже має згенерований розклад. Редагування параметрів семестру призведе до <strong>повного видалення</strong> поточного розкладу.
+                <br><br>
+                Ви впевнені, що хочете продовжити?
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="hideModal('confirmScheduleModal')">Скасувати</button>
+                <button class="btn btn-confirm" onclick="confirmScheduleUpdate()">Так, видалити та змінити</button>
+            </div>
+        </div>
+    </div>
+
     <script src="../common.js"></script>
     <script src="../sidebar.js"></script>
     <script src="semester.js"></script>
