@@ -613,15 +613,6 @@
     var cur = semesters.find(function (s) { return s.is_current; }) || semesters[0];
     return cur ? String(cur.id) : null;
   }
-  window.addEventListener('popstate', function () {
-    if (!semesters.length) return;
-    var want = new URLSearchParams(window.location.search).get('semester');
-    if (!want || !semName(want)) want = defaultSem();
-    if (want == null || String(want) === String(semId)) return;
-    semId = String(want);
-    if (semSelect) semSelect.value = semId;
-    md.reload();
-  });
   function buildSemSelect() {
     var host = Shell.actionsEl && Shell.actionsEl();
     if (!host || semSelect) return;
@@ -677,7 +668,7 @@
     removedText: 'Обмеження видалено',
     removeQuestion: 'Точно видалити обмеження?',
     countLabel: function (n) { return n + ' ' + plural(n, 'обмеження', 'обмеження', 'обмежень'); },
-    load: function () {
+    load: function (lc) {
       return loadBase().then(function () {
         if (!semId) return [];
         var sid = semId;
@@ -685,6 +676,7 @@
           apiRequest('/semester_constraints/?semester=' + encodeURIComponent(sid)),
           plansFor(sid).catch(function () { return []; })
         ]).then(function (r) {
+          if (sid !== semId || (lc && !lc.isCurrent())) return []; // stale: a newer load owns plansMap
           plansMap = {};
           r[1].forEach(function (p) { plansMap[p.id] = p; });
           return list(r[0]);
@@ -717,5 +709,16 @@
       return apiRequest('/semester_constraints/' + c.id + '/', 'PUT', payload);
     },
     remove: function (c) { return apiRequest('/semester_constraints/' + c.id + '/', 'DELETE'); }
+  });
+
+  // Registered after MasterDetail's own handler, so the item from the URL is selected first.
+  window.addEventListener('popstate', function () {
+    if (!semesters.length) return;
+    var want = new URLSearchParams(window.location.search).get('semester');
+    if (!want || !semName(want)) want = defaultSem();
+    if (want == null || String(want) === String(semId)) return;
+    semId = String(want);
+    if (semSelect) semSelect.value = semId;
+    md.reload();
   });
 })();
