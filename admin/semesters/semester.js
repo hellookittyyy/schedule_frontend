@@ -13,7 +13,7 @@
     ['Friday', 'Пт'], ['Saturday', 'Сб'], ['Sunday', 'Нд']];
 
   var st = { semesters: [], sem: null, view: 'overview', checks: null, data: null, lessons: null,
-    constraints: null, calendar: null, token: 0 };
+    constraints: null, calendar: null, token: 0, generating: false };
 
   /* ---------- routing ---------- */
   function params() { return new URLSearchParams(location.search); }
@@ -140,7 +140,7 @@
       (view === 'calendar'
         ? '<button type="button" class="btn btn-ghost" data-view="overview">' + ic('chevron-left') + 'Огляд</button>'
         : '<button type="button" class="btn btn-ghost" data-view="calendar">' + ic('calendar') + 'Календар</button>') +
-      '<button type="button" class="btn btn-primary" data-generate disabled>' + ic('bolt') + 'Згенерувати</button>');
+      '<button type="button" class="btn btn-primary' + (st.generating ? ' is-busy' : '') + '" data-generate disabled>' + ic('bolt') + 'Згенерувати</button>');
     a.querySelector('[data-view]').addEventListener('click', function (e) { setView(e.currentTarget.getAttribute('data-view')); });
     a.querySelector('[data-generate]').addEventListener('click', askGenerate);
 
@@ -202,9 +202,12 @@
     var gen = document.querySelector('[data-generate]');
     if (gen) {
       var blocks = st.checks.filter(function (c) { return c.severity === 'block'; }).length;
-      gen.disabled = blocks > 0;
-      gen.title = blocks ? 'Спершу усуньте блокери: ' + blocks : '';
+      gen.disabled = st.generating || blocks > 0;
+      gen.classList.toggle('is-busy', st.generating);
+      gen.title = st.generating ? 'Генерація триває…' : blocks ? 'Спершу усуньте блокери: ' + blocks : '';
     }
+    var edit = document.querySelector('[data-edit]');
+    if (edit && st.lessons) { edit.disabled = false; edit.title = ''; }
   }
 
   function groupStats() {
@@ -305,7 +308,7 @@
     var days = Math.round((new Date(sem.end_date + 'T00:00:00') - new Date(sem.start_date + 'T00:00:00')) / 864e5);
     el.innerHTML = '<div class="stack">' +
       '<div class="card"><div class="card-head"><h2 class="card-title">Про семестр</h2><span class="sp"></span>' +
-      '<button type="button" class="btn btn-sm" data-edit>' + ic('edit', 14) + 'Редагувати</button></div>' +
+      '<button type="button" class="btn btn-sm" data-edit' + (st.lessons ? '' : ' disabled title="Завантаження даних семестру…"') + '>' + ic('edit', 14) + 'Редагувати</button></div>' +
       '<dl class="kv"><dt>Назва</dt><dd>' + esc(sem.name) + '</dd><dt>Початок</dt><dd>' + esc(SemCalendar.fmtDate(sem.start_date)) + '</dd>' +
       '<dt>Кінець</dt><dd>' + esc(SemCalendar.fmtDate(sem.end_date)) + '</dd><dt>Тривалість</dt><dd class="num">' + esc(plural(days, 'день', 'дні', 'днів')) + '</dd>' +
       '<dt>Статус</dt><dd>' + (sem.is_current ? 'поточний' : 'не поточний') + '</dd></dl></div>' +
@@ -336,7 +339,7 @@
   /* ---------- generation ---------- */
   function askGenerate() {
     var btn = document.querySelector('[data-generate]');
-    if (!st.sem || !st.lessons || (btn && btn.disabled)) return;
+    if (!st.sem || !st.lessons || st.generating || (btn && btn.disabled)) return;
     var L = st.lessons, unlocked = L.total - L.locked;
     var warning = L.total
       ? 'Буде видалено ' + plural(unlocked, 'незаблоковане заняття', 'незаблоковані заняття', 'незаблокованих занять') +
@@ -351,7 +354,9 @@
 
   function runGenerate() {
     var sem = st.sem, btn = document.querySelector('[data-generate]');
-    if (btn) { btn.disabled = true; btn.classList.add('is-busy'); }
+    if (st.generating) return;
+    st.generating = true;
+    if (btn) { btn.disabled = true; btn.classList.add('is-busy'); btn.title = 'Генерація триває…'; }
     UI.toast('Генерація розпочата, зачекайте…', { timeout: 6000 });
     return apiRequest('/generate-schedule/', 'POST', { semester_id: sem.id }).then(function (data) {
       if (data && data.success) {
@@ -364,7 +369,9 @@
     }, function (err) {
       UI.toast('Помилка генерації: ' + errText(err), { type: 'err', timeout: 8000 });
     }).then(function () {
-      if (btn) btn.classList.remove('is-busy');
+      st.generating = false;
+      // The button may have been re-rendered meanwhile; paint() restores its state.
+      if (st.checks) paint();
       if (st.sem && st.sem.id === sem.id) return refresh();
     });
   }
