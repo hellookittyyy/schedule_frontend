@@ -42,7 +42,10 @@
   }
 
   function isActive(item, path) {
-    if (item.exact) return path === item.href || path === item.href + 'index.html';
+    if (item.exact) {
+      var root = item.href.replace(/\/$/, '');
+      return path === root || path === root + '/' || path === root + '/index.html';
+    }
     var base = item.href.replace(/\/$/, '');
     return path === base || path.indexOf(base + '/') === 0;
   }
@@ -90,9 +93,17 @@
   /* ---------- drawer (below 980px) ---------- */
   function isOpen() { return !!state.app && state.app.classList.contains('sh-nav-open'); }
 
+  function setInert(on) {
+    var work = document.querySelector('.main-content') || document.querySelector('.sh-main');
+    if (!work) return;
+    if (on) { work.setAttribute('inert', ''); work.inert = true; }
+    else { work.removeAttribute('inert'); work.inert = false; }
+  }
+
   function openNav() {
     if (!state.app) return;
     state.app.classList.add('sh-nav-open');
+    setInert(true);
     if (state.menuBtn) state.menuBtn.setAttribute('aria-expanded', 'true');
     var target = state.nav.querySelector('.sh-nav-item.is-active') || state.nav.querySelector('a');
     if (target) setTimeout(function () { target.focus(); }, 30);
@@ -101,6 +112,7 @@
   function closeNav(restoreFocus) {
     if (!isOpen()) return;
     state.app.classList.remove('sh-nav-open');
+    setInert(false);
     if (state.menuBtn) {
       state.menuBtn.setAttribute('aria-expanded', 'false');
       if (restoreFocus) state.menuBtn.focus();
@@ -108,7 +120,17 @@
   }
 
   function onKey(e) {
-    if ((e.key === 'Escape' || e.key === 'Esc') && isOpen()) closeNav(true);
+    if (!isOpen()) return;
+    if (e.key === 'Escape' || e.key === 'Esc') { closeNav(true); return; }
+    if (e.key !== 'Tab') return;
+    // Trap Tab inside the open drawer; the page behind is inert.
+    var f = Array.prototype.filter.call(state.nav.querySelectorAll('a[href],button:not([disabled])'),
+      function (n) { return n.offsetParent !== null; });
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1], a = document.activeElement;
+    if (!state.nav.contains(a)) { e.preventDefault(); (e.shiftKey ? last : first).focus(); }
+    else if (e.shiftKey && a === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && a === last) { e.preventDefault(); first.focus(); }
   }
 
   /* ---------- public API ---------- */
