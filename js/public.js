@@ -10,7 +10,7 @@
   var DW_FULL = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пʼятниця', 'Субота', 'Неділя'];
   var MONTHS = ['січня', 'лютого', 'березня', 'квітня', 'травня', 'червня', 'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня'];
 
-  var groups = [], teachers = [];
+  var groups = [], teachers = [], streams = [];
   var cur = null;            // {type:'g'|'t', id, name, obj}
   var weekStart = null;      // Date (Monday 00:00)
   var dayIdx = 0;            // 0..6
@@ -37,12 +37,26 @@
 
   /* ---------- data ---------- */
   function list(data) { return (data && data.results) || data || []; }
+  function streamNamesOf(groupId) {
+    return streams.filter(function (s) {
+      var ids = (s.groups || []).concat((s.groups_details || []).map(function (g) { return g.id; }));
+      return ids.some(function (id) { return String(id) === String(groupId); });
+    }).map(function (s) { return s.name; });
+  }
   function lessonsQuery(extra) {
-    var p = new URLSearchParams();
+    var p = new URLSearchParams(), base = new URLSearchParams();
+    Object.keys(extra).forEach(function (k) { base.append(k, extra[k]); });
     if (cur.type === 'g') p.append('group_id', cur.id); else p.append('teacher_name', cur.name);
-    Object.keys(extra).forEach(function (k) { p.append(k, extra[k]); });
-    return apiRequest('/lessons/?' + p.toString()).then(function (d) {
-      var ls = list(d);
+    base.forEach(function (v, k) { p.append(k, v); });
+    var reqs = [apiRequest('/lessons/?' + p.toString()).then(list)];
+    // group_id matches only the plan's own group and the backend has no stream filter: stream lessons are filtered here
+    var names = cur.type === 'g' ? streamNamesOf(cur.id) : [];
+    if (names.length) reqs.push(apiRequest('/lessons/?' + base.toString()).then(function (d) {
+      return list(d).filter(function (l) { return plan(l).stream && names.indexOf(plan(l).stream) !== -1; });
+    }));
+    return Promise.all(reqs).then(function (r) {
+      var seen = {}, ls = [];
+      r.forEach(function (part) { part.forEach(function (l) { if (!seen[l.id]) { seen[l.id] = true; ls.push(l); } }); });
       // teacher_name is icontains on the backend: keep exact matches only
       if (cur.type === 't') ls = ls.filter(function (l) { return plan(l).teacher === cur.name; });
       return ls.sort(byTime);
@@ -347,6 +361,19 @@
 
   /* ---------- ICS ---------- */
   function icsEsc(s) { return String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+  // RFC 5545: fold lines longer than 75 octets (UTF-8) with CRLF + space
+  function icsFold(line) {
+    var parts = [], buf = '', n = 0;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i], code = line.charCodeAt(i);
+      if (code >= 0xD800 && code <= 0xDBFF && i + 1 < line.length) ch += line[++i];
+      var b = code < 0x80 ? 1 : code < 0x800 ? 2 : ch.length === 2 ? 4 : 3;
+      if (n + b > (parts.length ? 74 : 75)) { parts.push(buf); buf = ''; n = 0; }
+      buf += ch; n += b;
+    }
+    parts.push(buf);
+    return parts.join('\r\n ');
+  }
   function icsDt(d) { return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + 'T' + pad(d.getHours()) + pad(d.getMinutes()) + '00'; }
   function buildIcs(ls) {
     var stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
@@ -354,12 +381,12 @@
     ls.forEach(function (l) {
       var p = plan(l);
       out.push('BEGIN:VEVENT', 'UID:lesson-' + l.id + '@rozklad', 'DTSTAMP:' + stamp, 'DTSTART:' + icsDt(startOf(l)), 'DTEND:' + icsDt(endOf(l)),
-        'SUMMARY:' + icsEsc(p.subject + (p.class_type ? ' (' + p.class_type + ')' : '')));
+        'SUMMARY:' + icsEsc((p.subject || 'Заняття') + (p.class_type ? ' (' + p.class_type + ')' : '')));
       if (room(l)) out.push('LOCATION:' + icsEsc(room(l) + (l.room_details.building ? ', ' + l.room_details.building : '')));
       out.push('DESCRIPTION:' + icsEsc([p.teacher, p.group || p.stream].filter(Boolean).join(' · ')), 'END:VEVENT');
     });
     out.push('END:VCALENDAR');
-    return out.join('\r\n') + '\r\n';
+    return out.map(icsFold).join('\r\n') + '\r\n';
   }
   $('icsBtn').addEventListener('click', function () {
     if (weekState !== 'ok' || !weekLessons.length) { UI.toast('На цьому тижні немає пар для календаря', { type: 'warn' }); return; }
@@ -383,8 +410,9 @@
   $('icsBtn').innerHTML = ic('calendar', 16) + 'Додати тиждень у календар (.ics)';
 
   UI.state($('intro'), 'loading');
-  Promise.all([apiRequest('/groups/'), apiRequest('/teachers/')]).then(function (r) {
-    groups = list(r[0]); teachers = list(r[1]);
+  Promise.all([apiRequest('/groups/'), apiRequest('/teachers/'),
+    apiRequest('/streams/').catch(function () { return []; })]).then(function (r) {
+    groups = list(r[0]); teachers = list(r[1]); streams = list(r[2]);
     if (fromUrl('replace')) return;
     var mine = readMine();
     if (mine) openSel(mine.type, mine.id, 'replace');
