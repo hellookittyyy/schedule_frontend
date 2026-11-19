@@ -1,6 +1,6 @@
 # Фінальні кандидати UI
 
-Збережено 19.11.2026. Залишилось два варіанти, з яких буде обрано один (або зібрано гібрид).
+Збережено 19.11.2026. **Статус: обрано Mosaic, дизайн реалізовано** (план [`docs/plans/0001-mosaic-redesign.md`](../../docs/plans/0001-mosaic-redesign.md)). Продакшн-файли: `assets/css`, `assets/js`, сторінки в `admin/` та `index.html`. Файли нижче лишаються як історичний знімок.
 
 | Файл | Що це |
 |---|---|
@@ -44,8 +44,8 @@ py -m http.server 5500
 
 Ці файли — знімки з `design/ui-variants/15-slate-lab.html` (`?p=triad` і `?p=x-mosaic`). Подальші експерименти в `ui-variants/` на них не впливають.
 
-## Наступний крок
+## Реалізація
 
-Реалізація йде за планом [`docs/plans/0001-mosaic-redesign.md`](../../docs/plans/0001-mosaic-redesign.md).
+Реалізовано за планом [`docs/plans/0001-mosaic-redesign.md`](../../docs/plans/0001-mosaic-redesign.md).
 Продакшн-файли — у `assets/css` і `assets/js`; живий довідник компонентів — [`design/system.html`](../system.html).
 `design/ui-kit` лишається лише як застарілий референс.
