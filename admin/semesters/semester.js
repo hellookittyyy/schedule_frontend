@@ -66,7 +66,7 @@
 
   /* ---------- semester list ---------- */
   function renderList() {
-    st.sem = null; st.token++;
+    st.sem = null; st.checks = null; st.token++;
     document.title = 'Семестри — Адмін панель';
     Shell.setTitle('Семестри');
     Shell.setCrumbs(st.semesters.some(function (s) { return s.is_current; })
@@ -168,6 +168,9 @@
     }
     loadSemesterData(sem.id).then(function () { if (token === st.token) paint(); }, function (err) {
       if (token !== st.token) return;
+      // Lessons unknown: allow editing anyway; the server's 409/500 handling still protects.
+      var edit = document.querySelector('[data-edit]');
+      if (edit) { edit.disabled = false; edit.title = 'Не вдалося перевірити заняття семестру — попередження про них не буде показано'; }
       var box = document.getElementById('semSteps');
       UI.state(box, 'error', { text: 'Не вдалося перевірити семестр: ' + errText(err), actionLabel: 'Спробувати ще',
         onAction: function () { Checks.invalidate(sem.id); st.checks = null; renderSemester(sem, st.view); } });
@@ -371,7 +374,7 @@
     }).then(function () {
       st.generating = false;
       // The button may have been re-rendered meanwhile; paint() restores its state.
-      if (st.checks) paint();
+      if (st.checks && st.sem && st.sem.id === sem.id && document.getElementById('semSteps')) paint();
       if (st.sem && st.sem.id === sem.id) return refresh();
     });
   }
