@@ -7,7 +7,7 @@
 
   var roomTypes = [];
   var md;
-  // Live filter list: master-detail does `opts.filters.slice()`, so hand it an object whose slice() returns this array.
+  // Live filter list: master-detail re-evaluates `filters()` on each render.
   var filterList = [{ id: 'all', label: 'Усі', test: function () { return true; } }];
 
   function plural(n, one, few, many) {
@@ -263,7 +263,7 @@
     removedText: 'Аудиторію видалено',
     removeQuestion: 'Точно видалити аудиторію?',
     countLabel: function (n) { return n + ' ' + plural(n, 'аудиторія', 'аудиторії', 'аудиторій'); },
-    filters: { slice: function () { return filterList; } },
+    filters: function () { return filterList; },
     load: function () {
       return Promise.all([apiRequest('/rooms/'), apiRequest('/room_types/')]).then(function (r) {
         roomTypes = list(r[1]).slice().sort(function (a, b) { return String(a.name).localeCompare(String(b.name), 'uk'); });

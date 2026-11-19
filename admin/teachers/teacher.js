@@ -457,7 +457,7 @@
       if (String(t.name || '').toLowerCase().indexOf(q) >= 0) return true;
       return subjOf(t).some(function (s) { return String(s.name).toLowerCase().indexOf(q) >= 0; });
     },
-    filters: [{ id: 'nosubj', label: 'Без предметів', test: function (t) { return !subjOf(t).length; } }],
+    filters: [{ id: 'no-subjects', label: 'Без предметів', test: function (t) { return !subjOf(t).length; } }],
     renderRow: renderRow,
     renderDetail: renderDetail,
     mount: mount,
