@@ -1,0 +1,11 @@
+/* Аудиторії page (plan 0001 phase 3). Section colour: --c1. Tokens only. */
+
+.rt{margin-top:var(--gap)}
+.rt-list{border-top:1px solid var(--line)}
+.rt-item{border-bottom:1px solid var(--line)}
+.rt-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) 110px 30px;gap:10px;align-items:center;padding:8px 0}
+.rt-row .rt-n{font-size:13px;color:var(--muted);white-space:nowrap}
+.rt-item .danger{margin:0 0 10px}
+.rt-item .danger:not(.is-confirm){display:none}
+.rt-add{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) auto;gap:10px;align-items:center;padding-top:14px}
+.rt-hint{margin:0 0 12px}
