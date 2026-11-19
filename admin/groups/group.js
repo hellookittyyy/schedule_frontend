@@ -19,10 +19,16 @@
     return many;
   }
   function list(r) { return (r && r.results) || r || []; }
-  function course(g) { return g.current_course > 0 ? g.current_course : 0; }
-  function courseLabel(n) { return n ? n + ' курс' : 'Без курсу'; }
+  // API: 1–6, 0 for a future intake, or a string («Випускник») past 6th year.
+  function course(g) { var c = g.current_course; return c == null || c === '' ? null : c; }
+  function courseLabel(c) {
+    if (c == null) return 'Без курсу';
+    if (typeof c !== 'number') return String(c);
+    return c > 0 ? c + ' курс' : 'Абітурієнт';
+  }
+  function courseRank(c) { return c == null ? 99 : typeof c === 'number' ? c : 50; }
   function byGroup(a, b) {
-    return (course(a) || 99) - (course(b) || 99) ||
+    return courseRank(course(a)) - courseRank(course(b)) ||
       String(a.name || '').localeCompare(String(b.name || ''), 'uk', { numeric: true });
   }
   function planTotal(g) { return (directCount[g.id] || 0) + (streamCount[g.id] || 0); }
@@ -142,60 +148,62 @@
   }
 
   /* ---------- controller ---------- */
-  function create(courses) {
-    var filters = [{ id: 'no-plan',label: 'Без плану', test: function (g) { return plansOk && !planTotal(g); } }];
-    courses.forEach(function (n) {
-      filters.push({ id: 'c' + n, label: courseLabel(n), test: function (g) { return course(g) === n; } });
-    });
-    md = MasterDetail.create({
-      root: '#groups',
-      title: 'Групи',
-      color: '--c5',
-      searchPlaceholder: 'Пошук групи',
-      addLabel: 'Додати групу',
-      draftLabel: 'Нова група',
-      emptyText: 'Груп поки немає',
-      removedText: 'Групу видалено',
-      removeQuestion: 'Точно видалити групу?',
-      countLabel: function (n) { return n + ' ' + plural(n, 'група', 'групи', 'груп'); },
-      load: loadAll,
-      sort: byGroup,
-      groupBy: function (g) { return courseLabel(course(g)); },
-      search: function (g, q) { return String(g.name || '').toLowerCase().indexOf(q) >= 0; },
-      filters: filters,
-      renderRow: renderRow,
-      renderDetail: renderDetail,
-      mount: mount,
-      onCreate: function () { return { name: '', amount: null, start_year: null }; },
-      save: function (g, ch) {
-        if (g.id == null) {
-          // Draft: the API requires all three fields, so read them from the form.
-          var q = function (k) { return document.querySelector('#groups [data-md-field="' + k + '"]'); };
-          var p = { name: q('name').value.trim(), amount: q('amount').value, start_year: q('start_year').value };
-          if (!p.name || p.amount === '' || p.start_year === '') {
-            return Promise.reject(new Error('Заповніть назву, кількість студентів і рік вступу'));
-          }
-          p.amount = Number(p.amount); p.start_year = Number(p.start_year);
-          return apiRequest('/groups/', 'POST', p);
-        }
-        var body = { name: g.name, amount: g.amount, start_year: g.start_year };
-        Object.assign(body, ch);
-        return apiRequest('/groups/' + g.id + '/', 'PUT', body).then(function (saved) {
-          var sub = document.getElementById('g-sub'), c = document.getElementById('g-course');
-          if (saved) {
-            if (sub) sub.textContent = subText(saved);
-            if (c) c.textContent = courseLabel(course(saved));
-          }
-          return saved;
-        });
-      },
-      remove: function (g) { return apiRequest('/groups/' + g.id + '/', 'DELETE'); }
-    });
+  // Course chips follow the loaded groups, so an emptied course drops out after an edit.
+  function filters() {
+    var seen = {};
+    (md ? md.items() : []).forEach(function (g) { var c = course(g); if (c != null) seen['c' + c] = c; });
+    var out = [{ id: 'no-plan', label: 'Без плану', test: function (g) { return plansOk && !planTotal(g); } }];
+    Object.keys(seen).map(function (k) { return seen[k]; })
+      .sort(function (a, b) { return courseRank(a) - courseRank(b); })
+      .forEach(function (c) {
+        out.push({ id: 'c' + c, label: courseLabel(c), test: function (g) { return course(g) === c; } });
+      });
+    return out;
   }
 
-  apiRequest('/groups/').then(function (r) {
-    var seen = {};
-    list(r).forEach(function (g) { if (course(g)) seen[course(g)] = true; });
-    create(Object.keys(seen).map(Number).sort(function (a, b) { return a - b; }));
-  }, function () { create([]); });
+  md = MasterDetail.create({
+    root: '#groups',
+    title: 'Групи',
+    color: '--c5',
+    searchPlaceholder: 'Пошук групи',
+    addLabel: 'Додати групу',
+    draftLabel: 'Нова група',
+    emptyText: 'Груп поки немає',
+    removedText: 'Групу видалено',
+    removeQuestion: 'Точно видалити групу?',
+    countLabel: function (n) { return n + ' ' + plural(n, 'група', 'групи', 'груп'); },
+    load: loadAll,
+    sort: byGroup,
+    groupBy: function (g) { return courseLabel(course(g)); },
+    search: function (g, q) { return String(g.name || '').toLowerCase().indexOf(q) >= 0; },
+    filters: filters,
+    renderRow: renderRow,
+    renderDetail: renderDetail,
+    mount: mount,
+    onCreate: function () { return { name: '', amount: null, start_year: null }; },
+    save: function (g, ch) {
+      if (g.id == null) {
+        // Draft: the API requires all three fields, so read them from the form.
+        var q = function (k) { return document.querySelector('#groups [data-md-field="' + k + '"]'); };
+        var p = { name: q('name').value.trim(), amount: q('amount').value, start_year: q('start_year').value };
+        if (!p.name || p.amount === '' || p.start_year === '') {
+          return Promise.reject(new Error('Заповніть назву, кількість студентів і рік вступу'));
+        }
+        p.amount = Number(p.amount); p.start_year = Number(p.start_year);
+        return apiRequest('/groups/', 'POST', p);
+      }
+      var body = { name: g.name, amount: g.amount, start_year: g.start_year };
+      Object.assign(body, ch);
+      return apiRequest('/groups/' + g.id + '/', 'PUT', body).then(function (saved) {
+        var cur = md.current();
+        var sub = document.getElementById('g-sub'), c = document.getElementById('g-course');
+        if (saved && cur && cur.id === g.id) {
+          if (sub) sub.textContent = subText(saved);
+          if (c) c.textContent = courseLabel(course(saved));
+        }
+        return saved;
+      });
+    },
+    remove: function (g) { return apiRequest('/groups/' + g.id + '/', 'DELETE'); }
+  });
 })();
