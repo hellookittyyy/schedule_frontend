@@ -68,6 +68,7 @@
         (draft ? '' : '<div class="muted" id="r-sub">' + esc(subText(r)) + '</div>') + '</div>' +
         '<span class="saved" data-md-saved hidden></span>' +
       '</div>' +
+      '<div class="r-form">' +
       '<div class="section"><div class="section-title">Основне</div><div class="fields">' +
         '<label class="f-label" for="r-name">Назва / номер</label>' +
         '<div class="f-value"><input class="input" id="r-name"' + fld('title') + ' required autocomplete="off" maxlength="50" placeholder="Наприклад: 305" value="' + esc(r.title || '') + '"></div>' +
@@ -82,30 +83,35 @@
       '</div></div>' +
       '<div class="section"><div class="section-title">Примітка</div>' +
         '<textarea class="textarea" id="r-note" aria-label="Примітка"' + fld('note') + ' placeholder="Наприклад: проєктор, 12 комп’ютерів">' + esc(r.note || '') + '</textarea></div>' +
+      '</div>' +
       (draft ? '<div class="section"><button type="button" class="btn btn-primary" id="r-create">Створити аудиторію</button></div>' : '') +
       ctx.danger({ title: 'Видалити аудиторію', text: 'Аудиторію буде видалено з довідника.', draftText: 'З’явиться у списку після натискання «Створити аудиторію».' });
   }
 
+  var FIELDS = [['r-name', 'title'], ['r-bld', 'building'], ['r-type', 'room_type', 'number'], ['r-cap', 'capacity', 'number'], ['r-note', 'note']];
+
+  function paintSub(el, r) {
+    var sub = el.querySelector('#r-sub'), bld = el.querySelector('#r-bld'), cap = el.querySelector('#r-cap'), ty = el.querySelector('#r-type');
+    if (!sub) return;
+    var t = roomTypes.find(function (x) { return String(x.id) === ty.value; });
+    var n = cap.value === '' ? 0 : Number(cap.value);
+    sub.textContent = [bld.value.trim(), t ? t.name : typeName(r), seatsText(n)].filter(Boolean).join(' · ');
+  }
+
+  // Listeners go on the detail's own nodes: `el` outlives every render.
   function mount(el, r, ctx) {
     var name = el.querySelector('#r-name');
+    var form = el.querySelector('.r-form');
     name.addEventListener('input', function () {
       el.querySelector('#r-title').textContent = name.value.trim() || 'Нова аудиторія';
     });
-    if (!ctx.isDraft) {
-      var upd = function () {
-        var sub = el.querySelector('#r-sub'), bld = el.querySelector('#r-bld'), cap = el.querySelector('#r-cap'), ty = el.querySelector('#r-type');
-        if (!sub) return;
-        var t = roomTypes.find(function (x) { return String(x.id) === ty.value; });
-        var n = cap.value === '' ? 0 : Number(cap.value);
-        sub.textContent = [bld.value.trim(), t ? t.name : typeName(r), seatsText(n)].filter(Boolean).join(' · ');
-      };
-      el.addEventListener('input', upd);
-      el.addEventListener('change', upd);
-      return;
-    }
+    form.addEventListener('input', function () { paintSub(el, r); });
+    form.addEventListener('change', function () { paintSub(el, r); });
+    if (!ctx.isDraft) return;
     // Draft: backend needs all four required fields at once, so create via an explicit button.
     var btn = el.querySelector('#r-create');
     function submit() {
+      if (!ctx.isDraft || !ctx.alive() || btn.disabled) return;
       var bad = ['r-name', 'r-bld', 'r-type', 'r-cap'].filter(function (id) {
         var node = el.querySelector('#' + id), empty = node.value.trim() === '';
         node.classList.toggle('is-err', empty);
@@ -128,8 +134,27 @@
       }, function () { btn.disabled = false; });
     }
     btn.addEventListener('click', submit);
-    el.addEventListener('keydown', function (e) {
+    form.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); submit(); }
+    });
+    name.focus();
+  }
+
+  // After «Створити аудиторію»: switch the form to autosave in place, keeping what was typed meanwhile.
+  function onCreated(r, ctx) {
+    var el = ctx.el;
+    var sec = el.querySelector('#r-create');
+    if (sec) sec.closest('.section').remove();
+    var grow = el.querySelector('.detail-head .grow');
+    if (grow && !el.querySelector('#r-sub')) grow.insertAdjacentHTML('beforeend', '<div class="muted" id="r-sub"></div>');
+    paintSub(el, r);
+    FIELDS.forEach(function (f) {
+      var node = el.querySelector('#' + f[0]);
+      if (!node) return;
+      node.setAttribute('data-md-field', f[1]);
+      if (f[2]) node.setAttribute('data-md-type', f[2]);
+      var v = node.value.trim(), cur = r[f[1]];
+      if (v !== String(cur == null ? '' : cur)) node.dispatchEvent(new Event('change', { bubbles: true }));
     });
   }
 
@@ -177,10 +202,20 @@
 
   function typeById(id) { return roomTypes.find(function (t) { return t.id === id; }); }
 
+  // Refresh types in place: list chips/rows, counts and the open detail's select; never reload (keeps a draft).
   function afterTypesChange() {
     rebuildFilters();
     renderTypes();
-    return md.reload();
+    md.setFilters(function () { return filterList; });
+    var el = document.querySelector('#rooms .md-detail');
+    var sel = el && el.querySelector('#r-type');
+    if (sel) {
+      var keep = sel.value && typeById(Number(sel.value)) ? Number(sel.value) : null;
+      sel.innerHTML = typeOptions(keep);
+      var cur = md.current();
+      if (cur) paintSub(el, cur);
+    }
+    return Promise.resolve();
   }
 
   typesEl.addEventListener('change', function (e) {
@@ -282,6 +317,7 @@
     renderRow: renderRow,
     renderDetail: renderDetail,
     mount: mount,
+    onCreated: onCreated,
     onCreate: function () { return { title: '', building: '', capacity: null, room_type: null, note: '' }; },
     save: saveRoom,
     remove: function (r) { return apiRequest('/rooms/' + r.id + '/', 'DELETE').then(function () { setTimeout(updateCounts, 0); }); }
