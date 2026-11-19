@@ -8,116 +8,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../shared.css">
-    <link rel="stylesheet" href="constraint.css">
     <link rel="stylesheet" href="/assets/css/tokens.css">
+    <link rel="stylesheet" href="/assets/css/base.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
     <link rel="stylesheet" href="/assets/css/shell.css">
+    <link rel="stylesheet" href="/assets/css/pages/constraints.css">
 </head>
 <body>
     <div id="sidebar-container"></div>
 
-    <div class="main-content">
-        <div class="header header-fixed">
-            <h1>Обмеження розкладу</h1>
-            <button class="btn btn-add" onclick="openAddModal()">
-                ➕ Додати обмеження
-            </button>
-        </div>
-
-        <div class="card">
-            <div class="filters-bar" style="margin-bottom: 20px; padding: 15px;">
-                <div style="display: flex; gap: 15px; align-items: center;">
-                    <strong>Фільтр по семестру:</strong>
-                    <select id="filterSemester" class="form-input" style="max-width: 300px;">
-                        <option value="">Усі семестри</option>
-                    </select>
-                </div>
-            </div>
-            <div id="tableContainer">
-                <div class="loading">Завантаження...</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="constraintModal" class="modal">
-        <div class="modal-content" style="max-width: 700px;">
-            <div class="modal-header">
-                <h2 id="modalTitle">Додати обмеження</h2>
-                <button class="btn-close" onclick="hideModal('constraintModal')">&times;</button>
-            </div>
-            <form id="constraintForm">
-                
-                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div class="form-group">
-                        <label class="form-label">Семестр</label>
-                        <select id="constraintSemester" class="form-input" required>
-                            <option value="">-- Оберіть --</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Тип обмеження</label>
-                        <select id="constraintType" class="form-input" required>
-                            <option value="">-- Оберіть тип --</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group" style="margin-top: 15px;">
-                    <label class="form-label">Для кого це обмеження?</label>
-                    <div class="form-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px;">
-                        <select id="targetType" class="form-input" required>
-                            <option value="">-- Оберіть категорію --</option>
-                            <option value="teacher">👨‍🏫 Викладач</option>
-                            <option value="group">👥 Група</option>
-                            <option value="room">🏛️ Аудиторія</option>
-                            <option value="stream">🌊 Потік</option>
-                            <option value="global">🌐 Глобальне (для послідовностей)</option>
-                        </select>
-                        <select id="targetEntity" class="form-input" disabled required>
-                            <option value="">-- Спочатку оберіть категорію --</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group" style="margin-top: 20px;">
-                    <label class="form-label">Конфігурація</label>
-                    <div class="config-builder" id="configBuilder">
-                        <div class="config-builder-empty">Оберіть тип обмеження вище, щоб налаштувати</div>
-                    </div>
-                </div>
-
-                <div class="form-group" style="margin-top: 15px;">
-                    <label class="form-label">Опис (для себе)</label>
-                    <input type="text" id="constraintDescription" class="form-input" placeholder="Наприклад: Викладач не працює у п'ятницю">
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-cancel" onclick="hideModal('constraintModal')">Скасувати</button>
-                    <button type="submit" class="btn btn-save">💾 Зберегти</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="deleteModal" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
-            <div class="modal-header">
-                <h2>Підтвердження</h2>
-                <button class="btn-close" onclick="hideModal('deleteModal')">&times;</button>
-            </div>
-            <p style="padding: 20px 0;">Ви впевнені, що хочете видалити це обмеження?</p>
-            <div class="modal-actions">
-                <button class="btn btn-cancel" onclick="hideModal('deleteModal')">Ні</button>
-                <button class="btn btn-confirm" onclick="confirmDelete()">🗑️ Так, видалити</button>
-            </div>
-        </div>
-    </div>
+    <main class="sh-main">
+        <div id="constraints"></div>
+    </main>
 
     <script src="/assets/js/api.js"></script>
-    <script src="../common.js"></script>
+    <script src="/assets/js/ui.js"></script>
     <script src="/assets/js/icons.js"></script>
     <script src="/assets/js/shell.js"></script>
+    <script src="/assets/js/master-detail.js"></script>
     <script src="constraint.js"></script>
 </body>
 </html>
