@@ -1,40 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule</title>
-    <link rel="stylesheet" href="css/main.css">
+    <title>Розклад занять</title>
+    <script src="/assets/js/theme-boot.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/tokens.css">
+    <link rel="stylesheet" href="/assets/css/base.css">
+    <link rel="stylesheet" href="/assets/css/components.css">
+    <link rel="stylesheet" href="/assets/css/pages/public.css">
 </head>
 
 <body>
-    <div class="container">
-        <h1>Розклад занять</h1>
+    <div class="pub-wrap">
+        <div class="pub">
+            <header class="pub-head">
+                <a class="pub-brand" href="/"><span class="pub-brand-mark">Р</span><span class="pub-brand-name">Розклад</span></a>
+                <span class="sp"></span>
+                <button type="button" class="btn btn-ghost btn-sm" id="shareBtn" hidden></button>
+                <button type="button" class="icon-btn sm" id="themeBtn" aria-label="Змінити тему"></button>
+            </header>
 
-        <form id="searchForm" onsubmit="event.preventDefault(); showSchedule();">
-            <div class="form-group">
-                <label for="teacher">Ім'я викладача</label>
-                <div style="position: relative;">
-                    <input type="text" id="teacher" name="teacher" placeholder="Введіть ім'я викладача"
-                        autocomplete="off">
-                    <div id="teacherDropdown" class="dropdown"></div>
+            <div class="pub-find">
+                <div class="combo">
+                    <label class="search pub-search" id="searchBox">
+                        <span id="searchIco"></span>
+                        <input type="text" id="q" placeholder="Група або викладач" autocomplete="off"
+                            role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list"
+                            aria-label="Пошук групи або викладача">
+                    </label>
+                    <div class="combo-list" id="suggest" role="listbox"></div>
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label for="group">Номер групи</label>
-                <div style="position: relative;">
-                    <input type="text" id="group" name="group" placeholder="Введіть номер групи" autocomplete="off">
-                    <input type="hidden" id="groupId" name="groupId">
-                    <div id="groupDropdown" class="dropdown"></div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="course">Номер курсу</label>
-                <select id="course" name="course">
-                    <option value="">-- Оберіть курс --</option>
+                <select class="select pub-course" id="course" aria-label="Курс (для груп)">
+                    <option value="">Усі курси</option>
                     <option value="1">1 курс</option>
                     <option value="2">2 курс</option>
                     <option value="3">3 курс</option>
@@ -44,26 +46,53 @@
                 </select>
             </div>
 
-            <div class="date-group">
-                <div class="form-group">
-                    <label for="dateFrom">З дати</label>
-                    <input type="date" id="dateFrom" name="dateFrom">
-                </div>
+            <div id="intro" class="card pub-intro"></div>
 
-                <div class="form-group">
-                    <label for="dateTo">По дату</label>
-                    <input type="date" id="dateTo" name="dateTo">
+            <div id="schedule" hidden>
+                <div class="pub-sched">
+                    <div class="pub-title">
+                        <div class="grow">
+                            <h1 id="title"></h1>
+                            <span class="muted" id="subtitle"></span>
+                        </div>
+                        <label class="pub-mine">
+                            <button type="button" class="switch" id="mineSwitch" role="switch" aria-checked="false"
+                                aria-label="Зберегти як мій розклад"></button>
+                            Зберегти як мій розклад
+                        </label>
+                    </div>
+
+                    <div class="card now-card" id="nowCard" hidden></div>
+                    <div class="card next-card" id="nextCard" hidden></div>
+
+                    <div class="pub-week">
+                        <button type="button" class="icon-btn sm" id="prevWeek" aria-label="Попередній тиждень"></button>
+                        <span class="wk-label" id="weekLabel"></span>
+                        <button type="button" class="icon-btn sm" id="nextWeek" aria-label="Наступний тиждень"></button>
+                        <button type="button" class="btn btn-ghost btn-sm" id="todayBtn">Сьогодні</button>
+                        <span class="sp"></span>
+                        <input type="date" class="input" id="jumpDate" aria-label="Перейти до дати">
+                        <div class="seg" id="viewSeg" role="group" aria-label="Вигляд">
+                            <button type="button" data-view="day" class="is-on">День</button>
+                            <button type="button" data-view="week">Тиждень</button>
+                        </div>
+                    </div>
+
+                    <div class="daystrip" id="days"></div>
+                    <div class="card lessons" id="lessons"></div>
+
+                    <div class="pub-foot">
+                        <button type="button" class="btn btn-ghost" id="icsBtn"></button>
+                    </div>
                 </div>
             </div>
-
-            <button type="submit" class="btn-submit">Показати розклад</button>
-        </form>
-
-        <div id="scheduleResults" class="schedule-results"></div>
+        </div>
     </div>
-</body>
 
-<script src="/assets/js/api.js"></script>
-<script src="js/main.js"></script>
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/ui.js"></script>
+    <script src="/assets/js/icons.js"></script>
+    <script src="/js/public.js"></script>
+</body>
 
 </html>
