@@ -43,11 +43,13 @@
       return ids.some(function (id) { return String(id) === String(groupId); });
     }).map(function (s) { return s.name; });
   }
-  function lessonsQuery(extra) {
+  // streamExtra: params only for the unfiltered stream request (e.g. a date_to bound)
+  function lessonsQuery(extra, streamExtra) {
     var p = new URLSearchParams(), base = new URLSearchParams();
     Object.keys(extra).forEach(function (k) { base.append(k, extra[k]); });
     if (cur.type === 'g') p.append('group_id', cur.id); else p.append('teacher_name', cur.name);
     base.forEach(function (v, k) { p.append(k, v); });
+    Object.keys(streamExtra || {}).forEach(function (k) { base.append(k, streamExtra[k]); });
     var reqs = [apiRequest('/lessons/?' + p.toString()).then(list)];
     // group_id matches only the plan's own group and the backend has no stream filter: stream lessons are filtered here
     var names = cur.type === 'g' ? streamNamesOf(cur.id) : [];
@@ -216,9 +218,9 @@
     var my = ++upReq;
     upcoming = [];
     renderNowNext();
-    // bounded to 14 days: the unfiltered stream request must not be open-ended
+    // only the unfiltered stream request is bounded (14 days); the group/teacher one stays open-ended
     var today = new Date();
-    lessonsQuery({ date_from: iso(today), date_to: iso(addDays(today, 14)) }).then(function (ls) {
+    lessonsQuery({ date_from: iso(today) }, { date_to: iso(addDays(today, 14)) }).then(function (ls) {
       if (my !== upReq) return;
       var now = new Date();
       upcoming = ls.filter(function (l) { return endOf(l) > now; });
