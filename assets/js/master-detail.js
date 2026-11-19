@@ -9,21 +9,7 @@
   function icon(name, size) { return window.Icons ? Icons.svg(name, { size: size || 16 }) : ''; }
   function same(a, b) { return (a == null ? '' : String(a)) === (b == null ? '' : String(b)); }
 
-  // Readable message from an apiRequest error (DRF field errors, detail, error).
-  function errorText(err, fallback) {
-    var d = err && err.data;
-    if (d && typeof d === 'object') {
-      if (d.detail) return String(d.detail);
-      if (d.error) return String(d.error);
-      var keys = Object.keys(d);
-      for (var i = 0; i < keys.length; i++) {
-        var v = d[keys[i]];
-        if (Array.isArray(v) && v.length) return String(v[0]);
-        if (typeof v === 'string') return v;
-      }
-    }
-    return (err && err.message) || fallback || 'Сталася помилка';
-  }
+  function errorText(err, fallback) { return UI.errorText(err, fallback); }
 
   function create(opts) {
     opts = opts || {};
@@ -434,7 +420,11 @@
 
     function doRemove(c) {
       var item = c.item;
-      return Promise.resolve().then(function () { return opts.remove(item); }).then(function () {
+      // Queue behind pending saves (e.g. the blur-save from clicking «Видалити»), so DELETE goes last.
+      flushPending();
+      var p = saveChain.then(function () { return opts.remove(item); });
+      saveChain = p.then(null, function () {});
+      return p.then(function () {
         var vis = visibleItems();
         var idx = vis.indexOf(item);
         items = items.filter(function (x) { return x !== item; });

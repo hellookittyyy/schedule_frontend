@@ -5,19 +5,14 @@
   var esc = UI.escapeHtml;
   function ic(name, size) { return Icons.svg(name, { size: size || 16 }); }
 
-  var curSem = null;        // current semester or null
+  var curSem = null;        // semester for plan counts: ?semester= or the current one
   var directCount = {};     // group id -> study-plan entries of the group itself
   var streamCount = {};     // group id -> study-plan entries via its streams
   var streamsOf = {};       // group id -> streams containing the group
   var plansOk = false;
   var md;
 
-  function plural(n, one, few, many) {
-    var m10 = n % 10, m100 = n % 100;
-    if (m10 === 1 && m100 !== 11) return one;
-    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-    return many;
-  }
+  var plural = UI.pluralForm;
   function list(r) { return (r && r.results) || r || []; }
   // API: 1–6, 0 for a future intake, or a string («Випускник») past 6th year.
   function course(g) { var c = g.current_course; return c == null || c === '' ? null : c; }
@@ -40,7 +35,10 @@
       apiRequest('/semesters/').catch(function () { return []; })
     ]).then(function (r) {
       var groups = list(r[0]), streams = list(r[1]), sems = list(r[2]);
-      curSem = sems.find(function (s) { return s.is_current; }) || null;
+      // ?semester=N (links from a semester's checks) wins over the current semester.
+      var want = new URLSearchParams(window.location.search).get('semester');
+      curSem = (want && sems.find(function (s) { return String(s.id) === want; })) ||
+        sems.find(function (s) { return s.is_current; }) || null;
       streamsOf = {};
       var streamById = {};
       streams.forEach(function (s) {
@@ -92,7 +90,7 @@
       text += '.';
     }
     return '<p class="sm">' + esc(text) + '</p>' +
-      '<a class="btn btn-sm" href="/admin/study-plans/?group=' + esc(g.id) + '">' + ic('chevR', 14) + 'Навчальний план групи</a>';
+      '<a class="btn btn-sm" href="/admin/study-plans/?group=' + esc(g.id) + '&semester=' + esc(curSem.id) + '">' + ic('chevR', 14) + 'Навчальний план групи</a>';
   }
 
   // Shown only for a saved group (also inserted in place after a draft's first save).

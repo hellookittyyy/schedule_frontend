@@ -83,7 +83,7 @@
     add({ id: 'plans', severity: d.plans.length ? 'ok' : 'block',
       title: d.plans.length ? 'Навчальних планів у семестрі: ' + d.plans.length : 'У семестрі немає навчальних планів',
       count: d.plans.length ? 0 : 1, items: [],
-      action: { label: 'Заповнити', href: '/admin/study-plans/' } });
+      action: { label: 'Заповнити', href: '/admin/study-plans/?semester=' + sid } });
 
     {
       var per = plansPerGroup(d);
@@ -91,7 +91,7 @@
       add({ id: 'groups-without-plan', severity: noPlan.length ? 'warn' : 'ok',
         title: noPlan.length ? 'Груп без навчального плану: ' + noPlan.length : 'Усі групи мають навчальний план',
         items: noPlan.map(function (g) { return { id: g.id, label: g.name }; }),
-        action: { label: 'Заповнити', href: '/admin/groups/?filter=no-plan' } });
+        action: { label: 'Заповнити', href: '/admin/groups/?filter=no-plan&semester=' + sid } });
     }
 
     {
@@ -116,7 +116,7 @@
       add({ id: 'teacher-not-on-subject', severity: mismatch.length ? 'warn' : 'ok',
         title: mismatch.length ? 'Викладач у плані не веде цей предмет: ' + mismatch.length : 'Викладачі в планах ведуть свої предмети',
         items: mismatch.map(function (p) { return { id: p.id, label: planLabel(p) + ' — ' + (p.teacher_name || '') }; }),
-        action: { label: 'Плани', href: '/admin/study-plans/' } });
+        action: { label: 'Плани', href: '/admin/study-plans/?semester=' + sid } });
     }
 
     var taught = {};

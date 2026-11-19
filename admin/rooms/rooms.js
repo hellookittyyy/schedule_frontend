@@ -10,12 +10,7 @@
   // Live filter list: master-detail re-evaluates `filters()` on each render.
   var filterList = [{ id: 'all', label: 'Усі', test: function () { return true; } }];
 
-  function plural(n, one, few, many) {
-    var m10 = n % 10, m100 = n % 100;
-    if (m10 === 1 && m100 !== 11) return one;
-    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-    return many;
-  }
+  var plural = UI.pluralForm;
   function errText(err, fb) { return MasterDetail.errorText(err, fb); }
   function list(x) { return (x && x.results) || x || []; }
   function typeOf(r) { return r.room_type_details || null; }

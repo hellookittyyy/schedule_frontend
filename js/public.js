@@ -37,25 +37,45 @@
 
   /* ---------- data ---------- */
   function list(data) { return (data && data.results) || data || []; }
-  function streamNamesOf(groupId) {
+  function streamsOf(groupId) {
     return streams.filter(function (s) {
       var ids = (s.groups || []).concat((s.groups_details || []).map(function (g) { return g.id; }));
       return ids.some(function (id) { return String(id) === String(groupId); });
-    }).map(function (s) { return s.name; });
+    });
   }
-  // streamExtra: params only for the unfiltered stream request (e.g. a date_to bound)
-  function lessonsQuery(extra, streamExtra) {
+  // Study-plan ids of the group's streams (lessons carry study_plan id, but only the stream's name).
+  var streamPlanCache = {};
+  function streamPlanIds(groupId) {
+    var key = String(groupId);
+    if (!streamPlanCache[key]) {
+      var ss = streamsOf(groupId);
+      streamPlanCache[key] = Promise.all(ss.map(function (s) {
+        return apiRequest('/study_plans/?stream=' + encodeURIComponent(s.id)).then(list);
+      })).then(function (r) {
+        var ids = {};
+        r.forEach(function (ps) { ps.forEach(function (p) { ids[p.id] = true; }); });
+        return ids;
+      });
+      streamPlanCache[key].catch(function () { delete streamPlanCache[key]; });
+    }
+    return streamPlanCache[key];
+  }
+  function lessonsQuery(extra) {
     var p = new URLSearchParams(), base = new URLSearchParams();
     Object.keys(extra).forEach(function (k) { base.append(k, extra[k]); });
     if (cur.type === 'g') p.append('group_id', cur.id); else p.append('teacher_name', cur.name);
     base.forEach(function (v, k) { p.append(k, v); });
-    Object.keys(streamExtra || {}).forEach(function (k) { base.append(k, streamExtra[k]); });
     var reqs = [apiRequest('/lessons/?' + p.toString()).then(list)];
-    // group_id matches only the plan's own group and the backend has no stream filter: stream lessons are filtered here
-    var names = cur.type === 'g' ? streamNamesOf(cur.id) : [];
-    if (names.length) reqs.push(apiRequest('/lessons/?' + base.toString()).then(function (d) {
-      return list(d).filter(function (l) { return plan(l).stream && names.indexOf(plan(l).stream) !== -1; });
-    }));
+    // group_id matches only the plan's own group and the backend has no stream filter:
+    // stream lessons come from the unfiltered request, kept by the streams' plan ids.
+    if (cur.type === 'g' && streamsOf(cur.id).length) {
+      reqs.push(streamPlanIds(cur.id).then(function (ids) {
+        if (!Object.keys(ids).length) return [];
+        return apiRequest('/lessons/?' + base.toString()).then(function (d) {
+          return list(d).filter(function (l) { return ids[l.study_plan]; });
+        });
+      }));
+    }
     return Promise.all(reqs).then(function (r) {
       var seen = {}, ls = [];
       r.forEach(function (part) { part.forEach(function (l) { if (!seen[l.id]) { seen[l.id] = true; ls.push(l); } }); });
@@ -214,19 +234,25 @@
       UI.state($('lessons'), 'error', { text: (err && err.message) || 'Не вдалося завантажити розклад', actionLabel: 'Спробувати ще', onAction: loadWeek });
     });
   }
+  // Both requests share one window; it widens (2 weeks → 2 months → half a year) until a lesson is found.
+  var UP_WINDOWS = [14, 60, 183];
   function loadUpcoming() {
     var my = ++upReq;
     upcoming = [];
     renderNowNext();
-    // only the unfiltered stream request is bounded (14 days); the group/teacher one stays open-ended
     var today = new Date();
-    lessonsQuery({ date_from: iso(today) }, { date_to: iso(addDays(today, 14)) }).then(function (ls) {
-      if (my !== upReq) return;
-      var now = new Date();
-      upcoming = ls.filter(function (l) { return endOf(l) > now; });
-      renderNowNext();
-      if (weekState === 'ok') renderLessons();
-    }).catch(function () { /* now/next stay hidden; the list shows its own error */ });
+    function tryWindow(i) {
+      return lessonsQuery({ date_from: iso(today), date_to: iso(addDays(today, UP_WINDOWS[i])) }).then(function (ls) {
+        if (my !== upReq) return;
+        var now = new Date();
+        var found = ls.filter(function (l) { return endOf(l) > now; });
+        if (!found.length && i + 1 < UP_WINDOWS.length) return tryWindow(i + 1);
+        upcoming = found;
+        renderNowNext();
+        if (weekState === 'ok') renderLessons();
+      });
+    }
+    tryWindow(0).catch(function () { /* now/next stay hidden; the list shows its own error */ });
   }
 
   function lessonsOn(i) { var d = iso(addDays(weekStart, i)); return weekLessons.filter(function (l) { return slot(l).date === d; }); }
@@ -250,7 +276,7 @@
   function lessonRow(l, todayIso, now) {
     var s = slot(l), p = plan(l), cls = 'lesson';
     if (s.date === todayIso) { if (endOf(l) <= now) cls += ' is-past'; else if (startOf(l) <= now) cls += ' is-now'; }
-    return '<div class="' + cls + '"><div class="l-time"><b>' + esc(hm(s.start_time)) + '</b><span>' + esc(hm(s.end_time)) + '</span></div>' +
+    return '<div class="' + cls + '"' + (s.date === todayIso ? ' data-start="' + startOf(l).getTime() + '" data-end="' + endOf(l).getTime() + '"' : '') + '><div class="l-time"><b>' + esc(hm(s.start_time)) + '</b><span>' + esc(hm(s.end_time)) + '</span></div>' +
       '<div class="l-body"><div class="l-title">' + esc(p.subject || '') + '</div><div class="l-meta">' +
       (s.period_number ? esc(s.period_number + ' пара') + (metaLine(l) ? ' · ' : '') : '') + metaLine(l) + '</div></div>' + typeBadge(p.class_type) + '</div>';
   }
@@ -259,7 +285,8 @@
     ls.forEach(function (l, k) {
       var prev = ls[k - 1];
       if (prev && (slot(l).period_number || 0) - (slot(prev).period_number || 0) > 1 && startOf(l) > endOf(prev)) {
-        out += '<div class="lesson is-gap' + (slot(l).date === todayIso && startOf(l) <= now ? ' is-past' : '') + '"><div class="l-time">' +
+        out += '<div class="lesson is-gap' + (slot(l).date === todayIso && startOf(l) <= now ? ' is-past' : '') + '"' +
+          (slot(l).date === todayIso ? ' data-gap-end="' + startOf(l).getTime() + '"' : '') + '><div class="l-time">' +
           esc(hm(slot(prev).end_time)) + '</div><div>Вікно до ' + esc(hm(slot(l).start_time)) + '</div></div>';
       }
       out += lessonRow(l, todayIso, now);
@@ -268,8 +295,10 @@
   }
   function headFor(i) { return '<div class="lessons-head">' + DW_FULL[i] + ', ' + dateLong(addDays(weekStart, i)) + '</div>'; }
 
+  var renderedDay = null;
   function renderLessons() {
     var box = $('lessons');
+    renderedDay = iso(new Date());
     if (view === 'day') {
       var ls = lessonsOn(dayIdx);
       if (ls.length) { box.innerHTML = headFor(dayIdx) + dayRows(ls); return; }
@@ -340,10 +369,23 @@
         typeBadge(plan(nextL).class_type) + (metaLine(nextL) ? '<span class="muted sm">' + metaLine(nextL) + '</span>' : '');
     }
   }
+  // Only today's rows change with time: flip their past/now classes instead of rebuilding the list.
+  function tickLessons() {
+    if (renderedDay !== iso(new Date())) { renderLessons(); return; } // past midnight: «today» moved
+    var now = Date.now();
+    Array.prototype.forEach.call($('lessons').querySelectorAll('.lesson[data-gap-end]'), function (el) {
+      el.classList.toggle('is-past', +el.getAttribute('data-gap-end') <= now);
+    });
+    Array.prototype.forEach.call($('lessons').querySelectorAll('.lesson[data-start]'), function (el) {
+      var past = +el.getAttribute('data-end') <= now;
+      el.classList.toggle('is-past', past);
+      el.classList.toggle('is-now', !past && +el.getAttribute('data-start') <= now);
+    });
+  }
   setInterval(function () {
     if (!cur) return;
     renderNowNext();
-    if (weekState === 'ok' && iso(mondayOf(new Date())) === iso(weekStart)) renderLessons();
+    if (weekState === 'ok' && iso(mondayOf(new Date())) === iso(weekStart)) tickLessons();
   }, 30000);
 
   /* ---------- share ---------- */

@@ -21,10 +21,7 @@
   var draftSeq = 0;
   var md;
 
-  function plural(n, one, few, many) {
-    var m10 = n % 10, m100 = n % 100;
-    return n + ' ' + (m10 === 1 && m100 !== 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many);
-  }
+  var plural = UI.plural;
   function byName(a, b) { return String(a.name || '').localeCompare(String(b.name || ''), 'uk', { numeric: true }); }
   function find(arr, id) { return arr.find(function (x) { return String(x.id) === String(id); }); }
   function keyOf(p) { return p.group ? 'g' + p.group : p.stream ? 's' + p.stream : null; }

@@ -176,16 +176,7 @@
     return '<div class="card"><div class="card-head"><h2 class="card-title">Налаштування генерації слотів</h2></div>' + body + '</div>';
   }
 
-  function errText(err) {
-    var d = err && err.data;
-    if (d && typeof d === 'object') {
-      if (d.detail) return d.detail;
-      if (d.error) return d.error;
-      var k = Object.keys(d)[0];
-      if (k) return k + ': ' + [].concat(d[k]).join(' ');
-    }
-    return (err && err.message) || 'невідома помилка';
-  }
+  function errText(err) { return UI.errorText(err, 'невідома помилка'); }
 
   window.SemCalendar = { mount: mount, errText: errText, fmtDate: fmtDate, DAY_UK: DAY_UK };
 })();

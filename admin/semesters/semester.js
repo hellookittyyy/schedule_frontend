@@ -59,10 +59,7 @@
   function fmtShort(s) {
     return new Date(s + 'T00:00:00').toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
-  function plural(n, one, few, many) {
-    var m10 = n % 10, m100 = n % 100;
-    return n + ' ' + (m10 === 1 && m100 !== 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many);
-  }
+  var plural = UI.plural;
 
   /* ---------- semester list ---------- */
   function renderList() {
@@ -185,15 +182,30 @@
     go('id=' + encodeURIComponent(st.sem.id) + (view === 'calendar' ? '&view=calendar' : ''));
   }
 
+  // {total, locked}. The current semester's total comes from /stats/, so only locked lessons are
+  // listed; other semesters have no count endpoint and still need the full lesson list.
+  function lessonCounts(id) {
+    var q = '/lessons/?semester=' + encodeURIComponent(id);
+    var sem = st.semesters.find(function (s) { return String(s.id) === String(id); });
+    if (sem && sem.is_current) {
+      return Promise.all([apiRequest('/stats/'), apiRequest(q + '&is_locked=true')]).then(function (r) {
+        return { total: (r[0] && r[0].classes_scheduled) || 0, locked: (r[1] || []).length };
+      });
+    }
+    return apiRequest(q).then(function (ls) {
+      return { total: ls.length, locked: ls.filter(function (l) { return l.is_locked; }).length };
+    });
+  }
+
   function loadSemesterData(id, force) {
     if (force) Checks.invalidate(id);
     return Promise.all([
       Checks.run(id, { includeOk: true }), Checks.data(id),
-      apiRequest('/lessons/?semester=' + encodeURIComponent(id)),
+      lessonCounts(id),
       apiRequest('/semester_constraints/?semester=' + encodeURIComponent(id))
     ]).then(function (r) {
       st.checks = r[0]; st.data = r[1];
-      st.lessons = { total: r[2].length, locked: r[2].filter(function (l) { return l.is_locked; }).length };
+      st.lessons = r[2];
       st.constraints = r[3].length;
     });
   }
@@ -230,9 +242,9 @@
       { name: 'Ресурси', done: !!resOk, meta: plural(d.rooms.length, 'аудиторія', 'аудиторії', 'аудиторій') + ' · ' +
         plural(d.teachers.length, 'викладач', 'викладачі', 'викладачів'), view: 'overview', req: true },
       { name: 'Плани', done: d.plans.length > 0 && g.ready === g.total, meta: d.plans.length ? g.ready + ' з ' + g.total + ' груп' : 'немає планів',
-        href: '/admin/study-plans/', req: true },
+        href: '/admin/study-plans/?semester=' + encodeURIComponent(st.sem.id), req: true },
       { name: 'Обмеження', done: st.constraints > 0, meta: st.constraints ? plural(st.constraints, 'обмеження', 'обмеження', 'обмежень') : 'не задано',
-        href: '/admin/constraints/' },
+        href: '/admin/constraints/?semester=' + encodeURIComponent(st.sem.id) },
       { name: 'Генерація', done: st.lessons.total > 0, meta: st.lessons.total ? plural(st.lessons.total, 'заняття', 'заняття', 'занять')
         : blocks ? 'блокерів: ' + blocks : 'не запускали', view: 'overview', req: true }
     ];
@@ -303,7 +315,7 @@
         return '<div class="grp-row"><span class="g">' + esc(gr.name) + '</span>' +
           (n ? '<span class="muted num">' + esc(plural(n, 'план', 'плани', 'планів')) + '</span>' : '<span class="t-err">немає планів</span>') + '</div>';
       }).join('') +
-      '<div class="form-actions"><a class="btn btn-sm" href="/admin/study-plans/">' + ic('clipboard') + 'Навчальні плани</a></div>';
+      '<div class="form-actions"><a class="btn btn-sm" href="/admin/study-plans/?semester=' + encodeURIComponent(st.sem.id) + '">' + ic('clipboard') + 'Навчальні плани</a></div>';
   }
 
   /* ---------- «Календар» step ---------- */

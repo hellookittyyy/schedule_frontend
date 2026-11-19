@@ -9,10 +9,7 @@
   var DAY = 864e5;
   var HOW_KEY = 'home.howDismissed';
 
-  function plural(n, one, few, many) {
-    var m10 = n % 10, m100 = n % 100;
-    return n + ' ' + (m10 === 1 && m100 !== 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many);
-  }
+  var plural = UI.plural;
   function parseDate(s) { return new Date(s + 'T00:00:00'); }
   function today0() { var t = new Date(); t.setHours(0, 0, 0, 0); return t; }
   function daysBetween(a, b) { return Math.round((b - a) / DAY); }
@@ -22,7 +19,7 @@
     if (n === 0) return 'сьогодні';
     return n > 0 ? 'через ' + plural(n, 'день', 'дні', 'днів') : plural(-n, 'день', 'дні', 'днів') + ' тому';
   }
-  function errText(e) { return (e && e.data && (e.data.detail || e.data.error)) || (e && e.message) || 'помилка мережі'; }
+  function errText(e) { return UI.errorText(e, 'помилка мережі'); }
 
   // Week of the semester for today, or null outside its dates.
   function weekInfo(sem) {
@@ -98,10 +95,11 @@
       if (!sem) return renderNoSemester(body);
       return Promise.all([
         Checks.run(sem.id, { includeOk: true }), Checks.data(sem.id),
-        apiRequest('/lessons/?semester=' + encodeURIComponent(sem.id)),
         apiRequest('/semester_constraints/?semester=' + encodeURIComponent(sem.id))
       ]).then(function (x) {
-        render(body, { sem: sem, stats: r[1] || {}, checks: x[0], data: x[1], lessons: x[2].length, constraints: x[3].length });
+        // /stats/ counts the current semester's lessons: no need to download them.
+        var stats = r[1] || {};
+        render(body, { sem: sem, stats: stats, checks: x[0], data: x[1], lessons: stats.classes_scheduled || 0, constraints: x[2].length });
       });
     }).catch(function (err) {
       UI.state(body, 'error', { text: 'Не вдалося завантажити дані: ' + errText(err), actionLabel: 'Спробувати ще', onAction: load });
@@ -130,9 +128,9 @@
           meta: d.slots.length ? plural(d.slots.length, 'слот', 'слоти', 'слотів') : 'немає слотів' },
         { id: 'resources', name: 'Ресурси', done: !!resOk, req: true, href: semHref,
           meta: plural(d.rooms.length, 'аудиторія', 'аудиторії', 'аудиторій') + ' · ' + plural(d.teachers.length, 'викладач', 'викладачі', 'викладачів') },
-        { id: 'plans', name: 'Плани', done: d.plans.length > 0 && ready === d.groups.length, req: true, href: '/admin/study-plans/',
+        { id: 'plans', name: 'Плани', done: d.plans.length > 0 && ready === d.groups.length, req: true, href: '/admin/study-plans/?semester=' + encodeURIComponent(m.sem.id),
           meta: d.plans.length ? ready + ' з ' + d.groups.length + ' груп' : 'немає планів' },
-        { id: 'constraints', name: 'Обмеження', done: m.constraints > 0, href: '/admin/constraints/',
+        { id: 'constraints', name: 'Обмеження', done: m.constraints > 0, href: '/admin/constraints/?semester=' + encodeURIComponent(m.sem.id),
           meta: m.constraints ? plural(m.constraints, 'обмеження', 'обмеження', 'обмежень') : 'не задано' },
         { id: 'generation', name: 'Генерація', done: m.lessons > 0, req: true, href: semHref,
           meta: m.lessons ? plural(m.lessons, 'заняття', 'заняття', 'занять') : blocks ? 'блокерів: ' + blocks : 'не запускали' }

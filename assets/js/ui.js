@@ -338,6 +338,33 @@
     };
   }
 
-  window.UI = { toast: toast, confirmInline: confirmInline, drawer: drawer, state: state, dnd: dnd, escapeHtml: escapeHtml };
+  /* ---------- Text helpers ---------- */
+  // Ukrainian plural form: pluralForm(3, 'пара', 'пари', 'пар') → 'пари'; plural(...) → '3 пари'.
+  function pluralForm(n, one, few, many) {
+    var m10 = Math.abs(n) % 10, m100 = Math.abs(n) % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+    return many;
+  }
+  function plural(n, one, few, many) { return n + ' ' + pluralForm(n, one, few, many); }
+
+  // Readable message from an apiRequest error (DRF detail / error / first field error).
+  function errorText(err, fallback) {
+    var d = err && err.data;
+    if (d && typeof d === 'object') {
+      if (d.detail) return String(d.detail);
+      if (d.error) return String(d.error);
+      var keys = Object.keys(d);
+      for (var i = 0; i < keys.length; i++) {
+        var v = d[keys[i]];
+        if (Array.isArray(v) && v.length) return String(v[0]);
+        if (typeof v === 'string') return v;
+      }
+    }
+    return (err && err.message) || fallback || 'Сталася помилка';
+  }
+
+  window.UI = { toast: toast, confirmInline: confirmInline, drawer: drawer, state: state, dnd: dnd, escapeHtml: escapeHtml,
+    plural: plural, pluralForm: pluralForm, errorText: errorText };
 
 })();

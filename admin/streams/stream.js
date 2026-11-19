@@ -8,12 +8,7 @@
   var allGroups = [];
   var md;
 
-  function plural(n, one, few, many) {
-    var m10 = n % 10, m100 = n % 100;
-    if (m10 === 1 && m100 !== 11) return one;
-    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-    return many;
-  }
+  var plural = UI.pluralForm;
   function groupsOf(s) { return s.groups_details || []; }
   function byName(a, b) { return String(a.name || '').localeCompare(String(b.name || ''), 'uk', { numeric: true }); }
   function total(s) { return groupsOf(s).reduce(function (n, g) { return n + (g.amount || 0); }, 0); }

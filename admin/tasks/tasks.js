@@ -211,10 +211,7 @@
       { subject_id: Number(pair.subject), action: action });
   }
 
-  function errText(err, fallback) {
-    var d = err && err.data;
-    return (d && (d.error || d.detail)) || fallback;
-  }
+  function errText(err, fallback) { return UI.errorText(err, fallback); }
 
   function applyFix(panel, btn) {
     var hit = findItem(panel.getAttribute('data-fix'), panel.getAttribute('data-item'));

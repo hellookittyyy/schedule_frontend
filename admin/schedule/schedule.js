@@ -406,35 +406,75 @@ function openLesson(id) {
 }
 
 /* ---------- generation ---------- */
-function askGenerate() {
+// Same rules as the semester page: blocked by preflight blockers, one run at a time.
+let generating = false;
+
+function plural(n, one, few, many) { return UI.plural(n, one, few, many); }
+
+async function askGenerate() {
     if (!currentSemesterId) { UI.toast('Оберіть семестр', { type: 'warn' }); return; }
-    const sem = semesters.find(s => String(s.id) === String(currentSemesterId));
+    if (generating) return;
+    const semId = currentSemesterId;
+    const btn = $('btnGenerate');
+    if (btn) btn.disabled = true;
+    let checks = null;
+    try {
+        checks = await Checks.run(semId, { force: true });
+    } catch (error) {
+        UI.toast('Не вдалося перевірити семестр перед генерацією: ' + UI.errorText(error), { type: 'err' });
+    } finally {
+        if (btn && !generating) btn.disabled = false;
+    }
+    if (!checks || semId !== currentSemesterId) return;
+    const blocks = checks.filter(c => c.severity === 'block');
+    if (blocks.length) {
+        UI.toast('Генерацію заблоковано: ' + blocks.map(c => c.title).join('; '), {
+            type: 'err', timeout: 10000,
+            action: { label: 'Відкрити семестр', onClick: () => { location.href = '/admin/semesters/?id=' + encodeURIComponent(semId); } }
+        });
+        return;
+    }
+    const sem = semesters.find(s => String(s.id) === String(semId));
+    const total = lessons.length, locked = lessons.filter(l => l.is_locked).length;
+    const warning = total
+        ? 'Буде видалено ' + plural(total - locked, 'незаблоковане заняття', 'незаблоковані заняття', 'незаблокованих занять') +
+          (sem ? ' семестру «' + sem.name + '»' : '') + ', і розклад буде складено заново.' +
+          (locked ? ' Заблоковані заняття (' + locked + ') залишаться.' : '')
+        : 'Розклад семестру' + (sem ? ' «' + sem.name + '»' : '') + ' буде складено з навчальних планів.';
     UI.confirmInline($('genConfirm'), {
-        warning: `Поточний розклад семестру${sem ? ' «' + sem.name + '»' : ''} буде перезаписано.`,
+        warning: warning,
         question: 'Запустити генерацію?',
         yes: 'Згенерувати',
         no: 'Скасувати',
-        onYes: () => { runGeneration(); }
+        onYes: () => runGeneration(semId)
     });
 }
 
-async function runGeneration() {
+async function runGeneration(semId) {
+    if (generating) return;
+    generating = true;
+    const btn = $('btnGenerate');
+    if (btn) { btn.disabled = true; btn.classList.add('is-busy'); }
     const loader = $('generationLoader');
     const logBox = $('generationLog');
     loader.classList.add('is-open');
     logBox.textContent = 'Запуск алгоритму…';
     try {
-        const data = await apiRequest('/generate-schedule/', 'POST', { semester_id: currentSemesterId });
+        const data = await apiRequest('/generate-schedule/', 'POST', { semester_id: semId });
         if (!data.success) throw new Error(data.error || 'Невідома помилка');
         logBox.textContent = data.logs ? data.logs.join('\n') : 'Готово';
-        setTimeout(() => {
-            loader.classList.remove('is-open');
-            loadSchedule(currentSemesterId);
-            UI.toast(`Генерацію завершено. Створено: ${data.created}`, { type: 'ok' });
-        }, 1000);
+        Checks.invalidate(semId);
+        await new Promise(r => setTimeout(r, 1000));
+        loader.classList.remove('is-open');
+        if (String(semId) === String(currentSemesterId)) loadSchedule(semId);
+        UI.toast(`Генерацію завершено. Створено: ${data.created}`, { type: 'ok' });
     } catch (error) {
         logBox.textContent += `\nПомилка: ${error.message}`;
         UI.toast('Помилка генерації', { type: 'err' });
-        setTimeout(() => loader.classList.remove('is-open'), 3000);
+        await new Promise(r => setTimeout(r, 3000));
+        loader.classList.remove('is-open');
+    } finally {
+        generating = false;
+        if (btn) { btn.disabled = false; btn.classList.remove('is-busy'); }
     }
 }

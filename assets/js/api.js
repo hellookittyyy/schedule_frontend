@@ -31,10 +31,22 @@ async function apiRequest(endpoint, method = 'GET', body = null) {
     }
 
     if (response.status === 204) return true;
-    const data = await response.json();
+    // A proxy error (502 text/plain) or an empty body is not JSON: keep the status either way.
+    const text = await response.text();
+    let data = null;
+    if (text) {
+        try { data = JSON.parse(text); } catch (e) {
+            if (response.ok) {
+                const error = new Error('Сервер повернув некоректну відповідь');
+                error.status = response.status;
+                error.data = null;
+                throw error;
+            }
+        }
+    }
 
     if (!response.ok) {
-        const error = new Error(data.detail || 'Сталася помилка');
+        const error = new Error((data && data.detail) || `Помилка сервера (${response.status})`);
         error.status = response.status; // Важливо для обробки 409 Conflict
         error.data = data;
         throw error;
