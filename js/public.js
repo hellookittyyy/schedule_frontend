@@ -216,7 +216,9 @@
     var my = ++upReq;
     upcoming = [];
     renderNowNext();
-    lessonsQuery({ date_from: iso(new Date()) }).then(function (ls) {
+    // bounded to 14 days: the unfiltered stream request must not be open-ended
+    var today = new Date();
+    lessonsQuery({ date_from: iso(today), date_to: iso(addDays(today, 14)) }).then(function (ls) {
       if (my !== upReq) return;
       var now = new Date();
       upcoming = ls.filter(function (l) { return endOf(l) > now; });
