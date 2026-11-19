@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="light" data-palette="slate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 15 — Сланець · експерименти</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="look.css">
+<link rel="stylesheet" href="graphite.css">
+<link rel="stylesheet" href="ink-palettes.css">
+<link rel="stylesheet" href="slate-lab.css">
+<link rel="stylesheet" href="color-lab.css">
+<style>
+/* 14 · ЧОРНИЛО — форми й типографіка варіанту 12, кольори — з ink-palettes.css */
+html[data-theme]{
+  --font:'Commissioner',system-ui,sans-serif;
+  --radius:12px; --radius-sm:8px; --btn-radius:8px; --pill:6px; --card-border:1px solid var(--line); --pad:22px; --gap:16px;
+  --title-size:28px; --title-weight:600; --h2-size:15px;
+}
+.nav{border-right:0;padding:26px 14px}
+.brand-mark{background:var(--paper);color:var(--ink);border-radius:8px}
+.nav-label{text-transform:none;letter-spacing:0;font-size:12px;font-weight:400;color:color-mix(in srgb,var(--nav-text) 72%,transparent)}
+.nav-item{border-radius:8px;font-weight:400}
+.nav-item.is-active{box-shadow:inset 2px 0 0 var(--nav-mark)}
+.nav-count{color:var(--nav-text);opacity:.7}
+.nav-user .avatar{background:var(--nav-active-bg);color:var(--paper)}
+.main{padding:28px 32px 90px}
+.hero{border:1px solid var(--line)}
+.hero-value{font-weight:600}
+.btn-hero{border-color:var(--line);color:var(--text)}
+.kpi-value{font-weight:500}
+.seg{background:var(--surface-2)}
+.seg button.is-on{box-shadow:0 0 0 1px var(--line)}
+.task-group-label{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500}
+.task-fix{background:var(--surface-2)}
+.fix-opt.is-sel{border-color:var(--line)}
+.chip.is-on{background:var(--accent);border-color:var(--accent)}
+.md-row.is-active{background:var(--surface-2);box-shadow:inset 2px 0 0 var(--accent)}
+.section-title{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500;color:var(--text)}
+.step.is-cur{background:var(--surface-2)}
+.now-card{border:1px solid var(--line)}
+.now-title{font-weight:600}
+.day.is-active{background:var(--accent);border-color:var(--accent)}
+.lessons-head{text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);font-weight:500}
+.pal select{all:unset;cursor:pointer;color:#f4efe6;padding:8px 26px 8px 12px;border-radius:7px;background:rgba(255,255,255,.08) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cfc8bc' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") right 8px center/12px no-repeat}
+.pal select option{color:#111}
+</style>
+</head>
+<body>
+<script src="theme.js"></script>
+<script src="shell.js"></script>
+<script>
+const PALETTES = [['slate','Сланець'],['mono','Моно'],['copper','Мідь'],['triad','Тріада'],['depth','Глибина'],['tri-dusk','Тріада · Сутінки'],['tri-forest','Тріада · Ліс'],['tri-sea','Тріада · Море'],['tri-clay','Тріада · Глина'],['tri-retro','Тріада · Ретро'],['x-vivid','Соковитий'],['x-airy','Повітря'],['x-jewel','Коштовності'],['x-mosaic','Мозаїка'],['x-duo','Дуотон']];
+(function () {
+  const root = document.documentElement;
+  const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const set = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  root.dataset.palette = new URLSearchParams(location.search).get('p') || get('slate-palette') || 'slate';
+  initTheme('slate-theme');
+  renderApp({ name: '15 · Сланець', calm: true });
+  mountThemeToggle('slate-theme');
+  const pal = document.querySelector('.pal');
+  pal.insertAdjacentHTML('afterbegin', `<select aria-label="Палітра">${PALETTES.map(([k, n]) => `<option value="${k}" ${k === root.dataset.palette ? 'selected' : ''}>${n}</option>`).join('')}</select>`);
+  pal.querySelector('select').onchange = (e) => { root.dataset.palette = e.target.value; set('slate-palette', e.target.value); };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 11 — Тон</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="look.css">
+<link rel="stylesheet" href="graphite.css">
+<style>
+/* 11 · ТОН — жодної рамки: області розділені лише відтінком тла.
+   Найм'якший для очей варіант: немає ліній, які «ріжуть» простір. */
+html[data-theme]{
+  --font:'Golos Text',system-ui,sans-serif;
+  --radius:16px; --radius-sm:10px; --btn-radius:10px; --pill:8px; --card-border:0; --pad:22px; --gap:14px;
+  --title-size:26px; --title-weight:600; --h2-size:15px;
+}
+html[data-theme="light"]{ --bg:#ece7de; --surface:#f8f5ef; --surface-2:#efebe3; --nav-bg:#e5dfd4; --nav-active-bg:#f8f5ef;
+  --hero-bg:#e3dccf; --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:color-mix(in srgb,var(--text) 12%,transparent); --hero-bar:var(--accent); }
+html[data-theme="dark"] { --bg:#1b1916; --surface:#24211d; --surface-2:#2c2924; --nav-bg:#201e1a; --nav-active-bg:#2c2924; }
+.nav{border-right:0;padding:24px 14px}
+.brand-mark{border-radius:10px}
+.nav-label{text-transform:none;letter-spacing:0;font-size:12px;font-weight:400}
+.nav-item{border-radius:10px;font-weight:400}
+.nav-item.is-active{font-weight:500}
+.nav-user{border-top:0;background:var(--nav-active-bg);border-radius:12px;padding:10px;margin-top:10px}
+.main{padding:24px 26px 90px}
+.search,.icon-btn{border:0;background:var(--surface)}
+.btn{border:0;background:var(--surface-2)}
+.btn:hover{background:color-mix(in srgb,var(--text) 8%,var(--surface-2))}
+.btn-primary{background:var(--accent)}
+.btn-primary:hover{background:var(--accent)}
+.btn-hero{background:color-mix(in srgb,var(--hero-text) 12%,transparent)}
+.hero-value{font-weight:500}.kpi-value{font-weight:500}
+.seg{background:var(--surface-2)}
+.seg button.is-on{background:var(--surface);box-shadow:none}
+.task-group-label{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500}
+.task{border-top:0;padding:12px;margin:0 -12px;border-radius:12px}
+.task:hover{background:var(--surface-2)}
+.task-fix{background:var(--surface-2)}
+.fix-opt.is-sel{border-color:transparent}
+.sev-ico{border-radius:10px}
+.today-row{border-top:0;padding:10px 0}
+.chip{border:0;background:var(--surface-2)}
+.chip.is-on{background:var(--accent)}
+.md-list{border-right:0;background:color-mix(in srgb,var(--surface-2) 55%,var(--surface));padding-top:16px}
+.md-search{background:var(--surface);margin:0 12px}
+.md-filters{padding:12px}
+.md-row{border-top:0;border-radius:10px;margin:0 8px 2px;padding:10px}
+.md-row:hover{background:var(--surface-2)}
+.md-row.is-active{background:var(--surface);box-shadow:none}
+.section-title{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500;color:var(--text)}
+.fields{border-top:0}
+.f-label,.f-value{border-bottom:1px solid var(--surface-2)}
+.avail .c{border:0;border-radius:6px}
+.steps{background:transparent;gap:4px;display:grid}
+.step{background:var(--surface);border-right:0;border-radius:12px}
+.step.is-cur{background:var(--surface-2)}
+.step.is-cur::after{display:none}
+.step-n{border:0;background:var(--surface-2)}
+.step.is-cur .step-n{background:var(--accent)}
+.check{border-top:0;padding:9px 0}
+.grp-row .progress{background:var(--surface-2)}
+.empty-ico{background:var(--surface-2)}
+.pub-search{border:0;background:var(--surface)}
+.now-card{border-radius:20px}
+.next-card,.lessons{border:0}
+.day{border:0;border-radius:12px}
+.day.is-active{background:var(--accent)}
+.lesson{border-top:1px solid var(--surface-2)}
+.lessons-head{text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);font-weight:500}
+</style>
+</head>
+<body>
+<script src="theme.js"></script>
+<script src="shell.js"></script>
+<script>initTheme('v11-theme'); renderApp({ name: '11 · Тон', calm: true }); mountThemeToggle('v11-theme');</script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept 03 — Soft Gradient</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== Concept 03: Soft Gradient — evolution of the current purple brand (glass, rounded, friendly) ===== */
+:root{
+  --g1:#667eea; --g2:#764ba2; --grad:linear-gradient(135deg,var(--g1),var(--g2));
+  --bg:#f3f1fb; --glass:rgba(255,255,255,.72); --glass-border:rgba(255,255,255,.9);
+  --text:#2a2540; --muted:#7b7593; --line:#e9e5f5;
+  --lec:#5b6cf0; --pr:#1fb58f; --lab:#f29a3a; --danger:#ef5a6f;
+  --r:20px; --shadow:0 10px 40px rgba(102,126,234,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;color:var(--text);font-size:14px;min-height:100vh;
+  background:radial-gradient(900px 500px at 0% 0%,#dcd6ff 0,transparent 60%),radial-gradient(800px 500px at 100% 0%,#f5d9ff 0,transparent 55%),var(--bg)}
+button,input,select{font:inherit;color:inherit}
+.switch{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:4px;padding:5px;border-radius:99px;background:rgba(42,37,64,.88);backdrop-filter:blur(12px)}
+.switch button{border:0;background:none;color:#cfc9ea;padding:8px 16px;border-radius:99px;cursor:pointer;font-weight:600}
+.switch button.on{background:#fff;color:var(--text)}
+.screen{display:none}.screen.on{display:block}
+.glass{background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:var(--r);box-shadow:var(--shadow)}
+.btn{border:0;height:44px;padding:0 20px;border-radius:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .15s,box-shadow .15s}
+.btn.grad{background:var(--grad);color:#fff;box-shadow:0 8px 20px rgba(118,75,162,.3)}
+.btn.grad:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(118,75,162,.38)}
+.btn.soft{background:#fff;color:var(--text);box-shadow:0 2px 8px rgba(42,37,64,.06)}
+.btn.sm{height:34px;padding:0 12px;border-radius:10px;font-size:13px}
+.inp{height:48px;border-radius:14px;border:2px solid transparent;background:#fff;padding:0 16px;width:100%;outline:none;box-shadow:0 2px 8px rgba(42,37,64,.05);transition:border-color .2s}
+.inp:focus{border-color:var(--g1)}
+.lbl{font-size:12px;font-weight:700;color:var(--muted);margin:0 0 6px 4px;display:block}
+
+/* ===== Student ===== */
+.hero{max-width:1040px;margin:0 auto;padding:48px 20px 120px}
+.hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:34px}
+.logo{display:flex;gap:10px;align-items:center;font-weight:800;font-size:18px}
+.logo i{width:38px;height:38px;border-radius:12px;background:var(--grad);display:grid;place-items:center;color:#fff;font-style:normal}
+.hero h1{font-size:44px;line-height:1.1;letter-spacing:-.03em;font-weight:800}
+.hero h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .lead{color:var(--muted);font-size:16px;margin:10px 0 28px}
+.search{padding:18px;display:grid;grid-template-columns:auto 1fr 1fr 1fr auto;gap:12px;align-items:end}
+.mode{display:flex;flex-direction:column;gap:6px}
+.mode .seg{display:flex;background:#efecfa;border-radius:14px;padding:4px;height:48px}
+.mode .seg button{border:0;background:none;border-radius:10px;padding:0 14px;cursor:pointer;font-weight:700;color:var(--muted)}
+.mode .seg button.on{background:#fff;color:var(--g2);box-shadow:0 2px 8px rgba(42,37,64,.08)}
+.recent{display:flex;gap:8px;margin:14px 4px 0;color:var(--muted);font-size:13px;align-items:center;flex-wrap:wrap}
+.recent span{background:#fff;border-radius:99px;padding:4px 12px;cursor:pointer;font-weight:600;color:var(--text)}
+.now-next{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin:30px 0}
+.now{background:var(--grad);color:#fff;border-radius:var(--r);padding:24px;position:relative;overflow:hidden;box-shadow:0 18px 40px rgba(118,75,162,.3)}
+.now::after{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12)}
+.now small{font-weight:700;opacity:.85;text-transform:uppercase;letter-spacing:.1em;font-size:11px;display:flex;align-items:center;gap:8px}
+.now small i{width:8px;height:8px;border-radius:50%;background:#7dffcf;box-shadow:0 0 0 4px rgba(125,255,207,.25);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(125,255,207,0)}}
+.now h2{font-size:26px;margin:10px 0 6px;letter-spacing:-.02em}
+.now .meta{display:flex;gap:18px;opacity:.9;flex-wrap:wrap}
+.now .bar{height:6px;border-radius:99px;background:rgba(255,255,255,.25);margin-top:20px}
+.now .bar i{display:block;height:100%;width:45%;background:#fff;border-radius:99px}
+.next{padding:22px}
+.next small{color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:11px}
+.next h3{font-size:19px;margin:10px 0 4px}
+.next .in{display:inline-block;margin-top:14px;background:#efecfa;color:var(--g2);font-weight:700;border-radius:99px;padding:5px 12px}
+.days{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px}
+.dbtn{min-width:76px;padding:10px 0;border-radius:16px;border:0;background:#fff;cursor:pointer;text-align:center;box-shadow:0 2px 8px rgba(42,37,64,.05)}
+.dbtn small{display:block;color:var(--muted);font-weight:600;font-size:12px}
+.dbtn b{font-size:20px}
+.dbtn.on{background:var(--grad);color:#fff}.dbtn.on small{color:#e9e3ff}
+.dbtn .dots{display:flex;gap:3px;justify-content:center;margin-top:4px}
+.dbtn .dots i{width:5px;height:5px;border-radius:50%;background:var(--g1)}
+.dbtn.on .dots i{background:#fff}
+.timeline{padding:12px 22px}
+.tl{display:grid;grid-template-columns:70px 26px 1fr;gap:12px;padding:12px 0}
+.tl .tm{text-align:right;font-weight:700}
+.tl .tm small{display:block;color:var(--muted);font-weight:500}
+.tl .rail{display:flex;flex-direction:column;align-items:center}
+.tl .rail i{width:14px;height:14px;border-radius:50%;border:3px solid;background:#fff;margin-top:3px}
+.tl .rail span{flex:1;width:2px;background:var(--line);margin-top:4px}
+.tl:last-child .rail span{display:none}
+.tl .box{background:#fff;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;gap:12px;align-items:center;transition:transform .15s}
+.tl .box:hover{transform:translateX(4px)}
+.tl .box h4{font-size:16px;margin-bottom:4px}
+.tl .box p{color:var(--muted);font-size:13px}
+.type{font-size:12px;font-weight:700;padding:5px 12px;border-radius:99px;color:#fff;white-space:nowrap}
+.break{color:var(--muted);font-size:12px;padding-left:108px;font-style:italic}
+
+/* ===== Admin ===== */
+.adm{display:grid;grid-template-columns:250px 1fr;gap:20px;padding:20px 20px 100px;min-height:100vh}
+.sidebar{padding:20px 14px;position:sticky;top:20px;height:calc(100vh - 40px);display:flex;flex-direction:column}
+.sidebar .logo{padding:0 8px 22px}
+.side-item{display:flex;gap:12px;align-items:center;padding:11px 14px;border-radius:14px;color:var(--muted);font-weight:600;cursor:pointer;transition:background .15s}
+.side-item:hover{background:rgba(102,126,234,.08);color:var(--text)}
+.side-item.on{background:var(--grad);color:#fff;box-shadow:0 8px 18px rgba(118,75,162,.25)}
+.side-foot{margin-top:auto;display:flex;gap:10px;align-items:center;padding:12px;border-radius:14px;background:#fff}
+.av{width:36px;height:36px;border-radius:12px;background:var(--grad);color:#fff;display:grid;place-items:center;font-weight:800}
+.adm-main{display:flex;flex-direction:column;gap:18px;min-width:0}
+.adm-head{display:flex;align-items:center;gap:12px;padding:18px 22px}
+.adm-head h1{font-size:24px;letter-spacing:-.02em}
+.adm-head p{color:var(--muted);font-size:13px}
+.spacer{flex:1}
+.filters{display:flex;gap:12px;padding:16px 22px;flex-wrap:wrap;align-items:end}
+.filters .f{min-width:180px}
+.filters .inp{height:42px}
+.plans{padding:8px}
+.plan{display:grid;grid-template-columns:44px 1.5fr 1fr 1fr 110px 90px;gap:14px;align-items:center;padding:12px 14px;border-radius:14px}
+.plan:hover{background:rgba(255,255,255,.8)}
+.plan.head{color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.plan.head:hover{background:none}
+.pic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:20px}
+.plan b{display:block}.plan small{color:var(--muted)}
+.hours{display:flex;gap:4px;flex-wrap:wrap}
+.hours span{font-size:12px;font-weight:700;border-radius:8px;padding:3px 8px}
+.target{display:inline-flex;align-items:center;gap:6px;font-weight:600;background:#fff;border-radius:99px;padding:4px 12px;font-size:13px}
+.ring{width:42px;height:42px}
+.act{display:flex;gap:6px;justify-content:flex-end}
+.act button{width:34px;height:34px;border-radius:10px;border:0;background:#fff;cursor:pointer}
+.act button:hover{background:#efecfa}
+.modal-bg{position:fixed;inset:0;background:rgba(42,37,64,.35);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:70;padding:16px}
+.modal-bg.show{display:flex}
+.modal{width:560px;max-width:100%;padding:28px;background:rgba(255,255,255,.92);animation:pop .25s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{opacity:0;transform:scale(.94) translateY(10px)}}
+.modal h2{font-size:22px;margin-bottom:4px}.modal>p{color:var(--muted);margin-bottom:20px}
+.target-sel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.target-sel label{background:#fff;border:2px solid transparent;border-radius:16px;padding:14px;text-align:center;cursor:pointer;font-weight:700}
+.target-sel label span{display:block;font-size:24px;margin-bottom:4px}
+.target-sel input{display:none}
+.target-sel label:has(input:checked){border-color:var(--g1);background:#f4f2ff;color:var(--g2)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+.stepper{display:flex;align-items:center;background:#fff;border-radius:14px;height:48px;overflow:hidden;box-shadow:0 2px 8px rgba(42,37,64,.05)}
+.stepper button{width:40px;height:100%;border:0;background:none;cursor:pointer;font-size:18px;color:var(--g2)}
+.stepper input{flex:1;border:0;text-align:center;font-weight:800;outline:none;width:30px}
+.modal .foot{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.toast{position:fixed;top:20px;right:20px;z-index:90;display:flex;gap:12px;align-items:center;padding:14px 18px;border-radius:16px;background:#fff;box-shadow:0 14px 40px rgba(42,37,64,.18);transform:translateX(130%);transition:transform .35s cubic-bezier(.2,1.2,.4,1);border-left:5px solid var(--pr)}
+.toast.show{transform:none}
+
+/* ===== Builder ===== */
+.bld{padding:20px 20px 100px;max-width:1400px;margin:0 auto}
+.bld-grid{display:grid;grid-template-columns:1fr 300px;gap:18px;margin-top:18px}
+.wk{display:grid;grid-template-columns:80px repeat(6,1fr);gap:8px;padding:16px}
+.wk .h{text-align:center;font-weight:800;color:var(--muted);padding:6px 0}
+.wk .t{font-weight:700;font-size:12px;color:var(--muted);display:flex;flex-direction:column;justify-content:center;align-items:center;background:#fff;border-radius:14px}
+.wk .c{min-height:84px;border-radius:14px;background:rgba(255,255,255,.55);border:2px dashed transparent;padding:4px;transition:all .15s}
+.wk .c.over{border-color:var(--g1);background:#f4f2ff}
+.lc{border-radius:12px;padding:8px 10px;color:#fff;font-size:12px;cursor:grab;margin-bottom:4px;box-shadow:0 6px 14px rgba(42,37,64,.12)}
+.lc b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc.lec{background:linear-gradient(135deg,#6a7cf5,#5b6cf0)}.lc.pr{background:linear-gradient(135deg,#2cc9a0,#1fb58f)}.lc.lab{background:linear-gradient(135deg,#f7ad55,#f29a3a)}
+.lc.dragging{opacity:.4}
+.binbox{padding:18px;align-self:start;position:sticky;top:20px}
+.binbox h3{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.binbox h3 span{background:var(--danger);color:#fff;border-radius:99px;padding:2px 10px;font-size:12px}
+.loader{position:fixed;inset:0;background:rgba(243,241,251,.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:80}
+.loader.show{display:flex}
+.loader .glass{width:440px;max-width:calc(100% - 32px);padding:30px;text-align:center}
+.orb{width:70px;height:70px;border-radius:50%;margin:0 auto 14px;background:conic-gradient(var(--g1),var(--g2),var(--g1));animation:spin 1.2s linear infinite;-webkit-mask:radial-gradient(circle,transparent 26px,#000 27px);mask:radial-gradient(circle,transparent 26px,#000 27px)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.log{background:#1d1933;color:#9effd6;font-family:Consolas,monospace;font-size:12px;text-align:left;border-radius:14px;padding:12px;height:130px;overflow:auto;margin-top:16px}
+@media (max-width:900px){.search,.now-next{grid-template-columns:1fr}.adm{grid-template-columns:1fr}.sidebar{display:none}.plan{grid-template-columns:44px 1fr 90px}.plan>:nth-child(3),.plan>:nth-child(4),.plan>:nth-child(5){display:none}.bld-grid{grid-template-columns:1fr}.wk{overflow-x:auto;grid-template-columns:60px repeat(6,minmax(110px,1fr))}.hero h1{font-size:32px}}
+</style>
+</head>
+<body>
+<nav class="switch" id="sw">
+  <button class="on" data-s="student">🎓 Студенту</button><button data-s="admin">🛠 Навч. плани</button><button data-s="builder">🧩 Конструктор</button>
+</nav>
+
+<!-- ============ STUDENT ============ -->
+<section class="screen on" id="s-student">
+  <div class="hero">
+    <div class="hero-top"><div class="logo"><i>📚</i>Розклад <span style="font-weight:500;color:var(--muted);font-size:13px">Concept 03 · Soft Gradient</span></div><button class="btn soft sm">Увійти</button></div>
+    <h1>Твій розклад —<br><span>завжди під рукою</span></h1>
+    <p class="lead">Обери групу або викладача, і ми покажемо пари на тиждень.</p>
+    <div class="search glass">
+      <div class="mode"><span class="lbl">Шукати за</span><div class="seg" id="mode"><button class="on">Групою</button><button>Викладачем</button></div></div>
+      <div><span class="lbl">Група</span><input class="inp" value="КН-31"></div>
+      <div><span class="lbl">Курс</span><select class="inp"><option>3 курс</option><option>4 курс</option></select></div>
+      <div><span class="lbl">Тиждень</span><input class="inp" type="week" value="2026-W47"></div>
+      <button class="btn grad" style="height:48px">Показати →</button>
+    </div>
+    <div class="recent">Нещодавні: <span>КН-31</span><span>Мельник А. В.</span><span>ПІ-21</span></div>
+
+    <div class="now-next">
+      <div class="now"><small><i></i>Зараз · 3 пара</small><h2>Алгоритми та структури даних</h2>
+        <div class="meta"><span>🕐 11:40 – 13:00</span><span>📍 ауд. 207</span><span>👤 Бондар С. М.</span></div>
+        <div class="bar"><i></i></div></div>
+      <div class="next glass"><small>Далі · через 30 хв</small><h3>Вища математика</h3><p style="color:var(--muted)">Лекція · Ауд. 1 · Шевченко Т. І.</p><span class="in">13:30 – 14:50</span></div>
+    </div>
+
+    <div class="days" id="days"></div>
+    <div class="timeline glass" id="tl"></div>
+  </div>
+</section>
+
+<!-- ============ ADMIN ============ -->
+<section class="screen" id="s-admin">
+  <div class="adm">
+    <aside class="sidebar glass" id="sb"></aside>
+    <main class="adm-main">
+      <div class="adm-head glass"><div><h1>Навчальні плани</h1><p>Осінній семестр 2026 · 64 плани · 1 284 год.</p></div><div class="spacer"></div><button class="btn soft sm">⇩ Excel</button><button class="btn grad" onclick="openM()">+ Додати план</button></div>
+      <div class="filters glass">
+        <div class="f"><span class="lbl">📅 Семестр</span><select class="inp"><option>Осінній 2026</option></select></div>
+        <div class="f"><span class="lbl">👥 Група</span><select class="inp"><option>Усі групи</option><option>КН-31</option></select></div>
+        <div class="f"><span class="lbl">👨‍🏫 Викладач</span><select class="inp"><option>Усі викладачі</option></select></div>
+        <button class="btn soft sm" style="height:42px">↺ Скинути</button>
+      </div>
+      <div class="plans glass" id="plans"></div>
+    </main>
+  </div>
+</section>
+
+<!-- ============ BUILDER ============ -->
+<section class="screen" id="s-builder">
+  <div class="bld">
+    <div class="adm-head glass"><div><h1>Конструктор розкладу</h1><p>КН-31 · тиждень 12 · перетягуйте картки між слотами</p></div><div class="spacer"></div>
+      <select class="inp" style="width:200px;height:44px"><option>Осінній семестр 2026</option></select>
+      <button class="btn grad" onclick="gen()">⚡ Авто-генерація</button></div>
+    <div class="bld-grid">
+      <div class="wk glass" id="wk"></div>
+      <aside class="binbox glass"><h3>Нерозподілені <span id="bc">0</span></h3><div id="bin" class="dz" data-bin="1" style="min-height:140px"></div></aside>
+    </div>
+  </div>
+</section>
+
+<div class="modal-bg" id="mbg" onclick="if(event.target===this)closeM()">
+  <div class="modal glass">
+    <h2>Новий навчальний план</h2><p>Скільки годин предмета отримає група, потік або курс.</p>
+    <div class="target-sel">
+      <label><input type="radio" name="tg" checked><span>👥</span>Група</label>
+      <label><input type="radio" name="tg"><span>🌊</span>Потік</label>
+      <label><input type="radio" name="tg"><span>📚</span>Курс</label>
+    </div>
+    <div class="g2"><div><span class="lbl">Предмет</span><select class="inp"><option>Бази даних</option></select></div><div><span class="lbl">Група</span><select class="inp"><option>КН-31</option></select></div></div>
+    <div class="g3">
+      <div><span class="lbl">Лекції, год</span><div class="stepper"><button>−</button><input value="32"><button>+</button></div></div>
+      <div><span class="lbl">Практики, год</span><div class="stepper"><button>−</button><input value="16"><button>+</button></div></div>
+      <div><span class="lbl">Лаби, год</span><div class="stepper"><button>−</button><input value="16"><button>+</button></div></div>
+    </div>
+    <div><span class="lbl">Викладач</span><select class="inp"><option>Коваленко Олена Петрівна</option></select></div>
+    <div class="foot"><button class="btn soft" onclick="closeM()">Скасувати</button><button class="btn grad" onclick="closeM();toast('План збережено')">Зберегти план</button></div>
+  </div>
+</div>
+<div class="toast" id="toastEl">✅ <span id="toastTxt"></span></div>
+<div class="loader" id="loader"><div class="glass"><div class="orb"></div><h3>Генерація розкладу…</h3><p style="color:var(--muted)">Алгоритм шукає оптимальні варіанти</p><div class="log" id="log"></div></div></div>
+
+<script>
+const PAIRS=[['08:30','09:50'],['10:00','11:20'],['11:40','13:00'],['13:30','14:50'],['15:00','16:20']];
+const SHORT=['Пн','Вт','Ср','Чт','Пт','Сб'];
+const TYPE={lec:'Лекція',pr:'Практика',lab:'Лабораторна'};
+const LESSONS=[
+ {d:0,p:0,s:'Бази даних',t:'lec',tc:'Коваленко О. П.',r:'301'},{d:0,p:1,s:'Бази даних',t:'lab',tc:'Мельник А. В.',r:'Лаб-2'},{d:0,p:2,s:'Вища математика',t:'pr',tc:'Шевченко Т. І.',r:'214'},
+ {d:1,p:1,s:'Алгоритми та структури даних',t:'lec',tc:'Бондар С. М.',r:'Ауд. 1'},{d:1,p:2,s:'Англійська мова',t:'pr',tc:'Ткаченко Л. О.',r:'118'},
+ {d:2,p:0,s:'Операційні системи',t:'lec',tc:'Кравчук Д. Ю.',r:'301'},{d:2,p:1,s:'Веб-технології',t:'lab',tc:'Мельник А. В.',r:'Лаб-4'},{d:2,p:2,s:'Веб-технології',t:'lab',tc:'Мельник А. В.',r:'Лаб-4'},
+ {d:3,p:1,s:'Компʼютерні мережі',t:'lec',tc:'Олійник В. Р.',r:'Ауд. 2'},{d:3,p:2,s:'Алгоритми та структури даних',t:'pr',tc:'Бондар С. М.',r:'207'},{d:3,p:3,s:'Вища математика',t:'lec',tc:'Шевченко Т. І.',r:'Ауд. 1'},
+ {d:4,p:0,s:'Операційні системи',t:'lab',tc:'Кравчук Д. Ю.',r:'Лаб-1'},{d:4,p:1,s:'Компʼютерні мережі',t:'pr',tc:'Олійник В. Р.',r:'210'},
+];
+const UNSCHEDULED=[{s:'Англійська мова',t:'pr',r:'118'},{s:'Фізичне виховання',t:'pr',r:'Спортзал'},{s:'Бази даних',t:'pr',r:'305'}];
+const TODAY=3;
+
+sw.onclick=e=>{const b=e.target.closest('button');if(!b)return;sw.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+b.dataset.s));scrollTo(0,0)};
+mode.onclick=e=>{const b=e.target.closest('button');if(b)mode.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))};
+
+/* day strip + timeline */
+let cur=TODAY;
+function renderDays(){days.innerHTML=SHORT.map((d,i)=>`<button class="dbtn ${i===cur?'on':''}" data-i="${i}"><small>${d}</small><b>${16+i}</b><div class="dots">${LESSONS.filter(l=>l.d===i).map(()=>'<i></i>').join('')}</div></button>`).join('')}
+function renderTl(){const ls=LESSONS.filter(l=>l.d===cur).sort((a,b)=>a.p-b.p);
+  if(!ls.length){tl.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:42px">🌤</div><b>Вихідний!</b><p>Пар цього дня немає</p></div>';return}
+  tl.innerHTML=ls.map((l,i)=>{const gap=i&&l.p-ls[i-1].p>1?`<div class="break">☕ Вікно ${l.p-ls[i-1].p-1} пара</div>`:'';
+   return gap+`<div class="tl"><div class="tm">${PAIRS[l.p][0]}<small>${PAIRS[l.p][1]}</small></div><div class="rail"><i style="border-color:var(--${l.t})"></i><span></span></div>
+   <div class="box"><div><h4>${l.s}</h4><p>👤 ${l.tc} &nbsp; 📍 ауд. ${l.r}</p></div><span class="type" style="background:var(--${l.t})">${TYPE[l.t]}</span></div></div>`}).join('')}
+days.onclick=e=>{const b=e.target.closest('.dbtn');if(b){cur=+b.dataset.i;renderDays();renderTl()}};
+renderDays();renderTl();
+
+/* admin */
+sb.innerHTML=`<div class="logo"><i>📚</i>Розклад</div>`+[['📊','Дашборд'],['📅','Графік навчання'],['🗓','Розклад'],['📑','Навчальні плани',1],['📖','Предмети'],['👨‍🏫','Викладачі'],['👥','Групи'],['🌊','Потоки'],['🏛','Аудиторії'],['🚫','Обмеження']].map(([i,n,on])=>`<div class="side-item ${on?'on':''}">${i} ${n}</div>`).join('')+`<div class="side-foot"><span class="av">А</span><div><b>Адміністратор</b><br><small style="color:var(--muted)">деканат ФКН</small></div></div>`;
+const PLANS=[['💾','Бази даних','Коваленко О. П.','👥 КН-31',[32,16,16],.8],['🧮','Вища математика','Шевченко Т. І.','📚 2 курс',[48,32,0],.6],['🌐','Веб-технології','Мельник А. В.','🌊 Потік КН-3',[16,0,32],1],['🧠','Алгоритми','Бондар С. М.','👥 КН-32',[32,32,0],.35],['🖥','Операційні системи','Кравчук Д. Ю.','👥 ПІ-21',[32,0,16],.5]];
+const bg=['#e9ecff','#ddf7ef','#fff0de','#f6e6ff','#e6f4ff'];
+plans.innerHTML=`<div class="plan head"><span></span><span>Предмет</span><span>Для кого</span><span>Години (Л/П/Лаб)</span><span>Розподілено</span><span></span></div>`+PLANS.map((p,i)=>{const C=2*Math.PI*16;return `<div class="plan"><span class="pic" style="background:${bg[i]}">${p[0]}</span><div><b>${p[1]}</b><small>${p[2]}</small></div><span><span class="target">${p[3]}</span></span>
+ <div class="hours"><span style="background:#e9ecff;color:var(--lec)">${p[4][0]}</span><span style="background:#ddf7ef;color:var(--pr)">${p[4][1]}</span><span style="background:#fff0de;color:var(--lab)">${p[4][2]}</span></div>
+ <svg class="ring" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="#ece8f8" stroke-width="5"/><circle cx="20" cy="20" r="16" fill="none" stroke="url(#gr)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C*p[5]} ${C}" transform="rotate(-90 20 20)"/><text x="20" y="24" text-anchor="middle" font-size="10" font-weight="700" fill="#2a2540">${Math.round(p[5]*100)}</text><defs><linearGradient id="gr"><stop stop-color="#667eea"/><stop offset="1" stop-color="#764ba2"/></linearGradient></defs></svg>
+ <div class="act"><button onclick="openM()" title="Редагувати">✏️</button><button title="Видалити">🗑</button></div></div>`}).join('');
+function openM(){mbg.classList.add('show')}function closeM(){mbg.classList.remove('show')}
+document.querySelectorAll('.stepper').forEach(s=>{const[m,i,p]=s.children;m.onclick=()=>i.value=Math.max(0,+i.value-2);p.onclick=()=>i.value=+i.value+2});
+function toast(t){toastTxt.textContent=t;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),2800)}
+
+/* builder */
+const card=l=>`<div class="lc ${l.t}" draggable="true"><b>${l.s}</b>${TYPE[l.t]} · ${l.r}</div>`;
+let h='<div></div>'+SHORT.map(d=>`<div class="h">${d}</div>`).join('');
+PAIRS.forEach((p,pi)=>{h+=`<div class="t">${pi+1} пара<span style="font-weight:500">${p[0]}</span></div>`+SHORT.map((_,d)=>`<div class="c dz" data-d="${d}" data-p="${pi}"></div>`).join('')});
+wk.innerHTML=h;
+LESSONS.forEach(l=>wk.querySelector(`[data-d="${l.d}"][data-p="${l.p}"]`).insertAdjacentHTML('beforeend',card(l)));
+bin.innerHTML=UNSCHEDULED.map(card).join('');
+const upd=()=>bc.textContent=bin.children.length;upd();
+let dr=null;
+document.addEventListener('dragstart',e=>{if(e.target.classList?.contains('lc')){dr=e.target;dr.classList.add('dragging')}});
+document.addEventListener('dragend',()=>{dr?.classList.remove('dragging');dr=null});
+document.querySelectorAll('.dz').forEach(z=>{z.ondragover=e=>{e.preventDefault();z.classList.add('over')};z.ondragleave=()=>z.classList.remove('over');
+ z.ondrop=e=>{e.preventDefault();z.classList.remove('over');if(dr){z.appendChild(dr);upd();toast(z.dataset.bin?'Пару повернуто до нерозподілених':`Пару перенесено: ${SHORT[z.dataset.d]}, ${+z.dataset.p+1} пара`)}}});
+function gen(){loader.classList.add('show');log.textContent='';const lines=['> Ініціалізація…','> Завантажено 438 занять, 56 аудиторій','> Застосовано 12 обмежень','> Ітерація 1: 27 конфліктів','> Ітерація 2: 6 конфліктів','> Ітерація 3: 0 конфліктів ✓','> Збереження…'];
+ lines.forEach((l,i)=>setTimeout(()=>{log.textContent+=l+'\n';log.scrollTop=1e4;if(i===lines.length-1)setTimeout(()=>{loader.classList.remove('show');toast('Розклад згенеровано')},600)},i*450))}
+</script>
+</body>
+</html>

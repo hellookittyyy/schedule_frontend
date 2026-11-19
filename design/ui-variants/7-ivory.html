@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="uk" data-accent="graphite" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 7 — Ivory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="look.css">
+<style>
+/* 7 · IVORY — «Слонова кістка» з формами Mist, переглянута для комфорту очей.
+   Принципи:
+   · одна тепла температура скрізь (без холодних синіх елементів);
+   · темна тема — тепла темно-сіра, а не чорна; текст не чисто білий;
+   · кольори типів занять — землисті (слива / олива / теракота), не синій;
+   · другорядний текст ≥ 4.5:1 контрасту на своїй поверхні.
+   Акцент:  html[data-accent="graphite|sage|sepia"]   Тема: html[data-theme="light|dark"]   */
+
+/* ---------- спільна тепла основа (світла) ---------- */
+html[data-accent]{
+  --bg:#efebe3; --surface:#fbf9f5; --surface-2:#f4f0e9; --line:#ddd5c8; --text:#2a2723; --muted:#69645b; --faint:#9e978b;
+  --lec:#6d5a78; --pr:#5a6a35; --lab:#8f4e30;
+  --high:#ad4636; --mid:#a9792b; --ok:#5c6c37; --low:#968f84;
+  --hero-text:#faf7f1; --hero-muted:rgba(250,247,241,.66); --hero-track:rgba(250,247,241,.2);
+}
+/* ---------- акценти: світла тема ---------- */
+html[data-accent="graphite"]{ --accent:#3d3a35; --accent-ink:#faf7f1; --nav-bg:#e2dbcf; --nav-text:#3d3a35; --hero-bg:#3d3a35; --hero-bar:#e2dbcf; }
+html[data-accent="sage"]    { --accent:#4a5946; --accent-ink:#f8f9f4; --nav-bg:#dde0d3; --nav-text:#3b4738; --hero-bg:#4a5946; --hero-bar:#dde0d3; }
+html[data-accent="sepia"]   { --accent:#5b4637; --accent-ink:#fbf6ef; --nav-bg:#e5d8c7; --nav-text:#4a3a2e; --hero-bg:#5b4637; --hero-bar:#e5d8c7; }
+
+/* ---------- темна тема: тепла темно-сіра основа ---------- */
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#1f1d1a; --surface:#282521; --surface-2:#2f2c27; --line:#3b3732; --text:#e7e1d6; --muted:#aaa295; --faint:#7a7367;
+  --lec:#c3b1d1; --pr:#b9c58f; --lab:#e2a786;
+  --high:#e3907f; --mid:#dab26b; --ok:#b9c58f; --low:#8b8478;
+  --hero-text:#efe9df; --hero-muted:rgba(239,233,223,.62); --hero-track:rgba(239,233,223,.14);
+}
+html[data-accent="graphite"][data-theme="dark"]{ --accent:#d9cfbd; --accent-ink:#1f1d1a; --nav-bg:#24221e; --nav-text:#b4ac9f; --hero-bg:#37332d; --hero-bar:#d9cfbd; }
+html[data-accent="sage"][data-theme="dark"]    { --accent:#bccab0; --accent-ink:#1c1e1a; --nav-bg:#22241f; --nav-text:#a9b0a0; --hero-bg:#333a2f; --hero-bar:#bccab0;
+  --bg:#1d1e1a; --surface:#262823; --surface-2:#2d2f29; --line:#393c34; }
+html[data-accent="sepia"][data-theme="dark"]   { --accent:#dcc4a5; --accent-ink:#1f1b17; --nav-bg:#25201b; --nav-text:#b6a896; --hero-bg:#3b3129; --hero-bar:#dcc4a5;
+  --bg:#201c18; --surface:#29241f; --surface-2:#302a25; --line:#3e362f; }
+
+/* ---------- похідні токени ---------- */
+html[data-accent]{
+  --font:'Onest',system-ui,sans-serif;
+  --radius:20px; --radius-sm:10px; --btn-radius:10px; --card-border:1px solid var(--line);
+  --nav-strong:var(--text); --nav-active-bg:var(--surface); --nav-active-text:var(--text); --nav-line:color-mix(in srgb,var(--text) 12%,transparent);
+  --accent-soft:color-mix(in srgb,var(--accent) 10%,var(--surface));
+  --lec-soft:color-mix(in srgb,var(--lec) 13%,var(--surface)); --pr-soft:color-mix(in srgb,var(--pr) 14%,var(--surface)); --lab-soft:color-mix(in srgb,var(--lab) 13%,var(--surface));
+  --track:var(--surface-2); --bar:var(--accent);
+  --chip-bg:var(--nav-bg);
+  --btn-soft:color-mix(in srgb,var(--accent) 10%,var(--surface));
+  --row-active:color-mix(in srgb,var(--accent) 7%,var(--surface));
+  --main-bg:color-mix(in srgb,var(--bg) 45%,var(--surface));
+  --heat0:var(--surface-2);
+  --heat1:color-mix(in srgb,var(--accent) 20%,var(--surface-2));
+  --heat2:color-mix(in srgb,var(--accent) 42%,var(--surface-2));
+  --heat3:color-mix(in srgb,var(--accent) 68%,var(--surface-2));
+  --heat4:var(--accent);
+  --title-size:22px; --h2-size:12px; --h-transform:uppercase; --h-spacing:.04em;
+}
+html[data-theme="dark"]{
+  --nav-active-bg:color-mix(in srgb,var(--accent) 12%,var(--surface)); --nav-active-text:#f1ebe1; --nav-strong:var(--text);
+  --chip-bg:color-mix(in srgb,var(--accent) 18%,var(--surface));
+  --btn-soft:color-mix(in srgb,var(--accent) 12%,var(--surface));
+  --row-active:color-mix(in srgb,var(--accent) 9%,var(--surface));
+  --main-bg:var(--bg);
+  --heat1:color-mix(in srgb,var(--accent) 16%,var(--surface-2));
+  --heat2:color-mix(in srgb,var(--accent) 34%,var(--surface-2));
+  --heat3:color-mix(in srgb,var(--accent) 56%,var(--surface-2));
+  --heat4:color-mix(in srgb,var(--accent) 82%,var(--surface-2));
+}
+
+/* ---------- форми Mist ---------- */
+body{background:var(--bg);line-height:1.55;transition:background .2s,color .2s}
+html[data-theme="dark"] body{-webkit-font-smoothing:antialiased;font-weight:400}
+.app{margin:18px;border-radius:28px;overflow:hidden;border:1px solid var(--line);background:var(--main-bg);min-height:calc(100vh - 36px)}
+.nav{height:calc(100vh - 36px);top:18px;border-right:0;padding:26px 14px}
+html[data-theme="dark"] .nav{border-right:1px solid var(--line)}
+.brand-mark{border-radius:50%}
+.brand-name{text-transform:uppercase;letter-spacing:.08em;font-size:14px}
+.nav-label,.nav-count{color:var(--nav-text);opacity:.75}
+.nav-item{border-radius:12px}
+.nav-item.is-active{box-shadow:0 1px 0 rgba(0,0,0,.04)}
+.nav-user{border-top-color:var(--nav-line)}
+.avatar{background:var(--btn-soft);color:var(--accent)}
+.page-title{text-transform:uppercase;letter-spacing:.03em;font-weight:600}
+.crumbs{text-transform:lowercase}
+.btn{border-color:color-mix(in srgb,var(--accent) 70%,transparent);height:34px;font-size:13px;color:var(--text)}
+.btn-primary{border-color:var(--accent);color:var(--accent-ink)}
+.btn-ghost{background:var(--btn-soft);color:var(--accent)}
+.btn-sm{height:28px;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.btn-hero{border-color:var(--hero-track);color:var(--hero-text)}
+.search{border-radius:12px}
+.seg{background:transparent;gap:6px;padding:0}
+.seg button{border:1px solid color-mix(in srgb,var(--accent) 70%,transparent);background:transparent;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);padding:4px 10px;border-radius:8px}
+.seg button.is-on{background:var(--chip-bg);color:var(--accent);box-shadow:none}
+.kpi-label,.hero-label{text-transform:uppercase;font-size:11px;letter-spacing:.06em}
+.kpi-value{font-weight:500}
+.task{border-top-style:dashed}
+.chip{border-color:color-mix(in srgb,var(--accent) 60%,transparent);color:var(--accent);background:transparent}
+.chip.is-on{background:var(--chip-bg);color:var(--accent);border-color:var(--accent)}
+.md-row.is-active{background:var(--row-active);box-shadow:inset 3px 0 0 var(--accent)}
+.md-search{background:var(--surface);border:1px solid var(--line)}
+.step.is-cur{background:var(--row-active)}
+.step.is-cur .step-n,.step.is-done .step-n{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.badge{border-radius:8px}
+.tag,.badge-status{background:var(--chip-bg);color:var(--accent)}
+.day{border-radius:14px}
+.day.is-active{background:var(--chip-bg);border-color:var(--accent);color:var(--accent)}
+.now-card{border-radius:24px}
+.lesson.is-now .l-title::after{color:var(--accent)}
+.avail .c.off{background:repeating-linear-gradient(135deg,var(--line) 0 3px,var(--surface) 3px 7px)}
+.icon-btn .dot{background:var(--high)}
+
+/* ---------- перемикачі ---------- */
+.theme-btn .icon{width:17px;height:17px}
+.pal{position:fixed;left:50%;transform:translateX(-50%);bottom:62px;z-index:999;display:flex;gap:2px;padding:4px;border-radius:10px;background:rgba(28,26,23,.94);font:500 12px/1 system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.pal button{all:unset;cursor:pointer;color:#cfc8bc;padding:8px 11px;border-radius:7px;display:inline-flex;align-items:center;gap:6px}
+.pal button.on{background:#f4efe6;color:#1f1d1a}
+.pal i{width:10px;height:10px;border-radius:50%;display:inline-block;box-shadow:0 0 0 1px rgba(255,255,255,.25)}
+.pal .sep{width:1px;background:#3b3732;margin:4px 2px}
+.embed .pal{display:none}
+@media (max-width:980px){.pal{left:8px;right:8px;transform:none;overflow-x:auto}}
+</style>
+</head>
+<body>
+<script src="shell.js"></script>
+<script>
+(function () {
+  const root = document.documentElement;
+  const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const set = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const q = new URLSearchParams(location.search);
+  root.dataset.accent = q.get('a') || get('iv-accent') || 'graphite';
+  root.dataset.theme = q.get('t') || get('iv-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+  renderApp({ name: '7 · Ivory' });
+
+  const SUN = '<svg class="icon" viewBox="0 0 24 24"><path d="M12 17a5 5 0 100-10 5 5 0 000 10zM12 1.5v2M12 20.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M1.5 12h2M20.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg>';
+  const MOON = '<svg class="icon" viewBox="0 0 24 24"><path d="M20.5 13.2A8.5 8.5 0 1110.8 3.5a6.6 6.6 0 009.7 9.7z"/></svg>';
+  const btn = () => `<button class="icon-btn theme-btn" aria-label="Перемкнути тему"></button>`;
+  document.querySelectorAll('.topbar .search').forEach((s) => s.insertAdjacentHTML('afterend', btn()));
+  document.querySelector('.pub-head .btn').insertAdjacentHTML('beforebegin', btn());
+
+  const ACC = [['graphite', 'Графіт', '#3d3a35'], ['sage', 'Шавлія', '#4a5946'], ['sepia', 'Сепія', '#5b4637']];
+  document.body.insertAdjacentHTML('beforeend', `<div class="pal">${ACC.map(([k, n, c]) => `<button data-acc="${k}"><i style="background:${c}"></i>${n}</button>`).join('')}<span class="sep"></span><button data-th="light">Світла</button><button data-th="dark">Темна</button></div>`);
+
+  const sync = () => {
+    const dark = root.dataset.theme === 'dark';
+    document.querySelectorAll('.theme-btn').forEach((b) => { b.innerHTML = dark ? SUN : MOON; b.title = dark ? 'Світла тема' : 'Темна тема'; });
+    document.querySelectorAll('[data-acc]').forEach((b) => b.classList.toggle('on', b.dataset.acc === root.dataset.accent));
+    document.querySelectorAll('[data-th]').forEach((b) => b.classList.toggle('on', b.dataset.th === root.dataset.theme));
+  };
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.theme-btn')) { root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark'; set('iv-theme', root.dataset.theme); }
+    const a = e.target.closest('[data-acc]'); if (a) { root.dataset.accent = a.dataset.acc; set('iv-accent', a.dataset.acc); }
+    const t = e.target.closest('[data-th]'); if (t) { root.dataset.theme = t.dataset.th; set('iv-theme', t.dataset.th); }
+    sync();
+  });
+  sync();
+})();
+</script>
+</body>
+</html>

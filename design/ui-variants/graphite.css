@@ -1,0 +1,38 @@
+/* =====================================================================
+   Graphite on ivory — shared colour tokens for variants 9–13.
+   Light = warm ivory paper + graphite ink. Dark = warm slate, cream text.
+   Contrast: text ≈ 14:1 (light) / 12:1 (dark); muted text ≥ 4.5:1.
+   Variants override only shape / typography tokens.
+   ===================================================================== */
+html[data-theme]{
+  --bg:#f3efe7; --surface:#fbf9f5; --surface-2:#efeae1; --line:#e1dacd; --text:#2a2723; --muted:#69645b; --faint:#a19a8e;
+  --accent:#34312c; --accent-ink:#faf7f1; --accent-soft:#ebe6dc;
+  --lec:#6d5a78; --pr:#5a6a35; --lab:#8f4e30; --high:#ad4636; --mid:#a07526; --ok:#5a6a35; --low:#968f84;
+  --nav-bg:var(--surface); --nav-text:var(--muted); --nav-strong:var(--text); --nav-active-bg:var(--surface-2); --nav-active-text:var(--text); --nav-line:var(--line);
+  --lec-soft:color-mix(in srgb,var(--lec) 12%,var(--surface)); --pr-soft:color-mix(in srgb,var(--pr) 13%,var(--surface)); --lab-soft:color-mix(in srgb,var(--lab) 12%,var(--surface));
+  --track:var(--surface-2); --bar:var(--accent);
+  --hero-bg:var(--accent); --hero-text:var(--accent-ink); --hero-muted:color-mix(in srgb,var(--accent-ink) 62%,transparent);
+  --hero-track:color-mix(in srgb,var(--accent-ink) 18%,transparent); --hero-bar:var(--accent-ink);
+  --heat0:var(--surface-2); --heat1:color-mix(in srgb,var(--accent) 20%,var(--surface-2)); --heat2:color-mix(in srgb,var(--accent) 42%,var(--surface-2));
+  --heat3:color-mix(in srgb,var(--accent) 68%,var(--surface-2)); --heat4:var(--accent);
+  --h-transform:none; --h-spacing:-.015em;
+}
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#1f1d1a; --surface:#272420; --surface-2:#2f2b27; --line:#3a3631; --text:#e7e1d6; --muted:#aaa295; --faint:#7a7367;
+  --accent:#e2d9c8; --accent-ink:#1f1d1a; --accent-soft:#34302b;
+  --lec:#c3b1d1; --pr:#b9c58f; --lab:#e2a786; --high:#e3907f; --mid:#dab26b; --ok:#b9c58f; --low:#8b8478;
+  /* у темній темі «головна» картка не світиться — це втомлює очі */
+  --hero-bg:var(--surface-2); --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:var(--line); --hero-bar:var(--accent);
+}
+body{transition:background .2s,color .2s}
+.live{color:currentColor}
+html[data-theme="dark"] .icon-btn .dot{border-color:var(--surface)}
+
+/* prototype-only theme switcher */
+.theme-btn .icon{width:17px;height:17px}
+.pal{position:fixed;left:50%;transform:translateX(-50%);bottom:62px;z-index:999;display:flex;gap:2px;padding:4px;border-radius:10px;background:rgba(28,26,23,.94);font:500 12px/1 system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.pal button{all:unset;cursor:pointer;color:#cfc8bc;padding:8px 12px;border-radius:7px}
+.pal button.on{background:#f4efe6;color:#1f1d1a}
+.embed .pal{display:none}
+@media (max-width:980px){.pal{left:8px;transform:none}}

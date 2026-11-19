@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 2 — Graphite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="look.css">
+<style>
+/* 2 · GRAPHITE — монохром, білі картки без рамок, пігулки, одна чорна акцентна картка */
+:root{
+  --font:'Golos Text',system-ui,sans-serif;
+  --bg:#dedee1; --surface:#fff; --surface-2:#f1f1f2; --line:#ededee; --text:#141414; --muted:#6c6c72; --faint:#a3a3a8;
+  --accent:#141414; --accent-ink:#fff; --accent-soft:#efeff0;
+  --nav-active-bg:#f1f1f2;
+  --radius:22px; --radius-sm:12px; --btn-radius:999px; --card-border:0; --pad:22px;
+  --lec:#4b5d7a; --lec-soft:#e9edf3; --pr:#4a6b55; --pr-soft:#e7efe9; --lab:#7a6440; --lab-soft:#f2ede4;
+  --high:#c94a3f; --mid:#b98a2f; --low:#9a9aa0; --ok:#3f7a52;
+  --hero-bg:#141414; --hero-muted:rgba(255,255,255,.55); --hero-track:rgba(255,255,255,.16); --hero-bar:#fff;
+  --track:#ededee; --bar:#141414;
+  --heat0:#f1f1f2; --heat1:#dcdcde; --heat2:#b3b3b7; --heat3:#6c6c72; --heat4:#141414;
+  --title-size:28px; --title-weight:500; --h2-size:16px; --h-spacing:-.02em;
+}
+.app{margin:16px;border-radius:30px;overflow:hidden;background:#f3f3f4;min-height:calc(100vh - 32px)}
+.nav{background:#fff;border-right:0;height:calc(100vh - 32px);top:16px;padding:26px 14px}
+.brand-mark{border-radius:10px}
+.brand-name{font-size:19px;letter-spacing:-.03em}
+.nav-label{text-transform:none;letter-spacing:0;font-size:12px;font-weight:500}
+.nav-item{border-radius:12px;color:#3d3d42}
+.nav-item.is-active{font-weight:600}
+.nav-user{border-top:0;background:#141414;color:#fff;border-radius:16px;padding:12px;margin-top:12px}
+.nav-user .avatar{background:#3a3a3e;color:#fff}.nav-user-name{color:#fff}.nav-user-role{color:#9a9aa0}
+.main{padding:24px 28px}
+.search,.icon-btn{border:0;background:#fff}
+.search{border-radius:999px;width:260px}
+.avatar{background:#ececee}
+/* signature: окремі пігулки-перемикачі з сірим активним станом (Day / Week / Month) */
+.seg{background:transparent;gap:6px;padding:0}
+.seg button{background:#f1f1f2;border-radius:999px;padding:6px 14px}
+.seg button.is-on{background:#8a8a8f;color:#fff;box-shadow:none}
+.btn{border:0;background:#f1f1f2}
+.btn-primary{background:#141414}
+.btn-hero{background:#2a2a2c;color:#fff}
+.hero{position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;border:1px solid rgba(255,255,255,.08);box-shadow:0 0 0 30px rgba(255,255,255,.025)}
+.kpi-value{font-weight:600}
+.kpi-note::before{content:'↗ ';color:var(--ok)}
+.task{border-top-color:#f0f0f1}
+.sev-ico{border-radius:50%}
+.task-fix{background:#f6f6f7;border-radius:16px}
+.badge-status{background:#8a8a8f;color:#fff}
+.chip{border:0;background:#f1f1f2;color:#3d3d42}
+.chip.is-on{background:#141414}
+.md{background:#fff}
+.md-list{border-right-color:#f0f0f1;background:#fafafa}
+.md-row{border-top-color:#f0f0f1}
+.md-row.is-active{background:#fff;box-shadow:none;border-radius:14px;margin:0 8px;padding:10px 8px}
+.md-search{border-radius:999px;background:#fff}
+.fields,.f-label,.f-value{border-color:#f0f0f1}
+.avail .c{border-color:#ececee;border-radius:7px}
+.steps{background:#fff}
+.step{border-right-color:#f0f0f1}
+.step.is-cur{background:#141414;color:#fff}.step.is-cur .step-meta{color:#a3a3a8}.step.is-cur .step-n{background:#fff;color:#141414;border-color:#fff}.step.is-cur::after{display:none}
+.step.is-done .step-n{background:#8a8a8f;border-color:#8a8a8f}
+.check{border-top-color:#f0f0f1}
+/* public: денна смуга як вертикальні пігулки (як Thu 19 у референсі) */
+.day{border:0;background:transparent;border-radius:999px;padding:12px 0}
+.day.is-active{background:#8a8a8f;color:#fff}
+.pub-search{border-radius:999px;border:0}
+.lessons,.next-card{border:0}
+.lesson{border-top-color:#f0f0f1}
+.now-card{border-radius:26px}
+</style>
+</head>
+<body>
+<script src="shell.js"></script>
+<script>renderApp({ name: '2 · Graphite' })</script>
+</body>
+</html>

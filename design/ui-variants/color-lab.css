@@ -1,0 +1,162 @@
+/* =====================================================================
+   Colour lab — 5 experiments on different axes (loaded after slate-lab.css)
+   x-vivid   — high saturation, vivid accent with dark text
+   x-airy    — high key: light sidebar, white UI, one raspberry pop
+   x-jewel   — low key: stone page, deep jewel blocks with light text
+   x-mosaic  — many colours: each section / block has its own hue
+   x-duo     — two colours only: coloured terracotta sidebar + cream
+   ===================================================================== */
+
+/* ---------- shared tint usage for the x- family ---------- */
+html[data-palette^="x-"] .hero{border-color:transparent}
+html[data-palette^="x-"] .home-top .kpi{border-color:transparent}
+html[data-palette^="x-"] .home-top .kpi:nth-child(2){background:var(--tint-1)}
+html[data-palette^="x-"] .home-top .kpi:nth-child(3){background:var(--tint-2)}
+html[data-palette^="x-"] .home-top .kpi:nth-child(4){background:var(--tint-3)}
+html[data-palette^="x-"] .btn-hero{color:var(--hero-text);border-color:var(--hero-track)}
+html[data-palette^="x-"] .now-card{background:var(--tint-now);border-color:transparent;color:var(--text);
+  --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:color-mix(in srgb,var(--text) 12%,transparent); --hero-bar:var(--accent)}
+html[data-palette^="x-"] .next-card{background:var(--tint-next);border-color:transparent}
+html[data-palette^="x-"] .md-row.is-active{background:var(--tint-row)}
+html[data-palette^="x-"] .step.is-cur{background:var(--tint-row)}
+
+/* =================== 1 · СОКОВИТИЙ (насиченість) =================== */
+html[data-palette="x-vivid"]{ --ink:#1d1a17; --paper:#fbf7f0; --seed:#ff7a3d; }
+html[data-theme][data-palette="x-vivid"]{
+  --bg:#fbf7f0; --surface:#ffffff; --surface-2:#f4eee5; --line:#e8dfd2; --text:#1d1a17; --muted:#5f574e; --faint:#9b9186;
+  --accent:#ff7a3d; --accent-ink:#1d1a17; --nav-bg:#1d1a17; --nav-text:#b8afa5; --nav-strong:#fff; --nav-mark:#ff7a3d;
+  --lec:#5b3fc4; --pr:#2c7419; --lab:#b83e14; --high:#c43a2c; --mid:#9a6400; --ok:#2c7419; --low:#9b9186;
+  --tint-1:#ffd9c4; --tint-2:#ddf58f; --tint-3:#ddd2ff; --tint-now:#ddf58f; --tint-next:#ffe6d6; --tint-row:#fff0e6;
+  --hero-bg:#ff7a3d; --hero-text:#1d1a17; --hero-muted:rgba(29,26,23,.72); --hero-track:rgba(29,26,23,.16); --hero-bar:#1d1a17;
+}
+html[data-theme="dark"][data-palette="x-vivid"]{
+  --bg:#141210; --surface:#1c1a17; --surface-2:#25221e; --line:#302c27; --text:#f3ede5; --muted:#ada498; --faint:#776f65;
+  --accent:#ff8a52; --accent-ink:#141210; --nav-bg:#0d0c0b; --nav-text:#a39a90; --nav-mark:#ff8a52;
+  --lec:#b9a8ff; --pr:#a6dd6a; --lab:#ff9a6e; --high:#ff8070; --mid:#f2c050; --ok:#a6dd6a; --low:#776f65;
+  --tint-1:#3d2416; --tint-2:#2c3812; --tint-3:#2b2343; --tint-now:#2c3812; --tint-next:#3d2416; --tint-row:#2a201a;
+  --hero-bg:#ff8a52; --hero-text:#141210; --hero-muted:rgba(20,18,16,.72); --hero-track:rgba(20,18,16,.18); --hero-bar:#141210;
+}
+html[data-palette="x-vivid"] .hero-value{font-weight:700}
+html[data-palette="x-vivid"] .btn-primary{font-weight:600}
+
+/* =================== 2 · ПОВІТРЯ (висока яскравість) =================== */
+html[data-palette="x-airy"]{ --ink:#2a2a2e; --paper:#f7f6f3; --seed:#c2255c; }
+html[data-theme][data-palette="x-airy"]{
+  --bg:#f7f6f3; --surface:#ffffff; --surface-2:#f1f0ec; --line:#e7e5df; --text:#2a2a2e; --muted:#626268; --faint:#a2a2a7;
+  --accent:#c2255c; --accent-ink:#fff; --nav-bg:#ecebe6; --nav-text:#55555b; --nav-strong:#1f1f23; --nav-active-bg:#ffffff;
+  --nav-active-text:#1f1f23; --nav-line:#dddbd4; --nav-mark:#c2255c;
+  --lec:#6741a8; --pr:#256d42; --lab:#924f12; --high:#c2255c; --mid:#9a6400; --ok:#2b7a4b; --low:#a2a2a7;
+  --tint-1:#ffffff; --tint-2:#ffffff; --tint-3:#ffffff; --tint-now:#fbe7ee; --tint-next:#ffffff; --tint-row:#fbe7ee;
+  --hero-bg:#ffffff; --hero-text:#2a2a2e; --hero-muted:#626268; --hero-track:#f1f0ec; --hero-bar:#c2255c;
+}
+html[data-theme="dark"][data-palette="x-airy"]{
+  --bg:#2a2a2f; --surface:#323238; --surface-2:#3a3a40; --line:#44444b; --text:#ececef; --muted:#b4b4ba; --faint:#85858c;
+  --accent:#f0739b; --accent-ink:#2a2a2f; --nav-bg:#323238; --nav-text:#b4b4ba; --nav-strong:#fff; --nav-active-bg:#3e3e45;
+  --nav-active-text:#fff; --nav-line:#44444b; --nav-mark:#f0739b;
+  --lec:#c9b0f2; --pr:#8fd0a8; --lab:#f0b27a; --high:#f0739b; --mid:#f2c050; --ok:#8fd0a8; --low:#85858c;
+  --tint-1:#323238; --tint-2:#323238; --tint-3:#323238; --tint-now:#43303a; --tint-next:#323238; --tint-row:#43303a;
+  --hero-bg:#323238; --hero-text:#ececef; --hero-muted:#b4b4ba; --hero-track:#44444b; --hero-bar:#f0739b;
+}
+html[data-palette="x-airy"] .nav{border-right:1px solid var(--nav-line)}
+html[data-palette="x-airy"] .brand-mark{background:var(--accent);color:var(--accent-ink)}
+html[data-palette="x-airy"] .nav-user .avatar{background:var(--surface);color:var(--text)}
+html[data-palette="x-airy"] .nav-item.is-active{box-shadow:inset 2px 0 0 var(--accent),0 1px 2px rgba(0,0,0,.04)}
+html[data-palette="x-airy"] .hero,html[data-palette="x-airy"] .home-top .kpi{border-color:var(--line)}
+html[data-palette="x-airy"] .hero-value{color:var(--accent)}
+html[data-palette="x-airy"] .card{box-shadow:0 1px 2px rgba(20,20,30,.04)}
+
+/* =================== 3 · КОШТОВНОСТІ (низька яскравість, глибокі тони) =================== */
+html[data-palette="x-jewel"]{ --ink:#1a2b24; --paper:#f1ece3; --seed:#0f6b52; }
+html[data-theme][data-palette="x-jewel"]{
+  --bg:#d9d5cc; --surface:#ebe8e1; --surface-2:#e1ddd4; --line:#cdc8bd; --text:#1e1c1a; --muted:#4f4a43; --faint:#7f796f;
+  --accent:#0f6b52; --accent-ink:#fff; --nav-bg:#1a2b24; --nav-text:#a6b8ae; --nav-strong:#f1ece3; --nav-mark:#e0b341;
+  --lec:#0f6b52; --pr:#7a2238; --lab:#74500a; --high:#9c2a2a; --mid:#74500a; --ok:#0f6b52; --low:#7f796f;
+  --tint-1:#7a2238; --tint-2:#65440b; --tint-3:#0c4c3b; --tint-now:#d0e3d8; --tint-next:#e8dcc2; --tint-row:#d6e2da;
+  --hero-bg:#1a2b24; --hero-text:#f1ece3; --hero-muted:rgba(241,236,227,.68); --hero-track:rgba(241,236,227,.16); --hero-bar:#e0b341;
+}
+html[data-theme="dark"][data-palette="x-jewel"]{
+  --bg:#121614; --surface:#1a1f1c; --surface-2:#212824; --line:#2b332e; --text:#ece7dd; --muted:#a8a397; --faint:#726e66;
+  --accent:#4cc39b; --accent-ink:#121614; --nav-bg:#0c100e; --nav-text:#93a39a; --nav-mark:#e0b341;
+  --lec:#6fd1ad; --pr:#e88aa0; --lab:#e6b860; --high:#ef8a80; --mid:#e6b860; --ok:#6fd1ad; --low:#726e66;
+  --tint-1:#5a1a2b; --tint-2:#5e3f08; --tint-3:#0c4537; --tint-now:#1d332a; --tint-next:#33291a; --tint-row:#1f2d27;
+  --hero-bg:#1d2c25; --hero-text:#ece7dd; --hero-muted:#a8a397; --hero-track:#2f3f37; --hero-bar:#e0b341;
+}
+html[data-palette="x-jewel"] .home-top .kpi{color:#f6efe4}
+html[data-palette="x-jewel"] .home-top .kpi .kpi-label,html[data-palette="x-jewel"] .home-top .kpi .kpi-note,
+html[data-palette="x-jewel"] .home-top .kpi .kpi-value small{color:rgba(246,239,228,.88)}
+html[data-palette="x-jewel"] .home-top .kpi .progress{background:rgba(255,255,255,.18)}
+html[data-palette="x-jewel"] .home-top .kpi .progress>i{background:#e0b341}
+html[data-palette="x-jewel"] .card{border-color:transparent}
+
+/* =================== 4 · МОЗАЇКА (багато кольорів) =================== */
+html[data-palette="x-mosaic"]{ --ink:#222024; --paper:#f6f4ef; --seed:#222024;
+  --c1:#ff8f70; --c2:#ffd166; --c3:#7fd1ae; --c4:#a9a6f2; --c5:#f4a6c8; --c6:#c5e384; }
+html[data-theme][data-palette="x-mosaic"]{
+  --bg:#f6f4ef; --surface:#ffffff; --surface-2:#f0ede6; --line:#e4e0d7; --text:#222024; --muted:#5d5a60; --faint:#9b989e;
+  --accent:#222024; --accent-ink:#fff; --nav-bg:#222024; --nav-text:#b2aeb5; --nav-strong:#fff; --nav-mark:#ffd166;
+  --lec:#4a4cb0; --pr:#1f7350; --lab:#b0422a; --high:#c43a2c; --mid:#946200; --ok:#1f7350; --low:#9b989e;
+  --tint-1:#ffe1d8; --tint-2:#d9f2e7; --tint-3:#e4e3fb; --tint-now:#d9f2e7; --tint-next:#fff0c7; --tint-row:#fde3ee;
+  --hero-bg:#ffd166; --hero-text:#222024; --hero-muted:rgba(34,32,36,.72); --hero-track:rgba(34,32,36,.16); --hero-bar:#222024;
+}
+html[data-theme="dark"][data-palette="x-mosaic"]{
+  --bg:#19181b; --surface:#222125; --surface-2:#2a292e; --line:#343338; --text:#efedf0; --muted:#aaa7ad; --faint:#75727a;
+  --accent:#efedf0; --accent-ink:#19181b; --nav-bg:#111013; --nav-text:#9c99a0; --nav-mark:#ffd166;
+  --lec:#b8b6ff; --pr:#86dcb6; --lab:#ffa48a; --high:#ff8070; --mid:#ffd166; --ok:#86dcb6; --low:#75727a;
+  --tint-1:#3a231d; --tint-2:#1c3329; --tint-3:#2a2a42; --tint-now:#1c3329; --tint-next:#3a3219; --tint-row:#3a2230;
+  --hero-bg:#3a3219; --hero-text:#ffe7a8; --hero-muted:rgba(255,231,168,.7); --hero-track:rgba(255,231,168,.16); --hero-bar:#ffd166;
+}
+html[data-palette="x-mosaic"] .nav-item:nth-child(6n+1) .icon{color:var(--c1)}
+html[data-palette="x-mosaic"] .nav-item:nth-child(6n+2) .icon{color:var(--c2)}
+html[data-palette="x-mosaic"] .nav-item:nth-child(6n+3) .icon{color:var(--c3)}
+html[data-palette="x-mosaic"] .nav-item:nth-child(6n+4) .icon{color:var(--c4)}
+html[data-palette="x-mosaic"] .nav-item:nth-child(6n+5) .icon{color:var(--c5)}
+html[data-palette="x-mosaic"] .nav-item:nth-child(6n) .icon{color:var(--c6)}
+html[data-palette="x-mosaic"] .nav-item.is-active{box-shadow:inset 2px 0 0 var(--c2)}
+html[data-palette="x-mosaic"] .day.is-active{background:var(--c1);border-color:var(--c1);color:#222024}
+html[data-palette="x-mosaic"] .chip.is-on{background:var(--c4);border-color:var(--c4);color:#222024}
+html[data-palette="x-mosaic"] .brand-mark{background:var(--c2);color:#222024}
+html[data-palette="x-mosaic"] .pub-head .brand-mark{background:var(--c2);color:#222024}
+
+/* =================== 5 · ДУОТОН (2 кольори, кольорове меню) =================== */
+html[data-palette="x-duo"]{ --ink:#3a1d12; --paper:#f6efe4; --seed:#a3472a; }
+html[data-theme][data-palette="x-duo"]{
+  --bg:#f6efe4; --surface:#fbf6ee; --surface-2:#f0e5d6; --line:#e6d6c2; --text:#3a1d12; --muted:#6e4a3a; --faint:#a88b7c;
+  --accent:#a3472a; --accent-ink:#fff7ef; --nav-bg:#9c4426; --nav-text:#f7dccd; --nav-strong:#fff7ef;
+  --nav-active-bg:rgba(255,247,239,.16); --nav-active-text:#fff; --nav-line:rgba(255,247,239,.2); --nav-mark:#fff7ef;
+  --lec:#3a1d12; --pr:#a3472a; --lab:#7a4a35; --high:#a3302a; --mid:#8a5a1a; --ok:#3a1d12; --low:#a88b7c;
+  --tint-1:#f3e1d3; --tint-2:#efd5c3; --tint-3:#ebcab4; --tint-now:#efd5c3; --tint-next:#f3e1d3; --tint-row:#f3e1d3;
+  --hero-bg:#9c4426; --hero-text:#fff7ef; --hero-muted:rgba(255,247,239,.74); --hero-track:rgba(255,247,239,.22); --hero-bar:#fff7ef;
+}
+html[data-theme="dark"][data-palette="x-duo"]{
+  --bg:#1f1310; --surface:#2a1914; --surface-2:#331f19; --line:#432a22; --text:#f6e6da; --muted:#c9a593; --faint:#8f6c5c;
+  --accent:#f08a64; --accent-ink:#1f1310; --nav-bg:#6e2c18; --nav-text:#f0c8b4; --nav-strong:#fff3ea;
+  --nav-active-bg:rgba(255,243,234,.12); --nav-active-text:#fff; --nav-line:rgba(255,243,234,.14); --nav-mark:#f08a64;
+  --lec:#f6e6da; --pr:#f08a64; --lab:#d4a48e; --high:#ff8a7a; --mid:#e8b060; --ok:#f6e6da; --low:#8f6c5c;
+  --tint-1:#3a221a; --tint-2:#432820; --tint-3:#4d2e24; --tint-now:#432820; --tint-next:#3a221a; --tint-row:#3a221a;
+  --hero-bg:#5a2616; --hero-text:#f6e6da; --hero-muted:#d9b3a2; --hero-track:rgba(246,230,218,.2); --hero-bar:#f08a64;
+}
+html[data-palette="x-duo"] .card{border-color:transparent}
+html[data-palette="x-duo"] .nav-label{color:rgba(255,247,239,.7)}
+
+/* Головна — x- family */
+html[data-palette^="x-"] .next{background:var(--tint-now)}
+html[data-palette^="x-"] .how li:nth-child(1){background:var(--tint-1)}
+html[data-palette^="x-"] .how li:nth-child(2){background:var(--tint-2)}
+html[data-palette^="x-"] .how li:nth-child(3){background:var(--tint-3)}
+/* Мозаїка: кожна швидка дія та крок має свій колір */
+html[data-palette="x-mosaic"] .how li>b{color:#222024}
+html[data-palette="x-mosaic"] .how li:nth-child(1)>b{background:var(--c1)}
+html[data-palette="x-mosaic"] .how li:nth-child(2)>b{background:var(--c3)}
+html[data-palette="x-mosaic"] .how li:nth-child(3)>b{background:var(--c4)}
+html[data-palette="x-mosaic"] .qa-ico{color:#222024}
+html[data-palette="x-mosaic"] .qa:nth-child(1) .qa-ico{background:var(--c2)}
+html[data-palette="x-mosaic"] .qa:nth-child(2) .qa-ico{background:var(--c1)}
+html[data-palette="x-mosaic"] .qa:nth-child(3) .qa-ico{background:var(--c3)}
+html[data-palette="x-mosaic"] .qa:nth-child(4) .qa-ico{background:var(--c5)}
+html[data-palette="x-mosaic"] .res-ico{color:#222024}
+html[data-palette="x-mosaic"] .res:nth-child(1) .res-ico{background:var(--c1)}
+html[data-palette="x-mosaic"] .res:nth-child(2) .res-ico{background:var(--c3)}
+html[data-palette="x-mosaic"] .res:nth-child(3) .res-ico{background:var(--c4)}
+html[data-palette="x-mosaic"] .res:nth-child(4) .res-ico{background:var(--c2)}
+html[data-palette="x-mosaic"] .wk-day.is-today .wk-bar i{background:var(--c1)}
+html[data-palette="x-mosaic"] .wk-bar i{background:color-mix(in srgb,var(--c4) 55%,var(--surface-2))}

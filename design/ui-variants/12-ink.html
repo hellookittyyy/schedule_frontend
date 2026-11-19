@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 12 — Чорнило</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="look.css">
+<link rel="stylesheet" href="graphite.css">
+<style>
+/* 12 · ЧОРНИЛО — одна темна графітова колонка меню, решта — світлий папір.
+   Контраст «меню / робоча зона» читається миттєво, тож усе інше може бути тихим. */
+html[data-theme]{
+  --font:'Commissioner',system-ui,sans-serif;
+  --radius:12px; --radius-sm:8px; --btn-radius:8px; --pill:6px; --card-border:1px solid var(--line); --pad:22px; --gap:16px;
+  --title-size:28px; --title-weight:600; --h2-size:15px;
+  --hero-bg:var(--surface); --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:var(--surface-2); --hero-bar:var(--accent);
+}
+html[data-theme="light"]{
+  --surface:#fdfbf7;
+  --nav-bg:#2b2824; --nav-text:#b8b0a3; --nav-strong:#f4efe6; --nav-active-bg:rgba(244,239,230,.08); --nav-active-text:#f4efe6; --nav-line:rgba(244,239,230,.1);
+}
+html[data-theme="dark"]{
+  --nav-bg:#161412; --nav-text:#9b9386; --nav-strong:#ece6db; --nav-active-bg:rgba(236,230,219,.07); --nav-active-text:#f4efe6; --nav-line:#2c2925;
+}
+.nav{border-right:0;padding:26px 14px}
+.brand-mark{background:#f1ebe0;color:#2b2824;border-radius:8px}
+.nav-label{text-transform:none;letter-spacing:0;font-size:12px;font-weight:400;color:color-mix(in srgb,var(--nav-text) 70%,transparent)}
+.nav-item{border-radius:8px;font-weight:400}
+.nav-item.is-active{box-shadow:inset 2px 0 0 #e6dccb}
+.nav-count{color:var(--nav-text);opacity:.7}
+.nav-user .avatar{background:rgba(244,239,230,.1);color:#f4efe6}
+.main{padding:28px 32px 90px}
+.hero{border:1px solid var(--line)}
+.hero-value{font-weight:600}
+.btn-hero{border-color:var(--line);color:var(--text)}
+.kpi-value{font-weight:500}
+.seg{background:var(--surface-2)}
+.seg button.is-on{box-shadow:0 0 0 1px var(--line)}
+.task-group-label{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500}
+.task-fix{background:var(--surface-2)}
+.fix-opt.is-sel{border-color:var(--line)}
+.chip.is-on{background:var(--accent);border-color:var(--accent)}
+.md-row.is-active{background:var(--surface-2);box-shadow:inset 2px 0 0 var(--accent)}
+.section-title{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500;color:var(--text)}
+.step.is-cur{background:var(--surface-2)}
+.pub-wrap{background:var(--bg)}
+.now-card{border:1px solid var(--line)}
+.now-title{font-weight:600}
+.day.is-active{background:var(--accent);border-color:var(--accent)}
+.lessons-head{text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);font-weight:500}
+</style>
+</head>
+<body>
+<script src="theme.js"></script>
+<script src="shell.js"></script>
+<script>initTheme('v12-theme'); renderApp({ name: '12 · Чорнило', calm: true }); mountThemeToggle('v12-theme');</script>
+</body>
+</html>

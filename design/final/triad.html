@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<!-- Saved final candidate «Тріада» (2026-11-19). Self-contained snapshot: do not depend on design/ui-variants. -->
+<html lang="uk" data-theme="light" data-palette="triad">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Розклад — Тріада</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600&display=swap" rel="stylesheet">
+<style>/* look.css */
+/* =====================================================================
+   Token-driven visual layer shared by the 5 UI variants.
+   A variant = its own :root tokens + a few signature overrides.
+   ===================================================================== */
+:root{
+  --font:system-ui,sans-serif; --font-head:var(--font); --font-num:var(--font);
+  --bg:#f4f4f5; --surface:#fff; --surface-2:#f4f4f5; --line:#e4e4e7; --text:#18181b; --muted:#71717a; --faint:#a1a1aa;
+  --accent:#18181b; --accent-ink:#fff; --accent-soft:#f4f4f5;
+  --nav-bg:var(--surface); --nav-text:var(--muted); --nav-strong:var(--text); --nav-active-bg:var(--surface-2); --nav-active-text:var(--text); --nav-line:var(--line);
+  --radius:12px; --radius-sm:8px; --btn-radius:8px; --pill:999px;
+  --card-border:1px solid var(--line); --card-shadow:none; --pad:20px; --gap:16px; --page-pad:28px;
+  --lec:#3b6fd8; --lec-soft:#e8effc; --pr:#1f8a5b; --pr-soft:#e3f4ec; --lab:#b7791f; --lab-soft:#fbf1df;
+  --high:#d14343; --mid:#d98b1c; --low:#8b8b94; --ok:#1f8a5b;
+  --hero-bg:var(--accent); --hero-text:var(--accent-ink); --hero-muted:rgba(255,255,255,.65); --hero-track:rgba(255,255,255,.2); --hero-bar:var(--accent-ink);
+  --track:var(--surface-2); --bar:var(--accent);
+  --heat0:var(--surface-2); --heat1:#d4d4d8; --heat2:#a1a1aa; --heat3:#52525b; --heat4:#18181b;
+  --title-size:26px; --h2-size:15px; --title-weight:600; --h-transform:none; --h-spacing:-.01em;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.muted{color:var(--muted)}.sm{font-size:12px}.grow{flex:1;min-width:0}
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+.icon.xs{width:14px;height:14px}
+
+/* nav */
+.nav{background:var(--nav-bg);color:var(--nav-text);border-right:1px solid var(--nav-line);padding:20px 12px;gap:4px}
+.nav-brand{display:flex;align-items:center;gap:10px;padding:0 10px 18px}
+.brand-mark{width:30px;height:30px;border-radius:var(--radius-sm);background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--font-head);font-weight:700;font-size:15px}
+.brand-name{font-family:var(--font-head);font-weight:700;font-size:16px;color:var(--nav-strong);letter-spacing:var(--h-spacing)}
+.nav-group{display:flex;flex-direction:column;gap:2px;margin-bottom:14px}
+.nav-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding:6px 10px}
+.nav-item{padding:8px 10px;border-radius:var(--radius-sm);color:var(--nav-text);font-weight:500;transition:background .15s,color .15s}
+.nav-item:hover{color:var(--nav-strong);background:var(--nav-active-bg)}
+.nav-item.is-active{background:var(--nav-active-bg);color:var(--nav-active-text)}
+.nav-count{font-size:12px;font-family:var(--font-num);color:var(--faint)}
+.nav-user{display:flex;align-items:center;gap:10px;padding:12px 10px 0;margin-top:8px;border-top:1px solid var(--nav-line)}
+.nav-user-name{font-weight:600;color:var(--nav-strong);font-size:13px}.nav-user-role{font-size:12px;color:var(--faint)}
+
+/* main + topbar */
+.main{padding:var(--page-pad)}
+.topbar{margin-bottom:22px}
+.crumbs{font-size:12px;color:var(--muted);margin-bottom:2px}
+.page-title{margin:0;font-family:var(--font-head);font-size:var(--title-size);font-weight:var(--title-weight);letter-spacing:var(--h-spacing);display:flex;align-items:center;gap:10px}
+.search{height:38px;padding:0 12px;border-radius:var(--btn-radius);background:var(--surface);border:var(--card-border);color:var(--muted);width:280px}
+.search input::placeholder{color:var(--faint)}
+kbd{font-family:var(--font-num);font-size:11px;color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+.icon-btn{width:38px;height:38px;border-radius:var(--btn-radius);background:var(--surface);border:var(--card-border);color:var(--muted);position:relative}
+.icon-btn .dot{position:absolute;top:9px;right:10px;width:7px;height:7px;border-radius:50%;background:var(--high);border:2px solid var(--surface)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-soft);color:var(--text);font-size:12px;font-weight:600}
+.avatar.sm{width:26px;height:26px;font-size:11px}.avatar.lg{width:52px;height:52px;font-size:17px}
+
+/* card */
+.card{background:var(--surface);border:var(--card-border);border-radius:var(--radius);box-shadow:var(--card-shadow);padding:var(--pad)}
+.card-head{margin-bottom:14px}
+.card-title{margin:0;font-family:var(--font-head);font-size:var(--h2-size);font-weight:600;text-transform:var(--h-transform);letter-spacing:var(--h-spacing)}
+
+/* buttons */
+.btn{height:38px;padding:0 14px;border-radius:var(--btn-radius);border:1px solid var(--line);background:var(--surface);font-weight:500;transition:background .15s,border-color .15s,opacity .15s}
+.btn:hover{border-color:var(--faint)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{opacity:.9;border-color:var(--accent)}
+.btn-ghost{background:transparent}
+.btn-sm{height:30px;padding:0 11px;font-size:13px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* small elements */
+.seg{background:var(--surface-2);border-radius:var(--btn-radius);padding:3px;gap:2px}
+.seg button{background:none;padding:5px 11px;border-radius:calc(var(--btn-radius) - 2px);font-size:13px;color:var(--muted);font-weight:500}
+.seg button.is-on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.badge{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:var(--pill);font-size:12px;font-weight:500;white-space:nowrap;background:var(--surface-2);color:var(--muted)}
+.badge-lec{background:var(--lec-soft);color:var(--lec)}.badge-pr{background:var(--pr-soft);color:var(--pr)}.badge-lab{background:var(--lab-soft);color:var(--lab)}
+.badge-status{font-family:var(--font);font-size:12px;letter-spacing:0;text-transform:none;font-weight:500;background:var(--accent-soft);color:var(--text)}
+.tag{font-size:11px;font-weight:600;border-radius:var(--pill);padding:2px 8px;background:var(--accent-soft);color:var(--text)}
+.progress{height:6px;border-radius:var(--pill);background:var(--track)}.progress>i{background:var(--bar);border-radius:inherit}
+.progress.sm{height:4px;margin:10px 0 6px}
+
+/* home */
+.home-top{margin-bottom:var(--gap)}
+.hero{background:var(--hero-bg);color:var(--hero-text);border-color:transparent;display:flex;flex-direction:column;gap:10px}
+.hero-label{font-size:13px;color:var(--hero-muted)}
+.hero-row{display:flex;align-items:baseline;gap:12px}
+.hero-value{font-family:var(--font-num);font-size:44px;font-weight:600;line-height:1;letter-spacing:-.03em}.hero-value small{font-size:22px;margin-left:2px}
+.hero-note{font-size:13px;color:var(--hero-muted)}
+.hero .progress{background:var(--hero-track)}.hero .progress>i{background:var(--hero-bar)}
+.btn-hero{align-self:flex-start;margin-top:4px;background:transparent;color:var(--hero-text);border-color:var(--hero-track);height:32px;font-size:13px}
+.kpi{display:flex;flex-direction:column}
+.kpi-label{font-size:13px;color:var(--muted)}
+.kpi-value{font-family:var(--font-num);font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:8px;line-height:1.1}.kpi-value small{font-size:15px;color:var(--faint);font-weight:500;margin-left:4px}
+.kpi-note{font-size:12px;color:var(--muted);margin-top:auto;padding-top:8px}
+.task-group+.task-group{margin-top:16px}
+.task-group-label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding-bottom:6px}
+.task-group-label span{font-family:var(--font-num);color:var(--faint)}
+.sev{width:7px;height:7px;border-radius:50%;display:inline-block}.sev-high{--c:var(--high)}.sev-mid{--c:var(--mid)}.sev-low{--c:var(--low)}.sev{background:var(--c)}
+.task{padding:12px 0;border-top:1px solid var(--line)}
+.sev-ico{width:30px;height:30px;border-radius:var(--radius-sm);display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent)}
+.task-title{font-weight:500}.task-meta{font-size:12px;color:var(--muted)}
+.task-fix{margin-top:4px;padding:12px;border-radius:var(--radius-sm);background:var(--surface-2)}
+.fix-label{font-size:12px;color:var(--muted);margin-bottom:6px}
+.fix-opt{padding:8px;border-radius:var(--radius-sm);border:1px solid transparent;font-size:13px}
+.fix-opt input{accent-color:var(--accent);margin:0}
+.fix-opt.is-sel{background:var(--surface);border-color:var(--line)}
+.fix-actions{display:flex;gap:8px;margin-top:10px}
+.today-row{padding:9px 0;border-top:1px solid var(--line)}.today-row:first-of-type{border-top:0}
+.room{font-family:var(--font-num);font-weight:600;font-size:13px}
+.today-row .t{font-weight:500}
+.heat .hd{font-size:11px;color:var(--faint);text-align:center;align-self:center}
+.heat i{border-radius:4px}.h0{background:var(--heat0)}.h1{background:var(--heat1)}.h2{background:var(--heat2)}.h3{background:var(--heat3)}.h4{background:var(--heat4)}
+.legend{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--faint);margin-top:12px}.legend i{width:14px;height:10px;border-radius:3px}.legend span:first-child{margin-right:4px}.legend span:last-child{margin-left:4px}
+
+/* directory */
+.md{padding:0;overflow:hidden}
+.md-list{border-right:1px solid var(--line);padding:14px 0 0}
+.md-search{margin:0 14px;width:auto;background:var(--surface-2);border-color:transparent}
+.md-filters{padding:12px 14px}
+.chip{height:28px;padding:0 11px;border-radius:var(--pill);border:1px solid var(--line);font-size:12px;font-weight:500;color:var(--muted);background:var(--surface)}
+.chip.is-on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip-add{border-style:dashed}.chip.link{color:var(--text)}
+.md-row{padding:10px 14px;border-top:1px solid var(--line);transition:background .12s}
+.md-row:hover{background:var(--surface-2)}
+.md-row.is-active{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+.md-row .name{font-weight:500;font-size:13px}.md-row .meta{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.md-row .num{font-size:12px;color:var(--muted)}.num.warn{color:var(--high)}
+.md-detail{padding:24px 28px}
+.detail-name{margin:0;font-family:var(--font-head);font-size:20px;font-weight:600;letter-spacing:var(--h-spacing)}
+.saved{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--ok)}
+.section{margin-top:26px}
+.section-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:flex;gap:10px;align-items:baseline}
+.section-title .muted{text-transform:none;letter-spacing:0;font-weight:400}
+.fields{border-top:1px solid var(--line)}
+.f-label,.f-value{padding:11px 0;border-bottom:1px solid var(--line);min-height:44px;display:flex;align-items:center}
+.f-label{color:var(--muted);font-size:13px}
+.f-value.editable{border-radius:0}.f-value.editable:hover{background:var(--surface-2);cursor:text}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:13px}.status::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--ok)}.status.st-leave::before{background:var(--mid)}
+.load{display:flex;align-items:center;gap:12px;width:100%;max-width:360px}.load .progress{flex:1}.load .num{font-size:13px;color:var(--muted)}
+.avail{max-width:520px}.avail .hd{font-size:11px;color:var(--faint);text-align:center;align-self:center}.avail .tm{text-align:left}
+.avail .c{border-radius:5px;background:var(--surface-2);border:1px solid var(--line);transition:background .12s}
+.avail .c:hover{border-color:var(--faint)}
+.avail .c.off{background:repeating-linear-gradient(135deg,var(--line) 0 3px,var(--surface) 3px 7px);border-color:var(--line)}
+
+/* semester */
+.steps{padding:0;overflow:hidden;margin-bottom:var(--gap)}
+.step{padding:14px 16px;border-right:1px solid var(--line);position:relative}.step:last-child{border-right:0}
+.step-n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:600;font-family:var(--font-num);border:1px solid var(--line);color:var(--muted);margin-bottom:6px}
+.step-name{font-weight:600;font-size:13px}.step-meta{font-size:12px;color:var(--muted)}
+.step.is-done .step-n{background:var(--ok);border-color:var(--ok);color:#fff}
+.step.is-cur{background:var(--accent-soft)}.step.is-cur .step-n{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.step.is-cur::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--accent)}
+.step.is-todo .step-name{color:var(--muted)}
+.check{padding:11px 0;border-top:1px solid var(--line);font-size:13px}
+.check-ico{width:22px;height:22px;border-radius:50%;display:grid;place-items:center}
+.check.is-ok .check-ico{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.check.is-err .check-ico{background:color-mix(in srgb,var(--high) 14%,transparent);color:var(--high)}
+.check.is-warn .check-ico{background:color-mix(in srgb,var(--mid) 16%,transparent);color:var(--mid)}
+.check.is-ok>span:nth-child(2){color:var(--muted)}
+.grp-row{padding:7px 0}.grp-row .g{font-family:var(--font-num);font-weight:600;font-size:13px}.grp-row .num{font-size:12px;color:var(--muted);text-align:right}.grp-row .num.ok{color:var(--ok)}
+.empty{text-align:center;padding:22px 10px;color:var(--text);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.empty-ico{width:40px;height:40px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;color:var(--muted);margin-bottom:6px}
+
+/* public */
+.pub-wrap{background:var(--bg);padding:24px 16px 90px}
+.pub{display:flex;flex-direction:column;gap:14px}
+.pub-head{padding-bottom:6px}.pub-head .brand-name{color:var(--text)}
+.pub-search{width:100%;height:48px;font-size:15px;border-radius:var(--radius)}
+.pub-search input{color:var(--text);font-weight:600}
+.pub-title{margin-top:6px}.pub-title h1{margin:0;font-family:var(--font-head);font-size:32px;font-weight:var(--title-weight);letter-spacing:var(--h-spacing)}.pub-title .muted{font-size:13px}
+.now-card{background:var(--hero-bg);color:var(--hero-text);border-color:transparent;display:flex;flex-direction:column;gap:10px}
+.now-top{display:flex;justify-content:space-between;font-size:12px;color:var(--hero-muted)}
+.now-label{display:inline-flex;align-items:center;gap:8px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.live{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 0 currentColor;animation:live 1.8s infinite}
+@keyframes live{0%{box-shadow:0 0 0 0 rgba(255,255,255,.5)}70%{box-shadow:0 0 0 7px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+.now-left{font-family:var(--font-num)}
+.now-title{font-family:var(--font-head);font-size:22px;font-weight:600;line-height:1.2;letter-spacing:var(--h-spacing)}
+.now-meta{font-size:13px;color:var(--hero-muted)}
+.now-card .progress{background:var(--hero-track);height:4px}.now-card .progress>i{background:var(--hero-bar)}
+.next-card{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px var(--pad)}
+.next-label{font-size:12px;color:var(--muted);font-family:var(--font-num)}.next-title{font-weight:600;flex:1}
+.daystrip{gap:6px}
+.day{padding:8px 0;border-radius:var(--radius-sm);display:flex;flex-direction:column;gap:1px;background:var(--surface);border:var(--card-border)}
+.dw{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.dn{font-family:var(--font-num);font-size:17px;font-weight:600}.dc{font-size:11px;color:var(--faint);height:14px}
+.day.is-active{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}.day.is-active .dw,.day.is-active .dc{color:inherit;opacity:.7}
+.day.is-today:not(.is-active) .dn{color:var(--accent)}
+.lessons{padding:6px var(--pad)}
+.lessons-head{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:10px 0 4px}
+.lesson{padding:13px 0;border-top:1px solid var(--line)}
+.l-time{display:flex;flex-direction:column;font-family:var(--font-num);font-size:12px;color:var(--muted)}.l-time b{font-size:14px;color:var(--text);font-weight:600}
+.l-title{font-weight:600}.l-meta{font-size:12px;color:var(--muted)}
+.lesson.is-past{opacity:.45}
+.lesson.is-now .l-title::after{content:'зараз';margin-left:8px;font-size:11px;font-weight:600;color:var(--accent);vertical-align:1px}
+.pub-foot{display:flex;justify-content:center}
+
+/* ---------- Головна (точка входу) ---------- */
+.welcome{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 24px;align-items:start;margin-bottom:var(--gap)}
+.welcome.is-hidden{display:none}
+.welcome-text p{margin:4px 0 0;font-size:13.5px}
+.how{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0;padding:0;list-style:none}
+.how li{display:flex;gap:12px;padding:14px 16px;border-radius:var(--radius-sm);background:var(--surface-2)}
+.how li>b{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:13px;flex:none}
+.how li>span{display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--muted);line-height:1.45}
+.how li strong{color:var(--text);font-size:14px;font-weight:600}
+.start-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:var(--gap);align-items:start}
+.journey .steps{margin:2px 0 16px;border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden}
+.journey .step{padding:12px 14px}
+.next{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 18px;border-radius:var(--radius-sm);background:var(--accent-soft)}
+.next-k{font-size:12px;color:var(--muted)}
+.next-t{font-weight:600;font-size:15px;margin:1px 0 2px}
+.quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.qa{display:flex;align-items:flex-start;gap:12px;padding:14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:none;cursor:pointer;text-align:left;transition:background .15s,border-color .15s}
+.qa:hover{background:var(--surface-2);border-color:var(--faint)}
+.qa-ico{width:36px;height:36px;border-radius:var(--radius-sm);display:grid;place-items:center;background:var(--surface-2);flex:none;color:var(--text)}
+.qa b{display:block;font-size:14px;font-weight:600}
+.qa b+span{display:block;font-size:12.5px;color:var(--muted);line-height:1.4;margin-top:2px}
+.attention{display:flex;align-items:center;gap:12px}
+.attention b{font-weight:600}
+.today-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px}
+.today-stats div{display:flex;flex-direction:column}
+.today-stats b{font-size:26px;font-weight:600;line-height:1.1}
+.today-stats span{font-size:12px;color:var(--muted)}
+.change{display:grid;grid-template-columns:86px minmax(0,1fr);gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+.change .when{font-family:var(--font-num);font-size:12px;color:var(--muted)}
+@media (max-width:980px){.start-grid,.welcome{grid-template-columns:1fr}.how{grid-template-columns:1fr}.quick{grid-template-columns:1fr}.journey .steps{grid-template-columns:repeat(3,1fr)}}
+.journey .step-meta{display:none}
+.journey .step.is-cur .step-meta{display:block}
+
+/* ---------- Головна: зведені блоки ---------- */
+.res-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.res{padding:14px;border:1px solid var(--line);border-radius:var(--radius-sm);display:flex;flex-direction:column;gap:6px;min-width:0}
+.res[data-to]{cursor:pointer}.res[data-to]:hover{background:var(--surface-2)}
+.res-top{display:flex;align-items:center;gap:10px}
+.res-ico{width:30px;height:30px;border-radius:var(--radius-sm);display:grid;place-items:center;background:var(--surface-2);flex:none}
+.res-ico .icon{width:16px;height:16px}
+.res-name{font-weight:600;flex:1}
+.res-num{font-size:22px;font-weight:600;line-height:1}
+.res-metric{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--muted);margin-top:4px}
+.res-metric b{color:var(--text);font-weight:600;font-size:12.5px}
+.res .progress.sm{margin:0}
+.res-status{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.res-status.is-warn{color:var(--mid)}.res-status.is-err{color:var(--high)}
+.week{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;height:150px;align-items:end;margin-top:4px}
+.wk-day{display:flex;flex-direction:column;align-items:center;gap:6px;height:100%}
+.wk-n{font-size:12px;color:var(--muted)}
+.wk-bar{flex:1;width:100%;max-width:46px;display:flex;align-items:flex-end;background:var(--surface-2);border-radius:6px;overflow:hidden}
+.wk-bar i{display:block;width:100%;background:color-mix(in srgb,var(--accent) 35%,var(--surface-2));border-radius:6px 6px 0 0}
+.wk-d{font-size:12px;color:var(--muted)}
+.wk-day.is-today .wk-bar i{background:var(--accent)}
+.wk-day.is-today .wk-d,.wk-day.is-today .wk-n{color:var(--text);font-weight:600}
+.week-sum{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.week-sum b{color:var(--text);font-weight:600}
+.now-head{font-size:12px;color:var(--muted);margin:4px 0 2px;padding-top:10px;border-top:1px solid var(--line)}
+.card-head+.change{border-top:0;padding-top:0}
+.date-row{display:grid;grid-template-columns:62px minmax(0,1fr);gap:10px;align-items:start;padding:9px 0;border-top:1px solid var(--line)}
+.card-head+.date-row{border-top:0;padding-top:0}
+.date-d{font-size:12.5px;font-weight:600}
+.date-row .t{font-size:13.5px}
+.date-row.is-high .date-d{color:var(--high)}
+@media (max-width:980px){.res-grid{grid-template-columns:1fr}}
+/* Головна: колонки однакової висоти, остання картка в кожній дотягується донизу */
+.start-grid{align-items:stretch}
+.start-grid>.col>.card:last-child{flex:1}
+.changes-wide{margin-top:var(--gap)}
+.res-wide{margin-top:var(--gap)}
+.res-wide .res-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1180px){.res-wide .res-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.res-wide .res-grid{grid-template-columns:1fr}}
+
+</style>
+<style>/* graphite.css */
+/* =====================================================================
+   Graphite on ivory — shared colour tokens for variants 9–13.
+   Light = warm ivory paper + graphite ink. Dark = warm slate, cream text.
+   Contrast: text ≈ 14:1 (light) / 12:1 (dark); muted text ≥ 4.5:1.
+   Variants override only shape / typography tokens.
+   ===================================================================== */
+html[data-theme]{
+  --bg:#f3efe7; --surface:#fbf9f5; --surface-2:#efeae1; --line:#e1dacd; --text:#2a2723; --muted:#69645b; --faint:#a19a8e;
+  --accent:#34312c; --accent-ink:#faf7f1; --accent-soft:#ebe6dc;
+  --lec:#6d5a78; --pr:#5a6a35; --lab:#8f4e30; --high:#ad4636; --mid:#a07526; --ok:#5a6a35; --low:#968f84;
+  --nav-bg:var(--surface); --nav-text:var(--muted); --nav-strong:var(--text); --nav-active-bg:var(--surface-2); --nav-active-text:var(--text); --nav-line:var(--line);
+  --lec-soft:color-mix(in srgb,var(--lec) 12%,var(--surface)); --pr-soft:color-mix(in srgb,var(--pr) 13%,var(--surface)); --lab-soft:color-mix(in srgb,var(--lab) 12%,var(--surface));
+  --track:var(--surface-2); --bar:var(--accent);
+  --hero-bg:var(--accent); --hero-text:var(--accent-ink); --hero-muted:color-mix(in srgb,var(--accent-ink) 62%,transparent);
+  --hero-track:color-mix(in srgb,var(--accent-ink) 18%,transparent); --hero-bar:var(--accent-ink);
+  --heat0:var(--surface-2); --heat1:color-mix(in srgb,var(--accent) 20%,var(--surface-2)); --heat2:color-mix(in srgb,var(--accent) 42%,var(--surface-2));
+  --heat3:color-mix(in srgb,var(--accent) 68%,var(--surface-2)); --heat4:var(--accent);
+  --h-transform:none; --h-spacing:-.015em;
+}
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#1f1d1a; --surface:#272420; --surface-2:#2f2b27; --line:#3a3631; --text:#e7e1d6; --muted:#aaa295; --faint:#7a7367;
+  --accent:#e2d9c8; --accent-ink:#1f1d1a; --accent-soft:#34302b;
+  --lec:#c3b1d1; --pr:#b9c58f; --lab:#e2a786; --high:#e3907f; --mid:#dab26b; --ok:#b9c58f; --low:#8b8478;
+  /* у темній темі «головна» картка не світиться — це втомлює очі */
+  --hero-bg:var(--surface-2); --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:var(--line); --hero-bar:var(--accent);
+}
+body{transition:background .2s,color .2s}
+.live{color:currentColor}
+html[data-theme="dark"] .icon-btn .dot{border-color:var(--surface)}
+
+/* prototype-only theme switcher */
+.theme-btn .icon{width:17px;height:17px}
+.pal{position:fixed;left:50%;transform:translateX(-50%);bottom:62px;z-index:999;display:flex;gap:2px;padding:4px;border-radius:10px;background:rgba(28,26,23,.94);font:500 12px/1 system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.pal button{all:unset;cursor:pointer;color:#cfc8bc;padding:8px 12px;border-radius:7px}
+.pal button.on{background:#f4efe6;color:#1f1d1a}
+.embed .pal{display:none}
+@media (max-width:980px){.pal{left:8px;transform:none}}
+
+</style>
+<style>/* ink-palettes.css */
+/* =====================================================================
+   10 palettes for the «Чорнило» variant.
+   Each palette = 3 base colours:
+     --ink    dark sidebar / text colour
+     --paper  light page colour
+     --seed   accent (buttons, active states)
+   Everything else is derived below, for light and dark themes.
+   ===================================================================== */
+html[data-palette="graphite"]  { --ink:#2b2824; --paper:#f3efe7; --seed:#34312c; }
+html[data-palette="mocha"]     { --ink:#2e241d; --paper:#f4ede5; --seed:#5b4433; }
+html[data-palette="terracotta"]{ --ink:#33231d; --paper:#f6eee7; --seed:#9c4e2b; }
+html[data-palette="wine"]      { --ink:#2d1c21; --paper:#f5efed; --seed:#6e2836; }
+html[data-palette="plum"]      { --ink:#2a2130; --paper:#f3eff2; --seed:#5f4472; }
+html[data-palette="olive"]     { --ink:#2c2f22; --paper:#f2f1e7; --seed:#535d2f; }
+html[data-palette="pine"]      { --ink:#1e2c27; --paper:#eef1ec; --seed:#2f4c41; }
+html[data-palette="petrol"]    { --ink:#1d2c2f; --paper:#edf1f0; --seed:#2c5458; }
+html[data-palette="triad"]     { --ink:#262a2f; --paper:#eff0f0; --seed:#3d4651; }
+html[data-palette="ochre"]     { --ink:#2e281b; --paper:#f5f0e3; --seed:#755815; }
+
+/* ---------- light: paper page, ink sidebar ---------- */
+html[data-theme][data-palette]{
+  --bg:var(--paper);
+  --surface:color-mix(in srgb,var(--paper) 40%,#fff);
+  --surface-2:color-mix(in srgb,var(--paper) 94%,var(--ink));
+  --line:color-mix(in srgb,var(--paper) 85%,var(--ink));
+  --text:var(--ink);
+  --muted:color-mix(in srgb,var(--ink) 70%,var(--paper));
+  --faint:color-mix(in srgb,var(--ink) 44%,var(--paper));
+  --accent:var(--seed); --accent-ink:color-mix(in srgb,var(--paper) 40%,#fff);
+  --accent-soft:color-mix(in srgb,var(--seed) 10%,var(--surface));
+  --nav-bg:var(--ink);
+  --nav-text:color-mix(in srgb,var(--paper) 64%,var(--ink));
+  --nav-strong:var(--paper); --nav-active-text:var(--paper);
+  --nav-active-bg:color-mix(in srgb,var(--paper) 9%,transparent);
+  --nav-line:color-mix(in srgb,var(--paper) 11%,transparent);
+  --nav-mark:color-mix(in srgb,var(--seed) 35%,var(--paper));
+  --hero-bg:var(--surface); --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:var(--surface-2); --hero-bar:var(--accent);
+  --track:var(--surface-2); --bar:var(--accent);
+}
+/* ---------- dark: the ink becomes the room, paper becomes the chalk ---------- */
+html[data-theme="dark"][data-palette]{
+  --bg:color-mix(in srgb,var(--ink) 86%,#000);
+  --surface:color-mix(in srgb,var(--ink) 94%,#fff);
+  --surface-2:color-mix(in srgb,var(--ink) 90%,#fff);
+  --line:color-mix(in srgb,var(--ink) 80%,#fff);
+  --text:color-mix(in srgb,var(--paper) 92%,var(--ink));
+  --muted:color-mix(in srgb,var(--paper) 69%,var(--ink));
+  --faint:color-mix(in srgb,var(--paper) 40%,var(--ink));
+  --accent:color-mix(in srgb,var(--seed) 38%,var(--paper)); --accent-ink:color-mix(in srgb,var(--ink) 86%,#000);
+  --accent-soft:color-mix(in srgb,var(--accent) 12%,var(--surface));
+  --lec-soft:color-mix(in srgb,var(--lec) 9%,var(--surface)); --pr-soft:color-mix(in srgb,var(--pr) 9%,var(--surface)); --lab-soft:color-mix(in srgb,var(--lab) 9%,var(--surface));
+  --nav-bg:color-mix(in srgb,var(--ink) 70%,#000);
+  --nav-text:color-mix(in srgb,var(--paper) 56%,var(--ink));
+  --nav-active-bg:color-mix(in srgb,var(--paper) 7%,transparent);
+  --nav-line:color-mix(in srgb,var(--paper) 9%,transparent);
+  --hero-bg:var(--surface); --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:var(--surface-2); --hero-bar:var(--accent);
+}
+html[data-palette]{
+  --heat0:var(--surface-2);
+  --heat1:color-mix(in srgb,var(--accent) 20%,var(--surface-2)); --heat2:color-mix(in srgb,var(--accent) 42%,var(--surface-2));
+  --heat3:color-mix(in srgb,var(--accent) 68%,var(--surface-2)); --heat4:var(--accent);
+}
+/* public page has no dark sidebar behind the logo — use the accent instead of paper */
+html[data-palette] .pub-head .brand-mark{background:var(--accent);color:var(--accent-ink)}
+
+</style>
+<style>/* slate-lab.css */
+/* =====================================================================
+   «Сланець» + 4 colour experiments (loaded after ink-palettes.css).
+   slate  — base (derived from 3 seeds in ink-palettes.css)
+   mono   — 1 hue, 7-step scale; red only for errors
+   copper — 2 colours: cool slate + one warm copper accent
+   triad  — 3 hues: slate + sage + sand, pastel tints per block
+   depth  — 1 hue, tonal layers, no lines; page is not white
+   ===================================================================== */
+
+/* ---------- MONO ---------- */
+html[data-palette="mono"]{ --ink:#23282e; --paper:#eceef0; --seed:#39414a; }
+html[data-theme][data-palette="mono"]{
+  --bg:#eceef0; --surface:#f8f9fa; --surface-2:#e3e6e9; --line:#d3d8dd; --text:#23282e; --muted:#5b6570; --faint:#8a939d;
+  --accent:#39414a; --accent-ink:#f8f9fa; --nav-bg:#23282e; --nav-text:#a9b1ba; --nav-mark:#b9c0c8;
+  --lec:#23282e; --pr:#6b7682; --lab:#b0b8c0; --high:#b0443a; --mid:#5b6570; --ok:#39414a; --low:#8a939d;
+  --heat1:#d3d8dd; --heat2:#aeb6bf; --heat3:#6b7682; --heat4:#23282e;
+}
+html[data-theme="dark"][data-palette="mono"]{
+  --bg:#1b1f23; --surface:#22272c; --surface-2:#2a3036; --line:#343b42; --text:#e3e7eb; --muted:#9aa3ad; --faint:#6b747e;
+  --accent:#c9d0d7; --accent-ink:#1b1f23; --nav-bg:#14171a; --nav-text:#8f99a3; --nav-mark:#c9d0d7;
+  --lec:#e3e7eb; --pr:#9aa3ad; --lab:#5b6570; --high:#e0857b; --mid:#9aa3ad; --ok:#c9d0d7; --low:#6b747e;
+  --heat1:#2f363d; --heat2:#46505a; --heat3:#76818c; --heat4:#c9d0d7;
+}
+/* у моно тип заняття — це відтінок кружечка, текст завжди основного кольору */
+html[data-palette="mono"] .badge{background:var(--surface-2)!important;color:var(--text)!important}
+html[data-palette="mono"] .badge-lec::before,html[data-palette="mono"] .badge-pr::before,html[data-palette="mono"] .badge-lab::before{content:'';width:7px;height:7px;border-radius:50%;margin-right:6px;box-shadow:0 0 0 1px var(--line)}
+html[data-palette="mono"] .badge-lec::before{background:var(--lec)}
+html[data-palette="mono"] .badge-pr::before{background:var(--pr)}
+html[data-palette="mono"] .badge-lab::before{background:var(--lab)}
+
+/* ---------- COPPER (2 кольори) ---------- */
+html[data-palette="copper"]{ --ink:#262a2f; --paper:#eff0f0; --seed:#a3562f; }
+html[data-theme][data-palette="copper"]{
+  --bg:#eff0f0; --surface:#fafafa; --surface-2:#e6e8ea; --line:#d6dadd; --text:#262a2f; --muted:#5b636c; --faint:#949ba3;
+  --accent:#a3562f; --accent-ink:#fff; --nav-bg:#262a2f; --nav-text:#a8b0b8; --nav-mark:#d99a72;
+  --lec:#2f363e; --pr:#924c29; --lab:#5f6973; --high:#b0443a; --mid:#93641a; --ok:#2f363e; --low:#949ba3;
+}
+html[data-theme="dark"][data-palette="copper"]{
+  --bg:#1c1f23; --surface:#23272c; --surface-2:#2b3036; --line:#353b42; --text:#e4e7ea; --muted:#9aa2ab; --faint:#6c747d;
+  --accent:#e0966b; --accent-ink:#1c1f23; --nav-bg:#15181b; --nav-text:#8f98a2; --nav-mark:#e0966b;
+  --lec:#c5ccd3; --pr:#e0966b; --lab:#8f98a2; --high:#e3857a; --mid:#e0b06b; --ok:#c5ccd3; --low:#6c747d;
+}
+html[data-palette="copper"] .hero-value{color:var(--accent)}
+html[data-palette="copper"] .now-card{border-left:3px solid var(--accent)}
+html[data-palette="copper"] .live{color:var(--accent)}
+
+/* ---------- TRIAD (3 кольори) ---------- */
+html[data-palette="triad"]{ --ink:#2b3138; --paper:#f1efe9; --seed:#4b6657; }
+html[data-theme][data-palette="triad"]{
+  --bg:#f1efe9; --surface:#fbfaf7; --surface-2:#ebe7de; --line:#ddd8cc; --text:#262a2f; --muted:#5d6268; --faint:#999b9b;
+  --accent:#4b6657; --accent-ink:#fbfaf7; --nav-bg:#2b3138; --nav-text:#aeb5bd; --nav-strong:#f1efe9; --nav-mark:#a9c2b3;
+  --lec:#536173; --pr:#4b6657; --lab:#85502f; --high:#b0473b; --mid:#966b1e; --ok:#4b6657; --low:#999b9b;
+  --tint-1:#ece5d6; --tint-2:#e2ebe4; --tint-3:#f1e3d8;
+  --hero-bg:#2b3138; --hero-text:#f1efe9; --hero-muted:rgba(241,239,233,.66); --hero-track:rgba(241,239,233,.18); --hero-bar:#a9c2b3;
+}
+html[data-theme="dark"][data-palette="triad"]{
+  --bg:#1c1f23; --surface:#24282d; --surface-2:#2c3036; --line:#363b41; --text:#e6e4de; --muted:#a3a29c; --faint:#727470;
+  --accent:#a3c0ae; --accent-ink:#1c1f23; --nav-bg:#15181b; --nav-text:#959ca3; --nav-mark:#a3c0ae;
+  --lec:#b0bccb; --pr:#a3c0ae; --lab:#dca47d; --high:#e3887c; --mid:#dcb26b; --ok:#a3c0ae; --low:#727470;
+  --tint-1:#2e2b25; --tint-2:#26302a; --tint-3:#33291f;
+  --hero-bg:#2a3530; --hero-text:#e6e4de; --hero-muted:#a3a29c; --hero-track:#3a4640; --hero-bar:#a3c0ae;
+}
+html[data-palette^="tri"] .hero{border-color:transparent}
+html[data-palette^="tri"] .btn-hero{color:var(--hero-text);border-color:var(--hero-track)}
+html[data-palette^="tri"] .home-top .kpi{border-color:transparent}
+html[data-palette^="tri"] .home-top .kpi:nth-child(2){background:var(--tint-1)}
+html[data-palette^="tri"] .home-top .kpi:nth-child(3){background:var(--tint-2)}
+html[data-palette^="tri"] .home-top .kpi:nth-child(4){background:var(--tint-3)}
+html[data-palette^="tri"] .md-row.is-active{background:var(--tint-2)}
+html[data-palette^="tri"] .now-card{background:var(--tint-2);border-color:transparent;color:var(--text);
+  --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:color-mix(in srgb,var(--text) 12%,transparent); --hero-bar:var(--accent)}
+html[data-palette^="tri"] .next-card{background:var(--tint-1);border-color:transparent}
+html[data-palette^="tri"] .step.is-cur{background:var(--tint-2)}
+
+/* ---------- DEPTH (тонові шари, без ліній) ---------- */
+html[data-palette="depth"]{ --ink:#39414a; --paper:#dde1e5; --seed:#2d343b; }
+html[data-theme][data-palette="depth"]{
+  --bg:#dde1e5; --surface:#f3f5f7; --surface-2:#e8ebee; --line:#e3e6e9; --text:#23282e; --muted:#556069; --faint:#88919a;
+  --accent:#2d343b; --accent-ink:#f3f5f7; --nav-bg:#39414a; --nav-text:#b7bfc7; --nav-strong:#f3f5f7; --nav-mark:#f3f5f7;
+  --lec:#4c5a6a; --pr:#4f6b58; --lab:#82502f; --high:#ad4538; --mid:#93681c; --ok:#4f6b58; --low:#88919a;
+  --hero-bg:#2d343b; --hero-text:#f3f5f7; --hero-muted:rgba(243,245,247,.66); --hero-track:rgba(243,245,247,.18); --hero-bar:#f3f5f7;
+  --card-border:0;
+}
+html[data-theme="dark"][data-palette="depth"]{
+  --bg:#15181b; --surface:#21252a; --surface-2:#292e34; --line:#2a2f35; --text:#e3e7eb; --muted:#9ba4ad; --faint:#6b737c;
+  --accent:#cdd4db; --accent-ink:#15181b; --nav-bg:#2a3037; --nav-text:#a5aeb7; --nav-strong:#e9edf0; --nav-mark:#cdd4db;
+  --lec:#b3bfcc; --pr:#a9c2b0; --lab:#d9a17f; --high:#e3857a; --mid:#dcb06b; --ok:#a9c2b0; --low:#6b737c;
+  --hero-bg:#2b3238; --hero-text:#e3e7eb; --hero-muted:#9ba4ad; --hero-track:#3a4148; --hero-bar:#cdd4db;
+}
+html[data-palette="depth"] .hero,html[data-palette="depth"] .now-card{border:0}
+html[data-palette="depth"] .search,html[data-palette="depth"] .icon-btn{border:0}
+html[data-palette="depth"] .btn{border-color:transparent;background:var(--surface-2)}
+html[data-palette="depth"] .btn-primary{background:var(--accent)}
+html[data-palette="depth"] .btn-hero{background:rgba(255,255,255,.1);color:var(--hero-text)}
+html[data-palette="depth"] .chip{border:0;background:var(--surface-2)}
+html[data-palette="depth"] .chip.is-on{background:var(--accent)}
+html[data-palette="depth"] .md-list{border-right:0;background:color-mix(in srgb,var(--surface-2) 60%,var(--surface))}
+html[data-palette="depth"] .md-search{border:0}
+html[data-palette="depth"] .day{border:0}
+html[data-palette="depth"] .steps .step{border-right-color:var(--bg)}
+
+/* =====================================================================
+   TRIAD FAMILY — 5 more three-colour combinations (same rules as triad:
+   dark nav · warm paper · one accent · three pastel tints for blocks)
+   ===================================================================== */
+
+/* ---------- Сутінки: слива + пильна троянда + крем ---------- */
+html[data-palette="tri-dusk"]{ --ink:#2e2833; --paper:#f4efe9; --seed:#844b5b; }
+html[data-theme][data-palette="tri-dusk"]{
+  --bg:#f4efe9; --surface:#fcfaf8; --surface-2:#ede6df; --line:#e0d6ce; --text:#2a2430; --muted:#625a66; --faint:#9d949f;
+  --accent:#844b5b; --accent-ink:#fcfaf8; --nav-bg:#2e2833; --nav-text:#b3aab6; --nav-strong:#f4efe9; --nav-mark:#d7a9b5;
+  --lec:#5d4f78; --pr:#844b5b; --lab:#835c2e; --high:#b0473b; --mid:#93681c; --ok:#4f6b58; --low:#9d949f;
+  --tint-1:#f1e7da; --tint-2:#e8e3ef; --tint-3:#f4e2e5;
+  --hero-bg:#2e2833; --hero-text:#f4efe9; --hero-muted:rgba(244,239,233,.66); --hero-track:rgba(244,239,233,.18); --hero-bar:#d7a9b5;
+}
+html[data-theme="dark"][data-palette="tri-dusk"]{
+  --bg:#1d1a20; --surface:#252128; --surface-2:#2d2830; --line:#38323b; --text:#ebe5e8; --muted:#aca2ab; --faint:#766d76;
+  --accent:#dcaab7; --accent-ink:#1d1a20; --nav-bg:#161419; --nav-text:#9b929e; --nav-mark:#dcaab7;
+  --lec:#bfb2dc; --pr:#dcaab7; --lab:#d9b07a; --high:#e3887c; --mid:#dcb26b; --ok:#a9c2b0; --low:#766d76;
+  --tint-1:#302a24; --tint-2:#2a2733; --tint-3:#33262b;
+  --hero-bg:#342b37; --hero-text:#ebe5e8; --hero-muted:#aca2ab; --hero-track:#463b49; --hero-bar:#dcaab7;
+}
+
+/* ---------- Ліс: хвоя + мох + охра ---------- */
+html[data-palette="tri-forest"]{ --ink:#1f2b26; --paper:#f2f0e8; --seed:#35523f; }
+html[data-theme][data-palette="tri-forest"]{
+  --bg:#f2f0e8; --surface:#fbfaf6; --surface-2:#e9e7dc; --line:#dad7ca; --text:#1f2a25; --muted:#57605a; --faint:#959a94;
+  --accent:#35523f; --accent-ink:#fbfaf6; --nav-bg:#1f2b26; --nav-text:#a5b0aa; --nav-strong:#f2f0e8; --nav-mark:#d9c27e;
+  --lec:#35523f; --pr:#745712; --lab:#8b4a32; --high:#b0473b; --mid:#8a6316; --ok:#35523f; --low:#959a94;
+  --tint-1:#f0e7cd; --tint-2:#e2e9dd; --tint-3:#ece2d8;
+  --hero-bg:#1f2b26; --hero-text:#f2f0e8; --hero-muted:rgba(242,240,232,.66); --hero-track:rgba(242,240,232,.18); --hero-bar:#d9c27e;
+}
+html[data-theme="dark"][data-palette="tri-forest"]{
+  --bg:#171d1a; --surface:#1f2622; --surface-2:#262e29; --line:#313a34; --text:#e4e7e0; --muted:#a1a99f; --faint:#6f776f;
+  --accent:#a9c4a8; --accent-ink:#171d1a; --nav-bg:#121614; --nav-text:#939c95; --nav-mark:#d9c27e;
+  --lec:#a9c4a8; --pr:#dcc47e; --lab:#e0a283; --high:#e3887c; --mid:#dcb26b; --ok:#a9c4a8; --low:#6f776f;
+  --tint-1:#2e2a1c; --tint-2:#222c24; --tint-3:#2f2622;
+  --hero-bg:#24302a; --hero-text:#e4e7e0; --hero-muted:#a1a99f; --hero-track:#34413a; --hero-bar:#d9c27e;
+}
+
+/* ---------- Море: петроль + корал + пісок ---------- */
+html[data-palette="tri-sea"]{ --ink:#1d2f33; --paper:#f1efe8; --seed:#2c5458; }
+html[data-theme][data-palette="tri-sea"]{
+  --bg:#f1efe8; --surface:#fbfaf7; --surface-2:#e8e6de; --line:#d9d6cc; --text:#1d2b2f; --muted:#56636a; --faint:#949b9e;
+  --accent:#2c5458; --accent-ink:#fbfaf7; --nav-bg:#1d2f33; --nav-text:#a3b3b5; --nav-strong:#f1efe8; --nav-mark:#e8a690;
+  --lec:#2c5458; --pr:#9c4934; --lab:#715a1c; --high:#b0473b; --mid:#8a6316; --ok:#2c5458; --low:#949b9e;
+  --tint-1:#dcebe9; --tint-2:#f1e8d6; --tint-3:#f6e1d9;
+  --hero-bg:#1d2f33; --hero-text:#f1efe8; --hero-muted:rgba(241,239,232,.66); --hero-track:rgba(241,239,232,.18); --hero-bar:#e8a690;
+}
+html[data-theme="dark"][data-palette="tri-sea"]{
+  --bg:#151d1f; --surface:#1c2628; --surface-2:#232e31; --line:#2e3a3d; --text:#e2e8e7; --muted:#9eabad; --faint:#6c7a7c;
+  --accent:#93c1c0; --accent-ink:#151d1f; --nav-bg:#101618; --nav-text:#8f9fa1; --nav-mark:#e8a690;
+  --lec:#93c1c0; --pr:#e9a28c; --lab:#d9be7a; --high:#e3887c; --mid:#dcb26b; --ok:#93c1c0; --low:#6c7a7c;
+  --tint-1:#1f3031; --tint-2:#2d2a21; --tint-3:#33241f;
+  --hero-bg:#1f3337; --hero-text:#e2e8e7; --hero-muted:#9eabad; --hero-track:#2f4448; --hero-bar:#e8a690;
+}
+
+/* ---------- Глина: еспресо + олива + глина ---------- */
+html[data-palette="tri-clay"]{ --ink:#2d231e; --paper:#f3eee6; --seed:#56622f; }
+html[data-theme][data-palette="tri-clay"]{
+  --bg:#f3eee6; --surface:#fcfaf6; --surface-2:#ebe4d9; --line:#ddd3c5; --text:#2b231e; --muted:#645a51; --faint:#a0968b;
+  --accent:#56622f; --accent-ink:#fcfaf6; --nav-bg:#2d231e; --nav-text:#b5aa9f; --nav-strong:#f3eee6; --nav-mark:#dba88a;
+  --lec:#56622f; --pr:#934f31; --lab:#6d5277; --high:#b0473b; --mid:#8a6316; --ok:#56622f; --low:#a0968b;
+  --tint-1:#f2e0d4; --tint-2:#e5e8d3; --tint-3:#ede4d6;
+  --hero-bg:#2d231e; --hero-text:#f3eee6; --hero-muted:rgba(243,238,230,.66); --hero-track:rgba(243,238,230,.18); --hero-bar:#dba88a;
+}
+html[data-theme="dark"][data-palette="tri-clay"]{
+  --bg:#1e1915; --surface:#26201b; --surface-2:#2e2722; --line:#3a312a; --text:#ece5dc; --muted:#ab9f93; --faint:#776c61;
+  --accent:#c3cc98; --accent-ink:#1e1915; --nav-bg:#16120f; --nav-text:#9f9488; --nav-mark:#dba88a;
+  --lec:#c3cc98; --pr:#e3a283; --lab:#c8b0d4; --high:#e3887c; --mid:#dcb26b; --ok:#c3cc98; --low:#776c61;
+  --tint-1:#33251d; --tint-2:#2a2b1d; --tint-3:#2e2720;
+  --hero-bg:#352a23; --hero-text:#ece5dc; --hero-muted:#ab9f93; --hero-track:#47392f; --hero-bar:#dba88a;
+}
+
+/* ---------- Ретро: графіт + м'ята + гірчиця + рум'янець ---------- */
+html[data-palette="tri-retro"]{ --ink:#26262a; --paper:#f3f1ec; --seed:#2b625b; }
+html[data-theme][data-palette="tri-retro"]{
+  --bg:#f3f1ec; --surface:#fcfbf9; --surface-2:#eae7e0; --line:#dcd8cf; --text:#26262a; --muted:#5d5d63; --faint:#9a9a9e;
+  --accent:#2b625b; --accent-ink:#fcfbf9; --nav-bg:#26262a; --nav-text:#adadb2; --nav-strong:#f3f1ec; --nav-mark:#e8c766;
+  --lec:#2b625b; --pr:#7d5a10; --lab:#9a4545; --high:#b0473b; --mid:#8a6316; --ok:#2b625b; --low:#9a9a9e;
+  --tint-1:#f3e9c9; --tint-2:#dcebe5; --tint-3:#f3dfdc;
+  --hero-bg:#26262a; --hero-text:#f3f1ec; --hero-muted:rgba(243,241,236,.66); --hero-track:rgba(243,241,236,.18); --hero-bar:#e8c766;
+}
+html[data-theme="dark"][data-palette="tri-retro"]{
+  --bg:#18181b; --surface:#202024; --surface-2:#28282c; --line:#333338; --text:#e8e7e3; --muted:#a4a3a6; --faint:#707074;
+  --accent:#8fcbbf; --accent-ink:#18181b; --nav-bg:#121214; --nav-text:#96969b; --nav-mark:#e8c766;
+  --lec:#8fcbbf; --pr:#e3c46e; --lab:#e8968f; --high:#e3887c; --mid:#dcb26b; --ok:#8fcbbf; --low:#707074;
+  --tint-1:#302b1c; --tint-2:#1d2c28; --tint-3:#33221f;
+  --hero-bg:#2a2a2f; --hero-text:#e8e7e3; --hero-muted:#a4a3a6; --hero-track:#3c3c42; --hero-bar:#e8c766;
+}
+
+/* Головна — тріади */
+html[data-palette^="tri"] .next{background:var(--tint-2)}
+html[data-palette^="tri"] .how li:nth-child(1){background:var(--tint-1)}
+html[data-palette^="tri"] .how li:nth-child(2){background:var(--tint-2)}
+html[data-palette^="tri"] .how li:nth-child(3){background:var(--tint-3)}
+html[data-palette^="tri"] .qa:nth-child(1) .qa-ico{background:var(--tint-2)}
+html[data-palette^="tri"] .qa:nth-child(2) .qa-ico{background:var(--tint-1)}
+html[data-palette^="tri"] .qa:nth-child(3) .qa-ico{background:var(--tint-3)}
+html[data-palette^="tri"] .qa:nth-child(4) .qa-ico{background:var(--tint-2)}
+html[data-palette^="tri"] .res:nth-child(1) .res-ico{background:var(--tint-2)}
+html[data-palette^="tri"] .res:nth-child(2) .res-ico{background:var(--tint-1)}
+html[data-palette^="tri"] .res:nth-child(3) .res-ico{background:var(--tint-3)}
+html[data-palette^="tri"] .res:nth-child(4) .res-ico{background:var(--tint-2)}
+
+</style>
+<style>/* color-lab.css */
+/* =====================================================================
+   Colour lab — 5 experiments on different axes (loaded after slate-lab.css)
+   x-vivid   — high saturation, vivid accent with dark text
+   x-airy    — high key: light sidebar, white UI, one raspberry pop
+   x-jewel   — low key: stone page, deep jewel blocks with light text
+   x-mosaic  — many colours: each section / block has its own hue
+   x-duo     — two colours only: coloured terracotta sidebar + cream
+   ===================================================================== */
+
+/* ---------- shared tint usage for the x- family ---------- */
+html[data-palette^="x-"] .hero{border-color:transparent}
+html[data-palette^="x-"] .home-top .kpi{border-color:transparent}
+html[data-palette^="x-"] .home-top .kpi:nth-child(2){background:var(--tint-1)}
+html[data-palette^="x-"] .home-top .kpi:nth-child(3){background:var(--tint-2)}
+html[data-palette^="x-"] .home-top .kpi:nth-child(4){background:var(--tint-3)}
+html[data-palette^="x-"] .btn-hero{color:var(--hero-text);border-color:var(--hero-track)}
+html[data-palette^="x-"] .now-card{background:var(--tint-now);border-color:transparent;color:var(--text);
+  --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:color-mix(in srgb,var(--text) 12%,transparent); --hero-bar:var(--accent)}
+html[data-palette^="x-"] .next-card{background:var(--tint-next);border-color:transparent}
+html[data-palette^="x-"] .md-row.is-active{background:var(--tint-row)}
+html[data-palette^="x-"] .step.is-cur{background:var(--tint-row)}
+
+/* =================== 1 · СОКОВИТИЙ (насиченість) =================== */
+html[data-palette="x-vivid"]{ --ink:#1d1a17; --paper:#fbf7f0; --seed:#ff7a3d; }
+html[data-theme][data-palette="x-vivid"]{
+  --bg:#fbf7f0; --surface:#ffffff; --surface-2:#f4eee5; --line:#e8dfd2; --text:#1d1a17; --muted:#5f574e; --faint:#9b9186;
+  --accent:#ff7a3d; --accent-ink:#1d1a17; --nav-bg:#1d1a17; --nav-text:#b8afa5; --nav-strong:#fff; --nav-mark:#ff7a3d;
+  --lec:#5b3fc4; --pr:#2c7419; --lab:#b83e14; --high:#c43a2c; --mid:#9a6400; --ok:#2c7419; --low:#9b9186;
+  --tint-1:#ffd9c4; --tint-2:#ddf58f; --tint-3:#ddd2ff; --tint-now:#ddf58f; --tint-next:#ffe6d6; --tint-row:#fff0e6;
+  --hero-bg:#ff7a3d; --hero-text:#1d1a17; --hero-muted:rgba(29,26,23,.72); --hero-track:rgba(29,26,23,.16); --hero-bar:#1d1a17;
+}
+html[data-theme="dark"][data-palette="x-vivid"]{
+  --bg:#141210; --surface:#1c1a17; --surface-2:#25221e; --line:#302c27; --text:#f3ede5; --muted:#ada498; --faint:#776f65;
+  --accent:#ff8a52; --accent-ink:#141210; --nav-bg:#0d0c0b; --nav-text:#a39a90; --nav-mark:#ff8a52;
+  --lec:#b9a8ff; --pr:#a6dd6a; --lab:#ff9a6e; --high:#ff8070; --mid:#f2c050; --ok:#a6dd6a; --low:#776f65;
+  --tint-1:#3d2416; --tint-2:#2c3812; --tint-3:#2b2343; --tint-now:#2c3812; --tint-next:#3d2416; --tint-row:#2a201a;
+  --hero-bg:#ff8a52; --hero-text:#141210; --hero-muted:rgba(20,18,16,.72); --hero-track:rgba(20,18,16,.18); --hero-bar:#141210;
+}
+html[data-palette="x-vivid"] .hero-value{font-weight:700}
+html[data-palette="x-vivid"] .btn-primary{font-weight:600}
+
+/* =================== 2 · ПОВІТРЯ (висока яскравість) =================== */
+html[data-palette="x-airy"]{ --ink:#2a2a2e; --paper:#f7f6f3; --seed:#c2255c; }
+html[data-theme][data-palette="x-airy"]{
+  --bg:#f7f6f3; --surface:#ffffff; --surface-2:#f1f0ec; --line:#e7e5df; --text:#2a2a2e; --muted:#626268; --faint:#a2a2a7;
+  --accent:#c2255c; --accent-ink:#fff; --nav-bg:#ecebe6; --nav-text:#55555b; --nav-strong:#1f1f23; --nav-active-bg:#ffffff;
+  --nav-active-text:#1f1f23; --nav-line:#dddbd4; --nav-mark:#c2255c;
+  --lec:#6741a8; --pr:#256d42; --lab:#924f12; --high:#c2255c; --mid:#9a6400; --ok:#2b7a4b; --low:#a2a2a7;
+  --tint-1:#ffffff; --tint-2:#ffffff; --tint-3:#ffffff; --tint-now:#fbe7ee; --tint-next:#ffffff; --tint-row:#fbe7ee;
+  --hero-bg:#ffffff; --hero-text:#2a2a2e; --hero-muted:#626268; --hero-track:#f1f0ec; --hero-bar:#c2255c;
+}
+html[data-theme="dark"][data-palette="x-airy"]{
+  --bg:#2a2a2f; --surface:#323238; --surface-2:#3a3a40; --line:#44444b; --text:#ececef; --muted:#b4b4ba; --faint:#85858c;
+  --accent:#f0739b; --accent-ink:#2a2a2f; --nav-bg:#323238; --nav-text:#b4b4ba; --nav-strong:#fff; --nav-active-bg:#3e3e45;
+  --nav-active-text:#fff; --nav-line:#44444b; --nav-mark:#f0739b;
+  --lec:#c9b0f2; --pr:#8fd0a8; --lab:#f0b27a; --high:#f0739b; --mid:#f2c050; --ok:#8fd0a8; --low:#85858c;
+  --tint-1:#323238; --tint-2:#323238; --tint-3:#323238; --tint-now:#43303a; --tint-next:#323238; --tint-row:#43303a;
+  --hero-bg:#323238; --hero-text:#ececef; --hero-muted:#b4b4ba; --hero-track:#44444b; --hero-bar:#f0739b;
+}
+html[data-palette="x-airy"] .nav{border-right:1px solid var(--nav-line)}
+html[data-palette="x-airy"] .brand-mark{background:var(--accent);color:var(--accent-ink)}
+html[data-palette="x-airy"] .nav-user .avatar{background:var(--surface);color:var(--text)}
+html[data-palette="x-airy"] .nav-item.is-active{box-shadow:inset 2px 0 0 var(--accent),0 1px 2px rgba(0,0,0,.04)}
+html[data-palette="x-airy"] .hero,html[data-palette="x-airy"] .home-top .kpi{border-color:var(--line)}
+html[data-palette="x-airy"] .hero-value{color:var(--accent)}
+html[data-palette="x-airy"] .card{box-shadow:0 1px 2px rgba(20,20,30,.04)}
+
+/* =================== 3 · КОШТОВНОСТІ (низька яскравість, глибокі тони) =================== */
+html[data-palette="x-jewel"]{ --ink:#1a2b24; --paper:#f1ece3; --seed:#0f6b52; }
+html[data-theme][data-palette="x-jewel"]{
+  --bg:#d9d5cc; --surface:#ebe8e1; --surface-2:#e1ddd4; --line:#cdc8bd; --text:#1e1c1a; --muted:#4f4a43; --faint:#7f796f;
+  --accent:#0f6b52; --accent-ink:#fff; --nav-bg:#1a2b24; --nav-text:#a6b8ae; --nav-strong:#f1ece3; --nav-mark:#e0b341;
+  --lec:#0f6b52; --pr:#7a2238; --lab:#74500a; --high:#9c2a2a; --mid:#74500a; --ok:#0f6b52; --low:#7f796f;
+  --tint-1:#7a2238; --tint-2:#65440b; --tint-3:#0c4c3b; --tint-now:#d0e3d8; --tint-next:#e8dcc2; --tint-row:#d6e2da;
+  --hero-bg:#1a2b24; --hero-text:#f1ece3; --hero-muted:rgba(241,236,227,.68); --hero-track:rgba(241,236,227,.16); --hero-bar:#e0b341;
+}
+html[data-theme="dark"][data-palette="x-jewel"]{
+  --bg:#121614; --surface:#1a1f1c; --surface-2:#212824; --line:#2b332e; --text:#ece7dd; --muted:#a8a397; --faint:#726e66;
+  --accent:#4cc39b; --accent-ink:#121614; --nav-bg:#0c100e; --nav-text:#93a39a; --nav-mark:#e0b341;
+  --lec:#6fd1ad; --pr:#e88aa0; --lab:#e6b860; --high:#ef8a80; --mid:#e6b860; --ok:#6fd1ad; --low:#726e66;
+  --tint-1:#5a1a2b; --tint-2:#5e3f08; --tint-3:#0c4537; --tint-now:#1d332a; --tint-next:#33291a; --tint-row:#1f2d27;
+  --hero-bg:#1d2c25; --hero-text:#ece7dd; --hero-muted:#a8a397; --hero-track:#2f3f37; --hero-bar:#e0b341;
+}
+html[data-palette="x-jewel"] .home-top .kpi{color:#f6efe4}
+html[data-palette="x-jewel"] .home-top .kpi .kpi-label,html[data-palette="x-jewel"] .home-top .kpi .kpi-note,
+html[data-palette="x-jewel"] .home-top .kpi .kpi-value small{color:rgba(246,239,228,.88)}
+html[data-palette="x-jewel"] .home-top .kpi .progress{background:rgba(255,255,255,.18)}
+html[data-palette="x-jewel"] .home-top .kpi .progress>i{background:#e0b341}
+html[data-palette="x-jewel"] .card{border-color:transparent}
+
+/* =================== 4 · МОЗАЇКА (багато кольорів) =================== */
+html[data-palette="x-mosaic"]{ --ink:#222024; --paper:#f6f4ef; --seed:#222024;
+  --c1:#ff8f70; --c2:#ffd166; --c3:#7fd1ae; --c4:#a9a6f2; --c5:#f4a6c8; --c6:#c5e384; }
+html[data-theme][data-palette="x-mosaic"]{
+  --bg:#f6f4ef; --surface:#ffffff; --surface-2:#f0ede6; --line:#e4e0d7; --text:#222024; --muted:#5d5a60; --faint:#9b989e;
+  --accent:#222024; --accent-ink:#fff; --nav-bg:#222024; --nav-text:#b2aeb5; --nav-strong:#fff; --nav-mark:#ffd166;
+  --lec:#4a4cb0; --pr:#1f7350; --lab:#b0422a; --high:#c43a2c; --mid:#946200; --ok:#1f7350; --low:#9b989e;
+  --tint-1:#ffe1d8; --tint-2:#d9f2e7; --tint-3:#e4e3fb; --tint-now:#d9f2e7; --tint-next:#fff0c7; --tint-row:#fde3ee;
+  --hero-bg:#ffd166; --hero-text:#222024; --hero-muted:rgba(34,32,36,.72); --hero-track:rgba(34,32,36,.16); --hero-bar:#222024;
+}
+html[data-theme="dark"][data-palette="x-mosaic"]{
+  --bg:#19181b; --surface:#222125; --surface-2:#2a292e; --line:#343338; --text:#efedf0; --muted:#aaa7ad; --faint:#75727a;
+  --accent:#efedf0; --accent-ink:#19181b; --nav-bg:#111013; --nav-text:#9c99a0; --nav-mark:#ffd166;
+  --lec:#b8b6ff; --pr:#86dcb6; --lab:#ffa48a; --high:#ff8070; --mid:#ffd166; --ok:#86dcb6; --low:#75727a;
+  --tint-1:#3a231d; --tint-2:#1c3329; --tint-3:#2a2a42; --tint-now:#1c3329; --tint-next:#3a3219; --tint-row:#3a2230;
+  --hero-bg:#3a3219; --hero-text:#ffe7a8; --hero-muted:rgba(255,231,168,.7); --hero-track:rgba(255,231,168,.16); --hero-bar:#ffd166;
+}
+html[data-palette="x-mosaic"] .nav-item:nth-child(6n+1) .icon{color:var(--c1)}
+html[data-palette="x-mosaic"] .nav-item:nth-child(6n+2) .icon{color:var(--c2)}
+html[data-palette="x-mosaic"] .nav-item:nth-child(6n+3) .icon{color:var(--c3)}
+html[data-palette="x-mosaic"] .nav-item:nth-child(6n+4) .icon{color:var(--c4)}
+html[data-palette="x-mosaic"] .nav-item:nth-child(6n+5) .icon{color:var(--c5)}
+html[data-palette="x-mosaic"] .nav-item:nth-child(6n) .icon{color:var(--c6)}
+html[data-palette="x-mosaic"] .nav-item.is-active{box-shadow:inset 2px 0 0 var(--c2)}
+html[data-palette="x-mosaic"] .day.is-active{background:var(--c1);border-color:var(--c1);color:#222024}
+html[data-palette="x-mosaic"] .chip.is-on{background:var(--c4);border-color:var(--c4);color:#222024}
+html[data-palette="x-mosaic"] .brand-mark{background:var(--c2);color:#222024}
+html[data-palette="x-mosaic"] .pub-head .brand-mark{background:var(--c2);color:#222024}
+
+/* =================== 5 · ДУОТОН (2 кольори, кольорове меню) =================== */
+html[data-palette="x-duo"]{ --ink:#3a1d12; --paper:#f6efe4; --seed:#a3472a; }
+html[data-theme][data-palette="x-duo"]{
+  --bg:#f6efe4; --surface:#fbf6ee; --surface-2:#f0e5d6; --line:#e6d6c2; --text:#3a1d12; --muted:#6e4a3a; --faint:#a88b7c;
+  --accent:#a3472a; --accent-ink:#fff7ef; --nav-bg:#9c4426; --nav-text:#f7dccd; --nav-strong:#fff7ef;
+  --nav-active-bg:rgba(255,247,239,.16); --nav-active-text:#fff; --nav-line:rgba(255,247,239,.2); --nav-mark:#fff7ef;
+  --lec:#3a1d12; --pr:#a3472a; --lab:#7a4a35; --high:#a3302a; --mid:#8a5a1a; --ok:#3a1d12; --low:#a88b7c;
+  --tint-1:#f3e1d3; --tint-2:#efd5c3; --tint-3:#ebcab4; --tint-now:#efd5c3; --tint-next:#f3e1d3; --tint-row:#f3e1d3;
+  --hero-bg:#9c4426; --hero-text:#fff7ef; --hero-muted:rgba(255,247,239,.74); --hero-track:rgba(255,247,239,.22); --hero-bar:#fff7ef;
+}
+html[data-theme="dark"][data-palette="x-duo"]{
+  --bg:#1f1310; --surface:#2a1914; --surface-2:#331f19; --line:#432a22; --text:#f6e6da; --muted:#c9a593; --faint:#8f6c5c;
+  --accent:#f08a64; --accent-ink:#1f1310; --nav-bg:#6e2c18; --nav-text:#f0c8b4; --nav-strong:#fff3ea;
+  --nav-active-bg:rgba(255,243,234,.12); --nav-active-text:#fff; --nav-line:rgba(255,243,234,.14); --nav-mark:#f08a64;
+  --lec:#f6e6da; --pr:#f08a64; --lab:#d4a48e; --high:#ff8a7a; --mid:#e8b060; --ok:#f6e6da; --low:#8f6c5c;
+  --tint-1:#3a221a; --tint-2:#432820; --tint-3:#4d2e24; --tint-now:#432820; --tint-next:#3a221a; --tint-row:#3a221a;
+  --hero-bg:#5a2616; --hero-text:#f6e6da; --hero-muted:#d9b3a2; --hero-track:rgba(246,230,218,.2); --hero-bar:#f08a64;
+}
+html[data-palette="x-duo"] .card{border-color:transparent}
+html[data-palette="x-duo"] .nav-label{color:rgba(255,247,239,.7)}
+
+/* Головна — x- family */
+html[data-palette^="x-"] .next{background:var(--tint-now)}
+html[data-palette^="x-"] .how li:nth-child(1){background:var(--tint-1)}
+html[data-palette^="x-"] .how li:nth-child(2){background:var(--tint-2)}
+html[data-palette^="x-"] .how li:nth-child(3){background:var(--tint-3)}
+/* Мозаїка: кожна швидка дія та крок має свій колір */
+html[data-palette="x-mosaic"] .how li>b{color:#222024}
+html[data-palette="x-mosaic"] .how li:nth-child(1)>b{background:var(--c1)}
+html[data-palette="x-mosaic"] .how li:nth-child(2)>b{background:var(--c3)}
+html[data-palette="x-mosaic"] .how li:nth-child(3)>b{background:var(--c4)}
+html[data-palette="x-mosaic"] .qa-ico{color:#222024}
+html[data-palette="x-mosaic"] .qa:nth-child(1) .qa-ico{background:var(--c2)}
+html[data-palette="x-mosaic"] .qa:nth-child(2) .qa-ico{background:var(--c1)}
+html[data-palette="x-mosaic"] .qa:nth-child(3) .qa-ico{background:var(--c3)}
+html[data-palette="x-mosaic"] .qa:nth-child(4) .qa-ico{background:var(--c5)}
+html[data-palette="x-mosaic"] .res-ico{color:#222024}
+html[data-palette="x-mosaic"] .res:nth-child(1) .res-ico{background:var(--c1)}
+html[data-palette="x-mosaic"] .res:nth-child(2) .res-ico{background:var(--c3)}
+html[data-palette="x-mosaic"] .res:nth-child(3) .res-ico{background:var(--c4)}
+html[data-palette="x-mosaic"] .res:nth-child(4) .res-ico{background:var(--c2)}
+html[data-palette="x-mosaic"] .wk-day.is-today .wk-bar i{background:var(--c1)}
+html[data-palette="x-mosaic"] .wk-bar i{background:color-mix(in srgb,var(--c4) 55%,var(--surface-2))}
+
+</style>
+<style>
+/* 14 · ЧОРНИЛО — форми й типографіка варіанту 12, кольори — з ink-palettes.css */
+html[data-theme]{
+  --font:'Commissioner',system-ui,sans-serif;
+  --radius:12px; --radius-sm:8px; --btn-radius:8px; --pill:6px; --card-border:1px solid var(--line); --pad:22px; --gap:16px;
+  --title-size:28px; --title-weight:600; --h2-size:15px;
+}
+.nav{border-right:0;padding:26px 14px}
+.brand-mark{background:var(--paper);color:var(--ink);border-radius:8px}
+.nav-label{text-transform:none;letter-spacing:0;font-size:12px;font-weight:400;color:color-mix(in srgb,var(--nav-text) 72%,transparent)}
+.nav-item{border-radius:8px;font-weight:400}
+.nav-item.is-active{box-shadow:inset 2px 0 0 var(--nav-mark)}
+.nav-count{color:var(--nav-text);opacity:.7}
+.nav-user .avatar{background:var(--nav-active-bg);color:var(--paper)}
+.main{padding:28px 32px 90px}
+.hero{border:1px solid var(--line)}
+.hero-value{font-weight:600}
+.btn-hero{border-color:var(--line);color:var(--text)}
+.kpi-value{font-weight:500}
+.seg{background:var(--surface-2)}
+.seg button.is-on{box-shadow:0 0 0 1px var(--line)}
+.task-group-label{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500}
+.task-fix{background:var(--surface-2)}
+.fix-opt.is-sel{border-color:var(--line)}
+.chip.is-on{background:var(--accent);border-color:var(--accent)}
+.md-row.is-active{background:var(--surface-2);box-shadow:inset 2px 0 0 var(--accent)}
+.section-title{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500;color:var(--text)}
+.step.is-cur{background:var(--surface-2)}
+.now-card{border:1px solid var(--line)}
+.now-title{font-weight:600}
+.day.is-active{background:var(--accent);border-color:var(--accent)}
+.lessons-head{text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);font-weight:500}
+.pal select{all:unset;cursor:pointer;color:#f4efe6;padding:8px 26px 8px 12px;border-radius:7px;background:rgba(255,255,255,.08) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cfc8bc' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") right 8px center/12px no-repeat}
+.pal select option{color:#111}
+</style>
+</head>
+<body>
+<script>/* theme.js */
+/* Light / dark theme for variants 9–13.
+   initTheme(key)  — call BEFORE renderApp (sets data-theme early, no flash)
+   mountThemeToggle(key) — call AFTER renderApp (adds the toggle buttons)   */
+(function () {
+  const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const set = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const root = document.documentElement;
+  const SUN = '<svg class="icon" viewBox="0 0 24 24"><path d="M12 17a5 5 0 100-10 5 5 0 000 10zM12 1.5v2M12 20.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M1.5 12h2M20.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></svg>';
+  const MOON = '<svg class="icon" viewBox="0 0 24 24"><path d="M20.5 13.2A8.5 8.5 0 1110.8 3.5a6.6 6.6 0 009.7 9.7z"/></svg>';
+
+  window.initTheme = (key) => {
+    root.dataset.theme = new URLSearchParams(location.search).get('t') || get(key) || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  };
+  window.mountThemeToggle = (key) => {
+    const btn = '<button class="icon-btn theme-btn" aria-label="Перемкнути тему"></button>';
+    document.querySelectorAll('.topbar .search').forEach((s) => s.insertAdjacentHTML('afterend', btn));
+    document.querySelector('.pub-head .btn')?.insertAdjacentHTML('beforebegin', btn);
+    document.body.insertAdjacentHTML('beforeend', '<div class="pal"><button data-th="light">Світла</button><button data-th="dark">Темна</button></div>');
+    const sync = () => {
+      const dark = root.dataset.theme === 'dark';
+      document.querySelectorAll('.theme-btn').forEach((b) => { b.innerHTML = dark ? SUN : MOON; b.title = dark ? 'Світла тема' : 'Темна тема'; });
+      document.querySelectorAll('[data-th]').forEach((b) => b.classList.toggle('on', b.dataset.th === root.dataset.theme));
+    };
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.theme-btn')) { root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark'; set(key, root.dataset.theme); }
+      const t = e.target.closest('[data-th]'); if (t) { root.dataset.theme = t.dataset.th; set(key, t.dataset.th); }
+      sync();
+    });
+    sync();
+  };
+})();
+
+</script>
+<script>/* shell.js */
+/* =====================================================================
+   Shared screen markup for the 5 UI variants.
+   The UX structure is fixed (chosen combination):
+     · Admin home      = task inbox + readiness  (UX v5)
+     · Directories     = list + detail, no modals (UX v4)
+     · Semester        = step checklist + preflight (UX v1, simplified)
+     · Public          = search + "my schedule" + now/next (UX v2 + v5)
+   Each variant page only supplies CSS (the visual layer) and calls
+   renderApp({ name }). Structural CSS lives here; themes style the look.
+   ===================================================================== */
+(function () {
+  const P = {
+    home: 'M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z',
+    inbox: 'M3 13h5l1.5 3h5l1.5-3h5M5.5 5h13L21 13v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6z',
+    calendar: 'M4 6h16v15H4zM4 10h16M8 3v4M16 3v4',
+    grid: 'M3 4h18v16H3zM3 10h18M3 15h18M9 4v16M15 4v16',
+    user: 'M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0',
+    users: 'M9 11a4 4 0 100-8 4 4 0 000 8zM2 21a7 7 0 0114 0M16 3.5a4 4 0 010 7.5M18 14a6 6 0 014 7',
+    layers: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5',
+    door: 'M6 21V4a1 1 0 011-1h10a1 1 0 011 1v17M3 21h18M14 12h.01',
+    book: 'M5 4h10a4 4 0 014 4v13H9a4 4 0 01-4-4zM5 17a4 4 0 014-4h10',
+    clipboard: 'M9 3h6v3H9zM7 4.5H5V21h14V4.5h-2M9 11h6M9 15h4',
+    ban: 'M12 21a9 9 0 100-18 9 9 0 000 18zM5.6 5.6l12.8 12.8',
+    search: 'M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-4-4',
+    bell: 'M6 9a6 6 0 0112 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 004 0',
+    plus: 'M12 5v14M5 12h14',
+    check: 'M5 12.5l4.5 4.5L19 7',
+    alert: 'M12 9v4M12 17h.01M10.3 4.3L2.5 18a2 2 0 001.7 3h15.6a2 2 0 001.7-3L13.7 4.3a2 2 0 00-3.4 0z',
+    x: 'M6 6l12 12M18 6L6 18',
+    clock: 'M12 21a9 9 0 100-18 9 9 0 000 18zM12 7v5l3 2',
+    pin: 'M12 21s7-6 7-12a7 7 0 00-14 0c0 6 7 12 7 12zM12 11a2 2 0 100-4 2 2 0 000 4z',
+    chevR: 'M9 6l6 6-6 6', chevL: 'M15 6l-6 6 6 6', chevD: 'M6 9l6 6 6-6',
+    sliders: 'M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M14 4v4M8 10v4M16 16v4',
+    upload: 'M12 16V4M7 9l5-5 5 5M4 20h16',
+    bolt: 'M13 3L4 14h7l-1 7 9-11h-7z',
+    more: 'M5 12h.01M12 12h.01M19 12h.01',
+    arrow: 'M5 12h14M13 6l6 6-6 6',
+    info: 'M12 21a9 9 0 100-18 9 9 0 000 18zM12 11v5M12 8h.01',
+    link: 'M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1',
+  };
+  const ic = (n, cls = '') => `<svg class="icon ${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${P[n]}"/></svg>`;
+
+  /* ---------- mock data ---------- */
+  const PAIRS = [['08:30', '09:50'], ['10:00', '11:20'], ['11:40', '13:00'], ['13:30', '14:50'], ['15:00', '16:20']];
+  const DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+  const DAYS_FULL = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П’ятниця', 'Субота'];
+  const TYPE = { lec: 'Лекція', pr: 'Практика', lab: 'Лабораторна' };
+  const LESSONS = [
+    [0, 0, 'Бази даних', 'lec', 'Коваленко О. П.', '301'], [0, 1, 'Бази даних', 'lab', 'Мельник А. В.', 'Лаб-2'], [0, 2, 'Вища математика', 'pr', 'Шевченко Т. І.', '214'],
+    [1, 1, 'Алгоритми та структури даних', 'lec', 'Бондар С. М.', 'Ауд. 1'], [1, 2, 'Англійська мова', 'pr', 'Ткаченко Л. О.', '118'],
+    [2, 0, 'Операційні системи', 'lec', 'Кравчук Д. Ю.', '301'], [2, 1, 'Веб-технології', 'lab', 'Мельник А. В.', 'Лаб-4'], [2, 2, 'Веб-технології', 'lab', 'Мельник А. В.', 'Лаб-4'],
+    [3, 1, 'Комп’ютерні мережі', 'lec', 'Олійник В. Р.', 'Ауд. 2'], [3, 2, 'Алгоритми та структури даних', 'pr', 'Бондар С. М.', '207'], [3, 3, 'Вища математика', 'lec', 'Шевченко Т. І.', 'Ауд. 1'],
+    [4, 0, 'Операційні системи', 'lab', 'Кравчук Д. Ю.', 'Лаб-1'], [4, 1, 'Комп’ютерні мережі', 'pr', 'Олійник В. Р.', '210'],
+  ].map(([d, p, s, t, tc, r]) => ({ d, p, s, t, tc, r }));
+  const TEACHERS = [
+    { n: 'Коваленко Олена Петрівна', dep: 'Кафедра комп’ютерних наук', subj: ['Бази даних', 'Інформаційні системи'], load: 16, max: 20, st: 'active', groups: ['КН-31', 'КН-32', 'Потік КН-3'], off: [[3, 0], [3, 1], [3, 2], [3, 3], [3, 4]] },
+    { n: 'Мельник Андрій Вікторович', dep: 'Кафедра програмної інженерії', subj: ['Веб-технології', 'Бази даних'], load: 22, max: 22, st: 'active', groups: ['КН-31', 'ПІ-21'], off: [[5, 0], [5, 1], [5, 2], [5, 3], [5, 4]] },
+    { n: 'Шевченко Тетяна Іванівна', dep: 'Кафедра вищої математики', subj: ['Вища математика'], load: 12, max: 18, st: 'active', groups: ['КН-31', 'КН-21'], off: [] },
+    { n: 'Бондар Сергій Миколайович', dep: 'Кафедра комп’ютерних наук', subj: ['Алгоритми', 'Дискретна математика'], load: 18, max: 20, st: 'active', groups: ['КН-31', 'КН-32'], off: [[0, 3], [0, 4]] },
+    { n: 'Ткаченко Лариса Олегівна', dep: 'Кафедра іноземних мов', subj: ['Англійська мова'], load: 10, max: 24, st: 'active', groups: ['Потік Англ-Б2'], off: [[0, 0], [0, 1]] },
+    { n: 'Кравчук Дмитро Юрійович', dep: 'Кафедра комп’ютерних наук', subj: [], load: 8, max: 18, st: 'leave', groups: ['КН-31'], off: [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4]] },
+    { n: 'Олійник Віктор Романович', dep: 'Кафедра мереж', subj: ['Комп’ютерні мережі', 'Кібербезпека'], load: 14, max: 20, st: 'active', groups: ['КН-31', 'ПІ-41'], off: [] },
+  ];
+  const initials = (n) => n.split(' ').slice(0, 2).map((w) => w[0]).join('');
+
+  /* ---------- structural CSS (layout only, no look) ---------- */
+  const BASE = `
+  *{box-sizing:border-box}body{margin:0}button,input,select{font:inherit;color:inherit}
+  .icon{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .app{display:grid;grid-template-columns:var(--nav-w,236px) minmax(0,1fr);min-height:100vh}
+  body[data-screen="pub"] .app{display:none}body:not([data-screen="pub"]) .pub-wrap{display:none}
+  .nav{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;overflow:auto}
+  .nav-item{display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none;white-space:nowrap}
+  .nav-count{margin-left:auto}.nav-foot{margin-top:auto}
+  .main{min-width:0;display:flex;flex-direction:column}
+  .screen{display:none}.screen.is-on{display:block}
+  .topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.sp{flex:1}
+  .search{display:flex;align-items:center;gap:8px}.search input{border:0;background:none;outline:none;min-width:0;flex:1}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;white-space:nowrap}
+  .icon-btn{display:inline-grid;place-items:center;cursor:pointer}
+  .avatar{display:inline-grid;place-items:center;flex:none}
+  .seg{display:inline-flex}.seg button{cursor:pointer;border:0}
+  .card-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .progress{overflow:hidden}.progress>i{display:block;height:100%}
+  .home-top{display:grid;grid-template-columns:1.35fr repeat(3,1fr);gap:var(--gap,16px)}
+  .home{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:var(--gap,16px);align-items:start}
+  .col{display:flex;flex-direction:column;gap:var(--gap,16px);min-width:0}
+  .task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center}
+  .task-fix{grid-column:2/-1;display:none}.task.is-open .task-fix{display:block}
+  .fix-opt{display:flex;align-items:center;gap:10px;cursor:pointer}
+  .today-row{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:center}
+  .heat{display:grid;grid-template-columns:22px repeat(6,1fr);gap:3px}.heat i{display:block;aspect-ratio:1.6}
+  .md{display:grid;grid-template-columns:330px minmax(0,1fr);min-height:620px}
+  .md-list{display:flex;flex-direction:column;min-width:0}.md-rows{flex:1;overflow:auto}
+  .md-row{display:flex;align-items:center;gap:10px;cursor:pointer}
+  .md-row .grow{min-width:0;flex:1}.md-row .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}.chip{display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap}
+  .md-detail{min-width:0}.detail-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .fields{display:grid;grid-template-columns:160px minmax(0,1fr);align-items:center}
+  .avail{display:grid;grid-template-columns:48px repeat(6,1fr);gap:3px}.avail .c{cursor:pointer;height:28px}
+  .steps{display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}
+  .step{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .sem{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:var(--gap,16px);align-items:start}
+  .check{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center}
+  .grp-row{display:grid;grid-template-columns:70px minmax(0,1fr) 54px;gap:10px;align-items:center}
+  .pub-wrap{min-height:100vh}.pub{max-width:560px;margin:0 auto}
+  .pub-head{display:flex;align-items:center;gap:10px}
+  .daystrip{display:grid;grid-template-columns:repeat(6,1fr)}.day{cursor:pointer;text-align:center}
+  .lesson{display:grid;grid-template-columns:66px minmax(0,1fr) auto;gap:12px;align-items:center}
+  .now-meta{display:flex;flex-wrap:wrap;gap:6px 16px}.now-meta span{display:inline-flex;align-items:center;gap:6px}
+  .vbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:999;display:flex;gap:2px;padding:4px;border-radius:10px;background:rgba(20,20,22,.92);font:500 12px/1 system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+  .vbar button{all:unset;cursor:pointer;color:#c9c9cf;padding:8px 11px;border-radius:7px}.vbar button.on{background:#fff;color:#111}
+  .vbar .vname{color:#8a8a92;padding:8px 10px 8px 8px;border-right:1px solid #333;margin-right:2px}
+  .embed .vbar{display:none}
+  @media (max-width:980px){.app{grid-template-columns:1fr}.nav{display:none}.home,.md,.sem{grid-template-columns:1fr}.home-top{grid-template-columns:1fr 1fr}.steps{grid-template-columns:repeat(3,1fr)}.fields{grid-template-columns:1fr}.vbar{left:8px;right:8px;transform:none;overflow-x:auto}}
+  `;
+
+  /* ---------- markup ---------- */
+  const NAV = [
+    ['', [['home', 'Головна', 'start'], ['inbox', 'Задачі', 'home', 9], ['grid', 'Розклад'], ['calendar', 'Семестри', 'sem']]],
+    ['Довідники', [['user', 'Викладачі', 'dir', 42], ['users', 'Групи', null, 24], ['layers', 'Потоки', null, 6], ['door', 'Аудиторії', null, 56], ['book', 'Предмети', null, 87]]],
+    ['Планування', [['clipboard', 'Навчальні плани'], ['ban', 'Обмеження']]],
+  ];
+  const nav = () => `<aside class="nav">
+    <div class="nav-brand"><span class="brand-mark">Р</span><span class="brand-name">Розклад</span></div>
+    ${NAV.map(([g, items]) => `<div class="nav-group">${g ? `<div class="nav-label">${g}</div>` : ''}${items.map(([i, t, s, c]) => `<a class="nav-item" ${s ? `data-to="${s}"` : ''}>${ic(i)}<span>${t}</span>${c != null ? `<span class="nav-count">${c}</span>` : ''}</a>`).join('')}</div>`).join('')}
+    <div class="nav-foot"><a class="nav-item">${ic('sliders')}<span>Налаштування</span></a><div class="nav-user"><span class="avatar">ОК</span><div><div class="nav-user-name">Оксана Кравець</div><div class="nav-user-role">Диспетчер</div></div></div></div>
+  </aside>`;
+
+  const topbar = (crumb, title, actions = '') => `<header class="topbar">
+    <div class="title-wrap"><div class="crumbs">${crumb}</div><h1 class="page-title">${title}</h1></div><span class="sp"></span>
+    ${actions}
+    <label class="search">${ic('search')}<input placeholder="Пошук або команда"><kbd>Ctrl K</kbd></label>
+    <button class="icon-btn" aria-label="Сповіщення">${ic('bell')}<i class="dot"></i></button>
+  </header>`;
+
+  const TASKS = [
+    ['high', 'Блокує генерацію', [
+      ['«Алгоритми» у КН-32 без викладача', 'Навчальний план · 64 год', 'Призначити', true],
+      ['6 груп без навчального плану', 'КН-21, ПІ-21, ПІ-22 та ще 3', 'Скопіювати плани'],
+    ]],
+    ['mid', 'Погіршує розклад', [
+      ['Кравчук Д. Ю. — 20 год плану, доступний 2 дні', 'Обмеження викладача', 'Переглянути'],
+      ['Замало лабораторних аудиторій', 'Потрібно ≈ 4, доступно 3', 'Деталі'],
+      ['КН-32: вікно 3 пари у вівторок', 'Після останньої генерації', 'Відкрити'],
+    ]],
+    ['low', 'Поради', [
+      ['3 викладачі без предметів', 'Довідник викладачів', 'Показати'],
+    ]],
+  ];
+  /* ---------- Головна: зрозуміла точка входу (не список помилок) ---------- */
+  /* [icon, title, total, metric label, metric %, status, status level, screen] */
+  const RES = [
+    ['user', 'Викладачі', 42, 'середнє навантаження', 78, '2 перевантажені', 'warn', 'dir'],
+    ['users', 'Групи', 24, 'мають навчальний план', 75, '6 без плану', 'err', ''],
+    ['door', 'Аудиторії', 56, 'зайнятість цього тижня', 71, 'лабораторій замало', 'warn', ''],
+    ['book', 'Предмети', 87, 'мають викладача', 97, '3 без викладача', 'warn', ''],
+  ];
+  const WEEK = [['Пн', 52], ['Вт', 48], ['Ср', 55], ['Чт', 48], ['Пт', 41], ['Сб', 6]];
+  const NOW = [['207', 'Алгоритми та СД', 'КН-31', 'pr'], ['Ауд. 1', 'Філософія', 'Потік ПІ-2', 'lec'], ['Лаб-4', 'Веб-технології', 'КН-32', 'lab']];
+  const DATES = [['28 лист', 'Дедлайн публікації розкладу', 'через 9 днів', 'high'], ['22 груд', 'Початок заліково-екзаменаційної сесії', 'через 33 дні', ''], ['25 груд', 'Різдво — вихідний день', 'вже в календарі', '']];
+  const start = () => `<section class="screen is-on" id="scr-start">
+    ${topbar('Четвер, 19 листопада · 12-й тиждень семестру', 'Доброго ранку, Оксано', `<button class="btn btn-ghost btn-sm how-open">${ic('info')}Як це працює?</button>`)}
+    <div class="page">
+      <div class="card welcome" id="welcome">
+        <div class="welcome-text"><h2 class="card-title">Як працює система</h2>
+          <p class="muted">Розклад складається у три етапи. До будь-якого з них можна повернутися пізніше.</p></div>
+        <button class="btn btn-ghost btn-sm how-close">Зрозуміло, сховати</button>
+        <ol class="how">
+          <li><b>1</b><span><strong>Довідники</strong>Викладачі, групи, аудиторії й предмети. Заповнюються один раз на рік.</span></li>
+          <li><b>2</b><span><strong>Плани й обмеження</strong>Скільки годин має кожна група і коли хто може працювати.</span></li>
+          <li><b>3</b><span><strong>Генерація й публікація</strong>Система складає розклад, ви перевіряєте й публікуєте для студентів.</span></li>
+        </ol>
+      </div>
+      <div class="start-grid">
+        <div class="col">
+          <div class="card journey">
+            <div class="card-head"><h2 class="card-title">Осінній семестр 2026</h2><span class="badge badge-status">Підготовка</span><span class="sp"></span><span class="muted sm">2 з 6 етапів готово</span></div>
+            <div class="steps">${STEPS.map(([n, s, m], i) => `<div class="step is-${s}"><span class="step-n">${s === 'done' ? ic('check', 'xs') : i + 1}</span><span class="step-name">${n}</span><span class="step-meta">${m}</span></div>`).join('')}</div>
+            <div class="next">
+              <div class="grow"><div class="next-k">Наступний крок</div><div class="next-t">Заповнити навчальні плани для 6 груп</div><div class="muted sm">приблизно 15 хвилин · КН-21, ПІ-21, ПІ-22 та ще 3</div></div>
+              <button class="btn btn-primary" data-to="sem">Продовжити ${ic('arrow')}</button>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card attention">
+            <span class="sev-ico sev-high">${ic('alert')}</span>
+            <div class="grow"><b>2 питання блокують генерацію</b><div class="muted sm">і ще 4 поради щодо якості розкладу</div></div>
+            <button class="btn btn-ghost btn-sm" data-to="home">Задачі</button>
+          </div>
+          <!-- «Сьогодні / Зараз іде» прибрано з головної — відкладено для розкладу лаборанта (design/final/backlog.md) -->
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Найближчі дати</h2></div>
+            ${DATES.slice(0, 2).map(([d, t, m, lvl]) => `<div class="date-row ${lvl ? 'is-' + lvl : ''}"><span class="date-d num">${d}</span><span class="grow"><div class="t">${t}</div><div class="muted sm">${m}</div></span></div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="card res-wide">
+        <div class="card-head"><h2 class="card-title">Ресурси семестру</h2><span class="sp"></span><span class="muted sm">що є і чого бракує</span></div>
+        <div class="res-grid">${RES.map(([i, t, n, ml, mv, st, lvl, to]) => `
+          <div class="res" ${to ? `data-to="${to}"` : ''}>
+            <div class="res-top"><span class="res-ico">${ic(i)}</span><span class="res-name">${t}</span><span class="res-num num">${n}</span></div>
+            <div class="res-metric"><span>${ml}</span><b class="num">${mv}%</b></div>
+            <div class="progress sm"><i style="width:${mv}%"></i></div>
+            <div class="res-status is-${lvl}">${ic(lvl === 'err' ? 'x' : 'alert', 'xs')}${st}</div>
+          </div>`).join('')}</div>
+      </div>
+      <div class="card changes-wide">
+        <div class="card-head"><h2 class="card-title">Останні зміни</h2></div>
+        <div class="change"><span class="when">Пт · 2 пара</span><span>Компʼютерні мережі перенесено в ауд. 210</span></div>
+        <div class="change"><span class="when">Ср–Пт</span><span>Мельник А. В. на лікарняному, 4 пари без заміни</span></div>
+      </div>
+    </div></section>`;
+
+  const home = () => `<section class="screen" id="scr-home">
+    ${topbar('Осінній семестр 2026', 'Задачі')}
+    <div class="page">
+      <div class="home-top">
+        <div class="card hero">
+          <div class="hero-label">Готовність до генерації</div>
+          <div class="hero-row"><span class="hero-value">78<small>%</small></span><span class="hero-note">2 блокери залишилось</span></div>
+          <div class="progress"><i style="width:78%"></i></div>
+          <button class="btn btn-hero" data-to="sem">Відкрити семестр ${ic('arrow')}</button>
+        </div>
+        ${[['Розподілено пар', '412', '/ 438', 'ще 26 у черзі', 94], ['Конфлікти', '3', '', '−4 після правок', null], ['Вікна у студентів', '11', '', 'у 5 груп', null]].map(([l, v, s, n, pr]) => `
+        <div class="card kpi"><div class="kpi-label">${l}</div><div class="kpi-value">${v}<small>${s}</small></div>${pr ? `<div class="progress sm"><i style="width:${pr}%"></i></div>` : ''}<div class="kpi-note">${n}</div></div>`).join('')}
+      </div>
+      <div class="home">
+        <div class="card tasks-card">
+          <div class="card-head"><h2 class="card-title">Потребує уваги</h2><span class="sp"></span>
+            <div class="seg"><button class="is-on">Усі 6</button><button>Блокери 2</button><button>Поради 1</button></div></div>
+          ${TASKS.map(([sev, label, items]) => `<div class="task-group"><div class="task-group-label"><i class="sev sev-${sev}"></i>${label}<span>${items.length}</span></div>
+            ${items.map(([t, m, a, fix]) => `<div class="task ${fix ? 'is-open' : ''}">
+              <span class="sev-ico sev-${sev}">${ic(sev === 'low' ? 'info' : 'alert')}</span>
+              <div class="task-body"><div class="task-title">${t}</div><div class="task-meta">${m}</div></div>
+              <button class="btn btn-sm ${sev === 'high' ? 'btn-primary' : 'btn-ghost'} task-toggle">${a}</button>
+              ${fix ? `<div class="task-fix"><div class="fix-label">Хто може вести «Алгоритми»</div>
+                <label class="fix-opt is-sel"><input type="radio" name="fx" checked><span class="avatar sm">БС</span><span class="grow"><b>Бондар С. М.</b> <span class="muted">веде цей предмет у КН-31 · 18/20 год</span></span><span class="tag">Рекомендовано</span></label>
+                <label class="fix-opt"><input type="radio" name="fx"><span class="avatar sm">ОВ</span><span class="grow"><b>Олійник В. Р.</b> <span class="muted">14/20 год · предмет не в профілі</span></span></label>
+                <div class="fix-actions"><button class="btn btn-primary btn-sm">Призначити</button><button class="btn btn-ghost btn-sm task-toggle">Пізніше</button></div></div>` : ''}
+            </div>`).join('')}</div>`).join('')}
+        </div>
+        <div class="col">
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Зараз у корпусі</h2><span class="sp"></span><span class="muted sm">Чт · 3 пара</span></div>
+            ${[['207', 'Алгоритми та СД', 'КН-31', 'pr'], ['Ауд. 1', 'Філософія', 'Потік ПІ-2', 'lec'], ['Лаб-4', 'Веб-технології', 'КН-32', 'lab'], ['214', 'Вища математика', 'ПІ-21', 'pr']].map(([r, s, g, t]) => `
+              <div class="today-row"><span class="room">${r}</span><span class="grow"><div class="t">${s}</div><div class="muted sm">${g}</div></span><span class="badge badge-${t}">${TYPE[t]}</span></div>`).join('')}
+          </div>
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Завантаженість аудиторій</h2></div>
+            <div class="heat">${'<span></span>' + DAYS.map((d) => `<span class="hd">${d}</span>`).join('') +
+              [[.9, .6, .7, .5, .8, .1], [1, .9, .97, .9, .85, .2], [.8, .85, .9, .95, .7, .1], [.5, .6, .55, .7, .4, 0], [.2, .3, .25, .3, .1, 0]]
+                .map((r, p) => `<span class="hd">${p + 1}</span>` + r.map((v) => `<i class="h${Math.min(4, Math.floor(v * 5))}" title="${Math.round(v * 100)}%"></i>`).join('')).join('')}</div>
+            <div class="legend"><span>менше</span>${[0, 1, 2, 3, 4].map((i) => `<i class="h${i}"></i>`).join('')}<span>більше</span></div>
+          </div>
+        </div>
+      </div>
+    </div></section>`;
+
+  const dir = () => `<section class="screen" id="scr-dir">
+    ${topbar('Довідники', 'Викладачі', `<button class="btn btn-ghost">${ic('upload')}Імпорт</button><button class="btn btn-primary">${ic('plus')}Додати</button>`)}
+    <div class="page">
+      <div class="card md">
+        <div class="md-list">
+          <label class="search md-search">${ic('search')}<input placeholder="Пошук викладача"></label>
+          <div class="chips md-filters"><span class="chip is-on">Усі 42</span><span class="chip">Без предметів 3</span><span class="chip">Перевантажені 2</span></div>
+          <div class="md-rows" id="mdRows"></div>
+        </div>
+        <div class="md-detail" id="mdDetail"></div>
+      </div>
+    </div></section>`;
+
+  const detail = (t) => `
+    <div class="detail-head"><span class="avatar lg">${initials(t.n)}</span>
+      <div class="grow"><h2 class="detail-name">${t.n}</h2><div class="muted">${t.dep}</div></div>
+      <span class="saved">${ic('check')}Збережено</span><button class="icon-btn" aria-label="Ще">${ic('more')}</button></div>
+    <div class="section"><div class="section-title">Основне</div>
+      <div class="fields">
+        <div class="f-label">ПІБ</div><div class="f-value editable">${t.n}</div>
+        <div class="f-label">Статус</div><div class="f-value"><span class="status st-${t.st}">${t.st === 'active' ? 'Активний' : 'Відпустка до 01.12'}</span></div>
+        <div class="f-label">Предмети</div><div class="f-value"><div class="chips">${t.subj.map((s) => `<span class="chip">${s}${ic('x', 'xs')}</span>`).join('') || '<span class="muted">Не призначено</span>'}<span class="chip chip-add">${ic('plus', 'xs')}Додати</span></div></div>
+        <div class="f-label">Навантаження</div><div class="f-value"><div class="load"><div class="progress"><i style="width:${(t.load / t.max) * 100}%"></i></div><span class="num">${t.load} / ${t.max} год</span></div></div>
+      </div></div>
+    <div class="section"><div class="section-title">Доступність <span class="muted sm">клікніть клітинку, щоб позначити недоступність</span></div>
+      <div class="avail">${'<span></span>' + DAYS.map((d) => `<span class="hd">${d}</span>`).join('') +
+        PAIRS.map((p, pi) => `<span class="hd tm">${p[0]}</span>` + DAYS.map((_, d) => `<span class="c ${t.off.some((o) => o[0] === d && o[1] === pi) ? 'off' : ''}"></span>`).join('')).join('')}</div></div>
+    <div class="section"><div class="section-title">Веде в групах</div>
+      <div class="chips">${t.groups.map((g) => `<span class="chip link">${g}${ic('chevR', 'xs')}</span>`).join('')}</div></div>`;
+
+  const STEPS = [['Календар', 'done', '1 вер – 20 груд'], ['Ресурси', 'done', '42 · 24 · 56'], ['Плани', 'cur', '18 з 24 груп'], ['Обмеження', 'todo', '12 правил'], ['Генерація', 'todo', 'не запускалась'], ['Публікація', 'todo', '—']];
+  const sem = () => `<section class="screen" id="scr-sem">
+    ${topbar('Семестри', 'Осінь 2026 <span class="badge badge-status">Підготовка</span>', `<button class="btn btn-ghost">${ic('calendar')}Календар</button><button class="btn btn-primary" disabled>${ic('bolt')}Згенерувати</button>`)}
+    <div class="page">
+      <div class="card steps">${STEPS.map(([n, s, m], i) => `<div class="step is-${s}"><span class="step-n">${s === 'done' ? ic('check', 'xs') : i + 1}</span><span class="step-name">${n}</span><span class="step-meta">${m}</span></div>`).join('')}</div>
+      <div class="sem">
+        <div class="card">
+          <div class="card-head"><h2 class="card-title">Передперевірка</h2><span class="sp"></span><span class="muted sm">оновлено 2 хв тому</span></div>
+          ${[['ok', '24 групи мають розклад дзвінків', ''], ['ok', 'Усі 56 аудиторій мають тип і місткість', ''], ['err', '6 груп без навчального плану', 'Заповнити'], ['err', '«Алгоритми» у КН-32 без викладача', 'Призначити'], ['warn', 'Кравчук Д. Ю. доступний лише 2 дні', 'Переглянути'], ['warn', 'Лабораторних аудиторій може не вистачити', 'Деталі']].map(([s, t, a]) => `
+            <div class="check is-${s}"><span class="check-ico">${ic(s === 'ok' ? 'check' : s === 'err' ? 'x' : 'alert', 'xs')}</span><span>${t}</span>${a ? `<button class="btn btn-sm btn-ghost">${a}</button>` : '<span></span>'}</div>`).join('')}
+        </div>
+        <div class="col">
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Навчальні плани по групах</h2><span class="sp"></span><span class="muted sm">18 / 24</span></div>
+            ${[['КН-31', 100], ['КН-32', 86], ['КН-21', 0], ['ПІ-21', 0], ['ПІ-41', 100], ['ПІ-22', 40]].map(([g, v]) => `
+              <div class="grp-row"><span class="g">${g}</span><div class="progress"><i style="width:${v}%"></i></div><span class="num ${v === 100 ? 'ok' : ''}">${v === 100 ? 'готово' : v + '%'}</span></div>`).join('')}
+          </div>
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Історія генерацій</h2></div>
+            <div class="empty"><div class="empty-ico">${ic('bolt')}</div><div>Генерацію ще не запускали</div><div class="muted sm">Кнопка стане активною, коли не залишиться блокерів</div></div>
+          </div>
+        </div>
+      </div>
+    </div></section>`;
+
+  const pub = () => `<div class="pub-wrap"><div class="pub">
+    <header class="pub-head"><span class="brand-mark">Р</span><span class="brand-name">Розклад</span><span class="sp"></span><button class="btn btn-ghost btn-sm">${ic('link')}Поділитися</button></header>
+    <label class="search pub-search">${ic('search')}<input value="КН-31"><span class="muted sm">група</span></label>
+    <div class="pub-title"><h1>КН-31</h1><span class="muted">3 курс · Факультет комп’ютерних наук</span></div>
+    <div class="card now-card">
+      <div class="now-top"><span class="now-label"><i class="live"></i>Зараз · 3 пара</span><span class="now-left">ще 47 хв</span></div>
+      <div class="now-title">Алгоритми та структури даних</div>
+      <div class="now-meta"><span>${ic('clock', 'xs')}11:40 – 13:00</span><span>${ic('pin', 'xs')}ауд. 207</span><span>${ic('user', 'xs')}Бондар С. М.</span></div>
+      <div class="progress"><i style="width:40%"></i></div>
+    </div>
+    <div class="card next-card"><span class="next-label">Далі · 13:30</span><span class="next-title">Вища математика</span><span class="badge badge-lec">Лекція</span><span class="muted sm">Ауд. 1</span></div>
+    <div class="daystrip" id="days"></div>
+    <div class="card lessons" id="lessons"></div>
+    <div class="pub-foot"><button class="btn btn-ghost">${ic('calendar')}Додати в Google / Apple Calendar</button></div>
+  </div></div>`;
+
+  /* ---------- render + interactions ---------- */
+  window.renderApp = function ({ name = '', calm = false } = {}) {
+    const st = document.createElement('style'); st.textContent = BASE; document.head.prepend(st);
+    document.body.innerHTML = `<div class="app">${nav()}<main class="main">${start()}${home()}${dir()}${sem()}</main></div>${pub()}
+      <nav class="vbar"><span class="vname">${name}</span><button class="on" data-to="start">Головна</button><button data-to="home">Задачі</button><button data-to="dir">Викладачі</button><button data-to="sem">Семестр</button><button data-to="pub">Студент</button></nav>`;
+    const go = (s) => {
+      document.body.dataset.screen = s;
+      document.querySelectorAll('.screen').forEach((x) => x.classList.toggle('is-on', x.id === 'scr-' + s));
+      document.querySelectorAll('.vbar button').forEach((b) => b.classList.toggle('on', b.dataset.to === s));
+      document.querySelectorAll('.nav-item[data-to]').forEach((a) => a.classList.toggle('is-active', a.dataset.to === s));
+      scrollTo(0, 0);
+    };
+    document.addEventListener('click', (e) => {
+      const t = e.target.closest('[data-to]'); if (t) go(t.dataset.to);
+      if (e.target.closest('.how-close')) { document.getElementById('welcome').classList.add('is-hidden'); try { localStorage.setItem('how-hidden', '1'); } catch (er) {} }
+      if (e.target.closest('.how-open')) { document.getElementById('welcome').classList.remove('is-hidden'); try { localStorage.removeItem('how-hidden'); } catch (er) {} }
+      const tg = e.target.closest('.task-toggle'); if (tg) tg.closest('.task').classList.toggle('is-open');
+      const seg = e.target.closest('.seg button'); if (seg) seg.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('is-on', b === seg));
+      const chip = e.target.closest('.md-filters .chip'); if (chip) chip.parentElement.querySelectorAll('.chip').forEach((c) => c.classList.toggle('is-on', c === chip));
+      const cell = e.target.closest('.avail .c'); if (cell) cell.classList.toggle('off');
+      const opt = e.target.closest('.fix-opt'); if (opt) opt.parentElement.querySelectorAll('.fix-opt').forEach((o) => o.classList.toggle('is-sel', o === opt));
+    });
+
+    /* directory */
+    let sel = 0;
+    const rows = () => document.getElementById('mdRows').innerHTML = TEACHERS.map((t, i) => `
+      <div class="md-row ${i === sel ? 'is-active' : ''}" data-i="${i}"><span class="avatar">${initials(t.n)}</span>
+        <div class="grow"><div class="name">${t.n}</div><div class="meta">${t.subj.join(', ') || 'Без предметів'}</div></div>
+        <span class="num ${t.load >= t.max ? 'warn' : ''}">${t.load}/${t.max}</span></div>`).join('');
+    const showDetail = () => document.getElementById('mdDetail').innerHTML = detail(TEACHERS[sel]);
+    document.getElementById('mdRows').addEventListener('click', (e) => { const r = e.target.closest('.md-row'); if (r) { sel = +r.dataset.i; rows(); showDetail(); } });
+    rows(); showDetail();
+
+    /* public */
+    let day = 3;
+    const pubRender = () => {
+      document.getElementById('days').innerHTML = DAYS.map((d, i) => `<div class="day ${i === day ? 'is-active' : ''} ${i === 3 ? 'is-today' : ''}" data-d="${i}"><span class="dw">${d}</span><span class="dn">${16 + i}</span><span class="dc">${LESSONS.filter((l) => l.d === i).length || ''}</span></div>`).join('');
+      const ls = LESSONS.filter((l) => l.d === day).sort((a, b) => a.p - b.p);
+      document.getElementById('lessons').innerHTML = `<div class="lessons-head">${DAYS_FULL[day]}, ${16 + day} листопада</div>` + (ls.length ? ls.map((l) => `
+        <div class="lesson ${day === 3 && l.p < 2 ? 'is-past' : ''} ${day === 3 && l.p === 2 ? 'is-now' : ''}"><div class="l-time"><b>${PAIRS[l.p][0]}</b><span>${PAIRS[l.p][1]}</span></div>
+        <div class="l-body"><div class="l-title">${l.s}</div><div class="l-meta">${l.tc} · ауд. ${l.r}</div></div><span class="badge badge-${l.t}">${TYPE[l.t]}</span></div>`).join('')
+        : `<div class="empty"><div class="empty-ico">${ic('calendar')}</div><div>Пар немає</div></div>`);
+    };
+    document.getElementById('days').addEventListener('click', (e) => { const d = e.target.closest('.day'); if (d) { day = +d.dataset.d; pubRender(); } });
+    pubRender();
+
+    if (calm) { // laconic mode: drop secondary noise
+      document.body.classList.add('calm');
+      document.querySelectorAll('.task.is-open').forEach((t) => t.classList.remove('is-open'));
+      document.querySelectorAll('kbd, .legend, .task-group-label span').forEach((e) => e.remove());
+      document.querySelectorAll('.nav-count').forEach((e, i) => { if (i) e.remove(); });
+      document.querySelectorAll('.heat').forEach((h) => h.closest('.card').remove());
+    }
+    if (window.top !== window) document.body.classList.add('embed'); // gallery thumbnails: hide the screen switcher
+    try { if (localStorage.getItem('how-hidden')) document.getElementById('welcome').classList.add('is-hidden'); } catch (er) {}
+    const first = new URLSearchParams(location.search).get('s'); go(first || 'start');
+  };
+})();
+
+</script>
+<script>
+const PALETTES = [['slate','Сланець'],['mono','Моно'],['copper','Мідь'],['triad','Тріада'],['depth','Глибина'],['tri-dusk','Тріада · Сутінки'],['tri-forest','Тріада · Ліс'],['tri-sea','Тріада · Море'],['tri-clay','Тріада · Глина'],['tri-retro','Тріада · Ретро'],['x-vivid','Соковитий'],['x-airy','Повітря'],['x-jewel','Коштовності'],['x-mosaic','Мозаїка'],['x-duo','Дуотон']];
+(function () {
+  const root = document.documentElement;
+  const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const set = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  root.dataset.palette = 'triad';
+  initTheme('final-triad-theme');
+  renderApp({ name: 'Тріада', calm: true });
+  mountThemeToggle('final-triad-theme');
+})();
+</script>
+</body>
+</html>

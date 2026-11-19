@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 3 — Ember</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="look.css">
+<style>
+/* 3 · EMBER — темна тема, один помаранчевий акцент, моноширинні цифри, штрихована теплова карта */
+:root{
+  color-scheme:dark;
+  --font:'IBM Plex Sans',system-ui,sans-serif; --font-num:'IBM Plex Mono',ui-monospace,monospace;
+  --bg:#0b0b0d; --surface:#151517; --surface-2:#1d1d20; --line:#252529; --text:#ececef; --muted:#8c8c95; --faint:#5d5d66;
+  --accent:#ff5b35; --accent-ink:#fff; --accent-soft:rgba(255,91,53,.12);
+  --nav-bg:#151517; --nav-text:#9a9aa3; --nav-strong:#fff; --nav-active-bg:#212125; --nav-active-text:#fff; --nav-line:#252529;
+  --radius:16px; --radius-sm:10px; --btn-radius:10px; --card-border:1px solid #222226;
+  --lec:#86a8ff; --lec-soft:rgba(134,168,255,.12); --pr:#55c993; --pr-soft:rgba(85,201,147,.12); --lab:#f2b765; --lab-soft:rgba(242,183,101,.12);
+  --high:#ff5f56; --mid:#f2b765; --low:#6a6a73; --ok:#55c993;
+  --hero-bg:var(--surface); --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:#26262a; --hero-bar:var(--accent);
+  --track:#26262a; --bar:var(--accent);
+  --heat0:#1d1d20; --heat1:#3a1f17; --heat2:#73301d; --heat3:#c4441f; --heat4:#ff6a42;
+  --title-size:24px; --h2-size:14px;
+}
+::selection{background:var(--accent);color:#fff}
+.app{background:var(--bg)}
+.nav{margin:12px 0 12px 12px;border-radius:18px;height:calc(100vh - 24px);top:12px;border:1px solid #222226}
+.nav-item.is-active .icon{color:var(--accent)}
+.nav-label{color:#55555d}
+.avatar{background:#26262a;color:#ddd}
+.main{padding:24px 26px}
+.search,.icon-btn{background:var(--surface);border-color:#222226}
+kbd{border-color:#2c2c31;color:#6c6c75}
+.icon-btn .dot{border-color:var(--surface)}
+.btn{background:#1d1d20;border-color:#2a2a2e;color:var(--text)}
+.btn:hover{border-color:#3a3a40}
+.btn-primary{background:var(--accent);border-color:var(--accent)}
+.btn-ghost{background:transparent}
+.seg{background:#0f0f11;border:1px solid #222226}
+.seg button.is-on{background:#26262a;color:#fff;box-shadow:none}
+/* signature: число готовності помаранчеве, дельти як маленькі бейджі */
+.hero-value{color:var(--accent)}
+.btn-hero{border-color:#2a2a2e;color:var(--text)}
+.kpi-note{display:inline-flex;align-self:flex-start;margin-top:auto;padding:2px 7px;border-radius:6px;background:#1f1f22;color:#b8b8c0;font-family:var(--font-num);font-size:11px}
+.kpi{gap:0}.kpi-note{margin-top:12px}
+.heat i.h3,.heat i.h4{background-image:repeating-linear-gradient(45deg,rgba(0,0,0,.22) 0 2px,transparent 2px 5px)}
+.heat i{border-radius:3px}
+.sev-ico{background:color-mix(in srgb,var(--c) 14%,transparent)}
+.task-fix{background:#1b1b1e}
+.fix-opt.is-sel{background:#222226;border-color:#2e2e33}
+.tag{background:var(--accent-soft);color:var(--accent)}
+.badge-status{background:var(--accent-soft);color:var(--accent)}
+.chip{background:#1b1b1e;border-color:#2a2a2e;color:#b8b8c0}
+.chip.is-on{background:var(--accent);border-color:var(--accent);color:#fff}
+.md-row.is-active{background:#1d1d20;box-shadow:inset 2px 0 0 var(--accent)}
+.md-search{background:#1d1d20}
+.avail .c{background:#1d1d20;border-color:#26262a}
+.avail .c.off{background:repeating-linear-gradient(135deg,#3a1f17 0 3px,#151517 3px 7px);border-color:#4a2418}
+.step.is-cur{background:#1b1b1e}
+.step.is-done .step-n{color:#0b0b0d}
+.empty-ico{background:#1d1d20}
+.now-card{border:1px solid #2a2a2e}
+.now-title{color:#fff}
+.live{color:var(--accent)}
+@keyframes live{0%{box-shadow:0 0 0 0 rgba(255,91,53,.6)}70%{box-shadow:0 0 0 7px rgba(255,91,53,0)}100%{box-shadow:0 0 0 0 rgba(255,91,53,0)}}
+.day{background:var(--surface)}
+.day.is-active{background:var(--accent);border-color:var(--accent)}
+.vbar{border:1px solid #2a2a2e}
+</style>
+</head>
+<body>
+<script src="shell.js"></script>
+<script>renderApp({ name: '3 · Ember' })</script>
+</body>
+</html>

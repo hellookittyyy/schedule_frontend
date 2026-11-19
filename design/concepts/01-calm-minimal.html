@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept 01 — Calm Minimal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Concept 01: Calm Minimal — neutral SaaS (Linear / Vercel inspired) ===== */
+:root{
+  --bg:#fafafa; --surface:#fff; --surface-2:#f4f4f5; --border:#e4e4e7; --border-strong:#d4d4d8;
+  --text:#18181b; --muted:#71717a; --faint:#a1a1aa;
+  --accent:#4f46e5; --accent-soft:#eef2ff; --accent-text:#4338ca;
+  --lec:#2563eb; --lec-soft:#eff6ff; --pr:#16a34a; --pr-soft:#f0fdf4; --lab:#d97706; --lab-soft:#fffbeb;
+  --danger:#dc2626; --danger-soft:#fef2f2;
+  --radius:8px; --shadow:0 1px 2px rgba(0,0,0,.04),0 4px 16px rgba(0,0,0,.04);
+}
+[data-theme="dark"]{
+  --bg:#09090b; --surface:#111113; --surface-2:#18181b; --border:#27272a; --border-strong:#3f3f46;
+  --text:#fafafa; --muted:#a1a1aa; --faint:#71717a;
+  --accent:#818cf8; --accent-soft:#1e1b4b; --accent-text:#c7d2fe;
+  --lec:#60a5fa; --lec-soft:#172554; --pr:#4ade80; --pr-soft:#052e16; --lab:#fbbf24; --lab-soft:#2b1d03;
+  --danger:#f87171; --danger-soft:#2a0f0f; --shadow:0 1px 2px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+.concept-bar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border)}
+.concept-bar .logo{font-weight:700;display:flex;align-items:center;gap:8px}
+.logo-mark{width:22px;height:22px;border-radius:6px;background:var(--text);color:var(--bg);display:grid;place-items:center;font-size:12px}
+.spacer{flex:1}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:2px}
+.seg button{border:0;background:none;padding:5px 12px;border-radius:6px;cursor:pointer;color:var(--muted);font-weight:500}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.icon-btn{border:1px solid var(--border);background:var(--surface);border-radius:8px;width:32px;height:32px;cursor:pointer;display:grid;place-items:center}
+.screen{display:none}.screen.on{display:block}
+
+/* buttons / inputs */
+.btn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-weight:500;transition:background .15s,border-color .15s}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+.btn.primary:hover{opacity:.88}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.ghost{border-color:transparent;background:none}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;font-weight:500;color:var(--muted)}
+.input{height:36px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);padding:0 12px;width:100%;outline:none;transition:border-color .15s,box-shadow .15s}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+kbd{font-family:inherit;font-size:11px;border:1px solid var(--border);border-bottom-width:2px;border-radius:4px;padding:0 5px;color:var(--muted);background:var(--surface)}
+
+/* ===== Student screen ===== */
+.student{max-width:960px;margin:0 auto;padding:40px 20px 80px}
+.student h1{font-size:28px;letter-spacing:-.02em}
+.student .sub{color:var(--muted);margin:4px 0 24px}
+.filters{display:grid;grid-template-columns:1.2fr 1.2fr .9fr .9fr auto;gap:10px;align-items:end;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;box-shadow:var(--shadow)}
+.combo{position:relative}
+.combo-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,.08);padding:4px;z-index:20;display:none}
+.combo-list.show{display:block}
+.combo-item{padding:7px 10px;border-radius:6px;cursor:pointer;display:flex;justify-content:space-between}
+.combo-item:hover,.combo-item.active{background:var(--surface-2)}
+.combo-item small{color:var(--faint)}
+.week-nav{display:flex;align-items:center;gap:8px;margin:28px 0 12px}
+.week-nav h2{font-size:16px;font-weight:600;margin-right:auto}
+.day{margin-bottom:22px}
+.day-head{display:flex;align-items:baseline;gap:8px;padding:0 4px 8px;border-bottom:1px solid var(--border);margin-bottom:6px}
+.day-head b{font-weight:600}.day-head span{color:var(--faint);font-size:13px}
+.today-pill{font-size:11px;font-weight:600;color:var(--accent-text);background:var(--accent-soft);padding:1px 8px;border-radius:99px}
+.row{display:grid;grid-template-columns:96px 4px 1fr auto;gap:14px;align-items:center;padding:10px 4px;border-radius:var(--radius);transition:background .15s}
+.row:hover{background:var(--surface)}
+.row .time{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
+.row .time b{color:var(--text);font-weight:600;display:block}
+.row .bar{height:36px;border-radius:2px}
+.row .title{font-weight:600}
+.row .meta{color:var(--muted);font-size:13px;display:flex;gap:14px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.t-lec{color:var(--lec);background:var(--lec-soft)}.t-pr{color:var(--pr);background:var(--pr-soft)}.t-lab{color:var(--lab);background:var(--lab-soft)}
+.b-lec{background:var(--lec)}.b-pr{background:var(--pr)}.b-lab{background:var(--lab)}
+.row.now{background:var(--surface);box-shadow:inset 0 0 0 1px var(--accent)}
+
+/* ===== Admin shell ===== */
+.shell{display:grid;grid-template-columns:232px 1fr;min-height:calc(100vh - 53px)}
+.side{border-right:1px solid var(--border);padding:14px 10px;background:var(--surface);display:flex;flex-direction:column;gap:2px}
+.side .search{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;color:var(--faint);margin-bottom:12px;cursor:pointer}
+.side .group-label{font-size:11px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 4px}
+.nav{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:6px;color:var(--muted);cursor:pointer;font-weight:500}
+.nav svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.nav:hover{background:var(--surface-2);color:var(--text)}
+.nav.on{background:var(--surface-2);color:var(--text)}
+.nav .count{margin-left:auto;font-size:11px;color:var(--faint)}
+.main{padding:28px 32px;min-width:0}
+.page-head{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.page-head h1{font-size:20px;letter-spacing:-.01em}
+.crumbs{color:var(--faint);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.stat .k{color:var(--muted);font-size:12px;font-weight:500}
+.stat .v{font-size:26px;font-weight:600;letter-spacing:-.02em;margin-top:4px}
+.stat .d{font-size:12px;color:var(--pr)}
+.progress{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-top:10px}
+.progress i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.toolbar{display:flex;gap:8px;padding:12px;border-bottom:1px solid var(--border);align-items:center}
+.toolbar .input{max-width:260px;height:32px}
+.chip-filter{height:32px;border:1px dashed var(--border-strong);border-radius:var(--radius);padding:0 10px;background:none;cursor:pointer;color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;font-weight:500;color:var(--muted);text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface-2)}
+td{padding:11px 14px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2)}
+tbody tr .row-actions{opacity:0;transition:opacity .15s}
+tbody tr:hover .row-actions{opacity:1}
+.person{display:flex;align-items:center;gap:10px}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent-text);display:grid;place-items:center;font-size:11px;font-weight:600}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font-size:12px;border:1px solid var(--border);border-radius:6px;padding:1px 7px;color:var(--muted);display:inline-flex;align-items:center;gap:4px}
+.chip button{border:0;background:none;cursor:pointer;color:var(--faint)}
+.load{display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.load .progress{width:70px;margin:0}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.status i{width:6px;height:6px;border-radius:50%;background:var(--pr)}
+.status.off i{background:var(--faint)}
+
+/* drawer + dialog */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:80}
+.scrim.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:420px;max-width:100%;background:var(--surface);border-left:1px solid var(--border);z-index:90;transform:translateX(100%);transition:transform .25s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+.drawer.show{transform:none}
+.drawer header,.drawer footer{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.drawer footer{border-top:1px solid var(--border);border-bottom:0;justify-content:flex-end;margin-top:auto}
+.drawer header h3{font-size:16px;margin-right:auto}
+.drawer .body{padding:20px;display:flex;flex-direction:column;gap:16px;overflow:auto}
+.dialog{position:fixed;left:50%;top:50%;transform:translate(-50%,-48%) scale(.98);opacity:0;pointer-events:none;width:400px;max-width:calc(100% - 32px);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;z-index:90;transition:all .18s}
+.dialog.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
+.dialog h3{font-size:16px;margin-bottom:6px}.dialog p{color:var(--muted)}
+.dialog .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.toasts{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:100}
+.toast{background:var(--text);color:var(--bg);padding:10px 14px;border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,.15);display:flex;gap:10px;align-items:center;animation:tin .2s ease-out}
+.toast .undo{color:var(--accent-soft);font-weight:600;cursor:pointer;margin-left:8px}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}}
+
+/* builder */
+.builder{display:grid;grid-template-columns:1fr 280px;gap:16px}
+.grid{display:grid;grid-template-columns:72px repeat(6,1fr);border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}
+.gh{padding:10px;font-size:12px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface-2)}
+.gt{padding:8px;font-size:12px;color:var(--faint);border-right:1px solid var(--border);border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+.gc{min-height:78px;padding:4px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);transition:background .15s}
+.gc.over{background:var(--accent-soft);outline:1.5px dashed var(--accent);outline-offset:-3px}
+.gc.conflict{background:var(--danger-soft)}
+.card-l{border-radius:6px;padding:6px 8px;font-size:12px;cursor:grab;border:1px solid var(--border);background:var(--surface);border-left:3px solid;margin-bottom:4px}
+.card-l b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-l span{color:var(--muted)}
+.card-l.lec{border-left-color:var(--lec)}.card-l.pr{border-left-color:var(--pr)}.card-l.lab{border-left-color:var(--lab)}
+.card-l.dragging{opacity:.4}
+.bin{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;align-self:start;position:sticky;top:70px}
+.bin h4{display:flex;justify-content:space-between;font-size:13px;margin-bottom:10px}
+.bin .count{background:var(--danger-soft);color:var(--danger);border-radius:99px;padding:0 8px;font-size:12px}
+.legend{display:flex;gap:14px;color:var(--muted);font-size:12px;margin-bottom:12px}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+@media (max-width:860px){
+  .filters{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr 1fr}
+  .shell{grid-template-columns:1fr}.side{display:none}.builder{grid-template-columns:1fr}.grid{overflow-x:auto}
+  .row{grid-template-columns:70px 4px 1fr}.row .tag{display:none}
+}
+</style>
+</head>
+<body data-theme="light">
+
+<div class="concept-bar">
+  <div class="logo"><span class="logo-mark">Р</span> Розклад <span style="color:var(--faint);font-weight:400">· Concept 01 Calm Minimal</span></div>
+  <div class="spacer"></div>
+  <div class="seg" id="screenSwitch">
+    <button class="on" data-s="student">Студенту</button>
+    <button data-s="admin">Адмін · Викладачі</button>
+    <button data-s="builder">Конструктор</button>
+  </div>
+  <button class="icon-btn" id="themeBtn" title="Тема">◐</button>
+</div>
+
+<!-- ============ STUDENT ============ -->
+<section class="screen on" id="s-student">
+  <div class="student">
+    <h1>Розклад занять</h1>
+    <p class="sub">Знайдіть розклад за групою, викладачем або курсом.</p>
+    <div class="filters">
+      <div class="field combo">
+        <label>Група</label>
+        <input class="input" id="groupInput" placeholder="Напр. КН-31" autocomplete="off" value="КН-31">
+        <div class="combo-list" id="groupList"></div>
+      </div>
+      <div class="field"><label>Викладач</label><input class="input" placeholder="Прізвище викладача"></div>
+      <div class="field"><label>З дати</label><input class="input" type="date" value="2026-11-16"></div>
+      <div class="field"><label>По дату</label><input class="input" type="date" value="2026-11-21"></div>
+      <button class="btn primary" style="height:36px">Показати</button>
+    </div>
+    <div class="week-nav">
+      <h2>16 – 21 листопада</h2>
+      <button class="btn ghost">‹</button><button class="btn">Сьогодні</button><button class="btn ghost">›</button>
+    </div>
+    <div id="studentList"></div>
+  </div>
+</section>
+
+<!-- ============ ADMIN ============ -->
+<section class="screen" id="s-admin">
+  <div class="shell">
+    <aside class="side" id="side"></aside>
+    <main class="main">
+      <div class="page-head">
+        <div><div class="crumbs">Довідники / Викладачі</div><h1>Викладачі</h1></div>
+        <div class="spacer"></div>
+        <button class="btn">Імпорт</button>
+        <button class="btn primary" onclick="openDrawer()">+ Додати викладача</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="k">Викладачів</div><div class="v">42</div><div class="d">+3 за семестр</div></div>
+        <div class="stat"><div class="k">Предметів</div><div class="v">87</div><div class="d" style="color:var(--muted)">без змін</div></div>
+        <div class="stat"><div class="k">Розподілено пар</div><div class="v">412 / 438</div><div class="progress"><i style="width:94%"></i></div></div>
+        <div class="stat"><div class="k">Тиждень семестру</div><div class="v">12 / 16</div><div class="progress"><i style="width:75%"></i></div></div>
+      </div>
+      <div class="panel">
+        <div class="toolbar">
+          <input class="input" placeholder="Пошук викладачів…" id="tSearch">
+          <button class="chip-filter">+ Кафедра</button>
+          <button class="chip-filter">+ Статус</button>
+          <div class="spacer"></div>
+          <span style="color:var(--faint);font-size:12px" id="tCount"></span>
+        </div>
+        <table>
+          <thead><tr><th>Викладач</th><th>Предмети</th><th>Навантаження</th><th>Статус</th><th></th></tr></thead>
+          <tbody id="tBody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</section>
+
+<!-- ============ BUILDER ============ -->
+<section class="screen" id="s-builder">
+  <div class="main" style="max-width:1400px;margin:0 auto">
+    <div class="page-head">
+      <div><div class="crumbs">Осінній семестр 2026 / Тиждень 12</div><h1>Конструктор розкладу</h1></div>
+      <div class="spacer"></div>
+      <div class="seg"><button class="on">КН-31</button><button>КН-32</button><button>ПІ-21</button></div>
+      <button class="btn primary">⚡ Авто-генерація</button>
+    </div>
+    <div class="legend"><span><i style="background:var(--lec)"></i>Лекція</span><span><i style="background:var(--pr)"></i>Практика</span><span><i style="background:var(--lab)"></i>Лабораторна</span><span style="margin-left:auto">Перетягніть картку в слот</span></div>
+    <div class="builder">
+      <div class="grid" id="bGrid"></div>
+      <aside class="bin"><h4>Нерозподілені <span class="count" id="binCount">0</span></h4><div id="bin" class="dropzone" data-bin="1" style="min-height:120px"></div></aside>
+    </div>
+  </div>
+</section>
+
+<div class="scrim" id="scrim" onclick="closeAll()"></div>
+<aside class="drawer" id="drawer">
+  <header><h3>Новий викладач</h3><button class="btn ghost" onclick="closeAll()">✕</button></header>
+  <div class="body">
+    <div class="field"><label>ПІБ *</label><input class="input" placeholder="Іванов Іван Іванович"></div>
+    <div class="field"><label>Кафедра</label><select class="input"><option>Комп'ютерних наук</option><option>Математики</option></select></div>
+    <div class="field"><label>Предмети</label>
+      <div class="chips" id="drawerChips"><span class="chip">Бази даних <button>✕</button></span><span class="chip">Веб-технології <button>✕</button></span></div>
+      <select class="input"><option>+ Додати предмет…</option><option>Алгоритми</option><option>Операційні системи</option></select>
+    </div>
+    <div class="field"><label>Максимум пар на день</label><input class="input" type="number" value="4"></div>
+  </div>
+  <footer><button class="btn" onclick="closeAll()">Скасувати</button><button class="btn primary" onclick="closeAll();toast('Викладача збережено')">Зберегти</button></footer>
+</aside>
+<div class="dialog" id="dialog">
+  <h3>Видалити викладача?</h3>
+  <p>Викладача <b id="delName"></b> буде видалено. Пари з ним стануть нерозподіленими.</p>
+  <div class="actions"><button class="btn" onclick="closeAll()">Скасувати</button><button class="btn danger" onclick="closeAll();toast('Викладача видалено',true)">Видалити</button></div>
+</div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* ---------- mock data (shared across all concepts) ---------- */
+const PAIRS=[['08:30','09:50'],['10:00','11:20'],['11:40','13:00'],['13:30','14:50'],['15:00','16:20']];
+const DAYS=['Понеділок','Вівторок','Середа','Четвер','Пʼятниця','Субота'];
+const SHORT=['Пн','Вт','Ср','Чт','Пт','Сб'];
+const TYPE={lec:'Лекція',pr:'Практика',lab:'Лабораторна'};
+const LESSONS=[
+ {d:0,p:0,s:'Бази даних',t:'lec',tc:'Коваленко О. П.',r:'301'},
+ {d:0,p:1,s:'Бази даних',t:'lab',tc:'Мельник А. В.',r:'Лаб-2'},
+ {d:0,p:2,s:'Вища математика',t:'pr',tc:'Шевченко Т. І.',r:'214'},
+ {d:1,p:1,s:'Алгоритми та структури даних',t:'lec',tc:'Бондар С. М.',r:'Ауд. 1'},
+ {d:1,p:2,s:'Англійська мова',t:'pr',tc:'Ткаченко Л. О.',r:'118'},
+ {d:2,p:0,s:'Операційні системи',t:'lec',tc:'Кравчук Д. Ю.',r:'301'},
+ {d:2,p:1,s:'Веб-технології',t:'lab',tc:'Мельник А. В.',r:'Лаб-4'},
+ {d:2,p:2,s:'Веб-технології',t:'lab',tc:'Мельник А. В.',r:'Лаб-4'},
+ {d:3,p:1,s:'Компʼютерні мережі',t:'lec',tc:'Олійник В. Р.',r:'Ауд. 2'},
+ {d:3,p:2,s:'Алгоритми та структури даних',t:'pr',tc:'Бондар С. М.',r:'207'},
+ {d:3,p:3,s:'Вища математика',t:'lec',tc:'Шевченко Т. І.',r:'Ауд. 1'},
+ {d:4,p:0,s:'Операційні системи',t:'lab',tc:'Кравчук Д. Ю.',r:'Лаб-1'},
+ {d:4,p:1,s:'Компʼютерні мережі',t:'pr',tc:'Олійник В. Р.',r:'210'},
+];
+const UNSCHEDULED=[
+ {s:'Англійська мова',t:'pr',tc:'Ткаченко Л. О.',r:'118'},
+ {s:'Фізичне виховання',t:'pr',tc:'Литвиненко Р. С.',r:'Спортзал'},
+ {s:'Бази даних',t:'pr',tc:'Коваленко О. П.',r:'305'},
+];
+const TEACHERS=[
+ ['Коваленко Олена Петрівна',['Бази даних','ІС'],16,20,1],
+ ['Мельник Андрій Вікторович',['Веб-технології','Бази даних'],22,22,1],
+ ['Шевченко Тетяна Іванівна',['Вища математика'],12,18,1],
+ ['Бондар Сергій Миколайович',['Алгоритми','Дискретна математика'],18,20,1],
+ ['Ткаченко Лариса Олегівна',['Англійська мова'],10,24,1],
+ ['Кравчук Дмитро Юрійович',['Операційні системи'],8,18,0],
+ ['Олійник Віктор Романович',['Компʼютерні мережі','Кібербезпека'],14,20,1],
+];
+const GROUPS=[['КН-31','3 курс · 26 студ.'],['КН-32','3 курс · 24 студ.'],['КН-21','2 курс · 28 студ.'],['ПІ-21','2 курс · 22 студ.'],['ПІ-41','4 курс · 19 студ.']];
+const TODAY=3, NOW_PAIR=2; // Thursday, 3rd pair — for the "now" highlight
+const initials=n=>n.split(' ').slice(0,2).map(w=>w[0]).join('');
+
+/* ---------- screen switch + theme ---------- */
+document.getElementById('screenSwitch').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('#screenSwitch button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+b.dataset.s));
+};
+themeBtn.onclick=()=>document.body.dataset.theme=document.body.dataset.theme==='dark'?'light':'dark';
+
+/* ---------- student list ---------- */
+studentList.innerHTML=DAYS.map((day,d)=>{
+  const ls=LESSONS.filter(l=>l.d===d).sort((a,b)=>a.p-b.p);
+  return `<div class="day"><div class="day-head"><b>${day}</b><span>${16+d} листопада</span>${d===TODAY?'<span class="today-pill">Сьогодні</span>':''}</div>
+  ${ls.length?ls.map(l=>`<div class="row ${d===TODAY&&l.p===NOW_PAIR?'now':''}">
+     <div class="time"><b>${PAIRS[l.p][0]}</b>${PAIRS[l.p][1]}</div><div class="bar b-${l.t}"></div>
+     <div><div class="title">${l.s}</div><div class="meta"><span>${l.tc}</span><span>ауд. ${l.r}</span><span>${l.p+1} пара</span></div></div>
+     <span class="tag t-${l.t}">${TYPE[l.t]}</span></div>`).join(''):'<div style="color:var(--faint);padding:10px 4px">Пар немає</div>'}</div>`;
+}).join('');
+
+/* ---------- combobox (keyboard accessible) ---------- */
+let comboIdx=-1;
+function renderCombo(){
+  const q=groupInput.value.toLowerCase();
+  const res=GROUPS.filter(g=>g[0].toLowerCase().includes(q));
+  groupList.innerHTML=res.length?res.map((g,i)=>`<div class="combo-item ${i===comboIdx?'active':''}" data-v="${g[0]}">${g[0]}<small>${g[1]}</small></div>`).join(''):'<div class="combo-item"><small>Нічого не знайдено</small></div>';
+  groupList.classList.add('show');
+}
+groupInput.oninput=()=>{comboIdx=-1;renderCombo()};
+groupInput.onfocus=renderCombo;
+groupInput.onkeydown=e=>{
+  const items=groupList.querySelectorAll('[data-v]');
+  if(e.key==='ArrowDown'){comboIdx=Math.min(comboIdx+1,items.length-1);renderCombo();e.preventDefault()}
+  if(e.key==='ArrowUp'){comboIdx=Math.max(comboIdx-1,0);renderCombo();e.preventDefault()}
+  if(e.key==='Enter'&&items[comboIdx]){groupInput.value=items[comboIdx].dataset.v;groupList.classList.remove('show')}
+  if(e.key==='Escape')groupList.classList.remove('show');
+};
+groupList.onmousedown=e=>{const it=e.target.closest('[data-v]');if(it){groupInput.value=it.dataset.v;groupList.classList.remove('show')}};
+groupInput.onblur=()=>setTimeout(()=>groupList.classList.remove('show'),100);
+
+/* ---------- admin sidebar + table ---------- */
+const ico=p=>`<svg viewBox="0 0 24 24"><path d="${p}"/></svg>`;
+const NAV=[['Головне',[['Дашборд','M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z'],['Розклад','M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z']]],
+ ['Довідники',[['Викладачі','M16 21v-2a4 4 0 00-8 0v2M12 11a4 4 0 100-8 4 4 0 000 8z',42,1],['Групи','M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87',24],['Потоки','M2 12h20M2 6h20M2 18h20',6],['Предмети','M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5z',87],['Аудиторії','M3 21h18M5 21V7l7-4 7 4v14',56]]],
+ ['Планування',[['Семестри','M12 8v4l3 3M12 22a10 10 0 100-20 10 10 0 000 20z'],['Навчальні плани','M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11'],['Обмеження','M12 22a10 10 0 100-20 10 10 0 000 20zM4.9 4.9l14.2 14.2']]]];
+side.innerHTML=`<div class="search">Пошук… <kbd>Ctrl K</kbd></div>`+NAV.map(([g,items])=>`<div class="group-label">${g}</div>`+items.map(([n,p,c,on])=>`<div class="nav ${on?'on':''}">${ico(p)}${n}${c?`<span class="count">${c}</span>`:''}</div>`).join('')).join('');
+function renderTable(){
+  const q=(tSearch.value||'').toLowerCase();
+  const rows=TEACHERS.filter(t=>t[0].toLowerCase().includes(q));
+  tCount.textContent=rows.length+' з '+TEACHERS.length;
+  tBody.innerHTML=rows.map(t=>`<tr>
+    <td><div class="person"><span class="avatar">${initials(t[0])}</span><div><div style="font-weight:500">${t[0]}</div></div></div></td>
+    <td><div class="chips">${t[1].map(s=>`<span class="chip">${s}</span>`).join('')}</div></td>
+    <td><div class="load"><div class="progress"><i style="width:${t[2]/t[3]*100}%;${t[2]>=t[3]?'background:var(--lab)':''}"></i></div>${t[2]}/${t[3]}</div></td>
+    <td><span class="status ${t[4]?'':'off'}"><i></i>${t[4]?'Активний':'Відпустка'}</span></td>
+    <td style="text-align:right"><span class="row-actions"><button class="btn ghost" onclick="openDrawer()">Редагувати</button><button class="btn ghost" style="color:var(--danger)" onclick="askDelete('${t[0]}')">Видалити</button></span></td></tr>`).join('');
+}
+tSearch.oninput=renderTable;renderTable();
+
+function openDrawer(){scrim.classList.add('show');drawer.classList.add('show')}
+function askDelete(n){delName.textContent=n;scrim.classList.add('show');dialog.classList.add('show')}
+function closeAll(){[scrim,drawer,dialog].forEach(e=>e.classList.remove('show'))}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});
+function toast(msg,undo){const t=document.createElement('div');t.className='toast';t.innerHTML=`✓ ${msg}${undo?'<span class="undo">Скасувати</span>':''}`;toasts.appendChild(t);setTimeout(()=>t.remove(),3200)}
+
+/* ---------- builder (HTML5 drag & drop) ---------- */
+const cardHtml=(l,i)=>`<div class="card-l ${l.t}" draggable="true" id="c${i}"><b>${l.s}</b><span>${TYPE[l.t]} · ${l.r}</span></div>`;
+let html='<div class="gh"></div>'+SHORT.map(d=>`<div class="gh">${d}</div>`).join('');
+PAIRS.forEach((p,pi)=>{html+=`<div class="gt">${p[0]}<br>${p[1]}</div>`+SHORT.map((_,d)=>`<div class="gc dropzone" data-d="${d}" data-p="${pi}"></div>`).join('')});
+bGrid.innerHTML=html;
+LESSONS.forEach((l,i)=>document.querySelector(`.gc[data-d="${l.d}"][data-p="${l.p}"]`).insertAdjacentHTML('beforeend',cardHtml(l,i)));
+UNSCHEDULED.forEach((l,i)=>bin.insertAdjacentHTML('beforeend',cardHtml(l,'u'+i)));
+const upd=()=>{binCount.textContent=bin.children.length;document.querySelectorAll('.gc').forEach(c=>c.classList.toggle('conflict',c.children.length>1))};upd();
+let dragged=null;
+document.addEventListener('dragstart',e=>{if(e.target.classList?.contains('card-l')){dragged=e.target;e.target.classList.add('dragging')}});
+document.addEventListener('dragend',e=>{e.target.classList?.remove('dragging');dragged=null});
+document.querySelectorAll('.dropzone').forEach(z=>{
+  z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('over')});
+  z.addEventListener('dragleave',()=>z.classList.remove('over'));
+  z.addEventListener('drop',e=>{e.preventDefault();z.classList.remove('over');if(dragged){z.appendChild(dragged);upd();toast(z.dataset.bin?'Пару знято з розкладу':`Перенесено: ${SHORT[z.dataset.d]}, ${+z.dataset.p+1} пара`)}});
+});
+</script>
+</body>
+</html>

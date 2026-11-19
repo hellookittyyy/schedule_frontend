@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 4 — Paper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="look.css">
+<style>
+/* 4 · PAPER — академічний стиль: теплий папір, серифні заголовки, тонкі лінії, верхнє меню, темно-зелений акцент */
+:root{
+  --font:'Source Sans 3',system-ui,sans-serif; --font-head:'Literata',Georgia,serif; --font-num:'Source Sans 3',system-ui,sans-serif;
+  --bg:#f3f0e9; --surface:#fbfaf6; --surface-2:#eeeae1; --line:#ddd6c8; --text:#1d1c1a; --muted:#6b665c; --faint:#a29c8f;
+  --accent:#1e4d3e; --accent-ink:#fff; --accent-soft:#e3ebe5;
+  --radius:4px; --radius-sm:3px; --btn-radius:3px; --pill:3px; --card-border:1px solid var(--line); --pad:22px;
+  --lec:#2f5d8a; --lec-soft:#e3eaf1; --pr:#1e4d3e; --pr-soft:#e3ebe5; --lab:#8a5a1e; --lab-soft:#f1e7d8;
+  --high:#a8392c; --mid:#b07a23; --ok:#1e4d3e;
+  --hero-bg:var(--surface); --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:var(--surface-2); --hero-bar:var(--accent);
+  --heat0:#eeeae1; --heat1:#d6e0d6; --heat2:#a9c2b1; --heat3:#5f8a77; --heat4:#1e4d3e;
+  --title-size:32px; --title-weight:500; --h2-size:18px; --h-spacing:-.01em;
+}
+body{font-size:15px}
+/* signature: горизонтальне верхнє меню замість бічного */
+.app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+.nav{position:sticky;top:0;height:auto;z-index:5;flex-direction:row;align-items:center;gap:16px;padding:0 32px;border-right:0;border-bottom:1px solid var(--line);background:var(--bg);overflow-x:auto}
+.nav-brand{padding:0}
+.brand-mark{border-radius:2px;font-family:var(--font-head)}
+.brand-name{font-family:var(--font-head);font-weight:600;font-size:19px}
+.nav-group{flex-direction:row;margin:0;gap:0}
+.nav-group+.nav-group{border-left:1px solid var(--line);padding-left:10px}
+.nav-label,.nav-item .icon{display:none}
+.nav-item{padding:18px 8px 16px;border-radius:0;border-bottom:2px solid transparent;background:none!important}
+.nav-item.is-active{border-bottom-color:var(--accent);color:var(--text)}
+.nav-count{margin-left:2px;font-size:11px}
+.nav-foot{margin:0 0 0 auto;display:flex;align-items:center}
+.nav-foot>.nav-item{display:none}
+.nav-user{border:0;padding:0;margin:0}.nav-user-role{display:none}
+.avatar{background:var(--accent);color:#fff;font-family:var(--font-head)}
+.main{max-width:1280px;width:100%;margin:0 auto;padding:30px 32px}
+.crumbs{text-transform:uppercase;letter-spacing:.1em;font-size:11px}
+.search,.icon-btn{background:transparent}
+.card{box-shadow:none}
+.card-title{font-weight:500}
+.btn{font-weight:600;letter-spacing:.01em}
+.seg{background:transparent;padding:0;border:1px solid var(--line)}
+.seg button{border-radius:0}.seg button+button{border-left:1px solid var(--line)}
+.seg button.is-on{background:var(--accent);color:#fff;box-shadow:none}
+/* hero: світла картка з товстою верхньою лінією і великим серифним числом */
+.hero{border:1px solid var(--line);border-top:3px solid var(--accent)}
+.hero-value{font-family:var(--font-head);font-weight:500;color:var(--accent);font-size:52px}
+.kpi-value{font-family:var(--font-head);font-weight:500}
+.btn-hero{color:var(--accent);border-color:var(--accent)}
+.kpi,.hero{border-top-width:3px}
+.kpi{border-top:3px solid var(--line)}
+.task-group-label,.section-title,.lessons-head{font-variant:small-caps;text-transform:lowercase;letter-spacing:.08em;font-size:13px}
+.sev-ico{border-radius:50%;width:26px;height:26px}
+.task-fix{border-left:2px solid var(--accent);border-radius:0}
+.badge{border-radius:2px;text-transform:uppercase;font-size:10.5px;letter-spacing:.06em;font-weight:600;height:20px}
+.badge-status{font-size:11px}
+.chip{border-radius:2px}
+.md-row.is-active{background:var(--surface-2);box-shadow:inset 3px 0 0 var(--accent)}
+.detail-name{font-size:24px;font-weight:500}
+.f-label{font-size:13px}
+.avail .c{border-radius:2px}
+.step-n{font-family:var(--font-head);border-radius:0}
+.step.is-cur{background:var(--accent-soft)}
+.check-ico{border-radius:2px}
+.grp-row .g{font-family:var(--font-head);font-weight:500}
+/* public */
+.pub-wrap{padding-top:32px}
+.pub-title h1{font-size:40px}
+.now-card{border:1px solid var(--line);border-top:3px solid var(--accent)}
+.now-title{font-weight:500;font-size:24px}
+.now-label{color:var(--accent)}
+.live{color:var(--accent)}
+@keyframes live{0%{box-shadow:0 0 0 0 rgba(30,77,62,.5)}70%{box-shadow:0 0 0 7px rgba(30,77,62,0)}100%{box-shadow:0 0 0 0 rgba(30,77,62,0)}}
+.daystrip{gap:0;border-bottom:1px solid var(--line)}
+.day{background:none;border:0;border-bottom:2px solid transparent;border-radius:0;margin-bottom:-1px}
+.day.is-active{background:none;color:var(--accent);border-bottom-color:var(--accent)}
+.day.is-active .dw,.day.is-active .dc{opacity:1;color:var(--muted)}
+.dn{font-family:var(--font-head);font-weight:500}
+.l-title{font-family:var(--font-head);font-weight:500;font-size:16px}
+</style>
+</head>
+<body>
+<script src="shell.js"></script>
+<script>renderApp({ name: '4 · Paper' })</script>
+</body>
+</html>
