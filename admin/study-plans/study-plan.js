@@ -49,6 +49,12 @@
     u.searchParams.set('semester', id);
     history.replaceState(history.state, '', u.href);
   }
+  function switchSem(id) {
+    semId = String(id); fresh = {};
+    var sel = document.getElementById('sp-sem');
+    if (sel) sel.value = semId;
+    md.reload();
+  }
 
   /* ---------- data ---------- */
   function loadRef() {
@@ -117,15 +123,21 @@
     a.innerHTML = '<label class="sp-sem"><span class="muted sm">Семестр</span>' +
       '<select class="select sm" id="sp-sem" aria-label="Семестр">' + options(ref.semesters, semId) + '</select></label>';
     a.querySelector('#sp-sem').addEventListener('change', function (e) {
-      semId = e.target.value; fresh = {};
-      setSemUrl(semId);
-      md.reload();
+      setSemUrl(e.target.value);
+      switchSem(e.target.value);
     });
   }
 
   /* ---------- list ---------- */
+  // current_course: 1–6, 0 (future intake) or a string such as «Випускник».
+  function courseText(c) {
+    if (c == null || c === '') return '';
+    if (typeof c !== 'number') return String(c);
+    return c > 0 ? c + ' курс' : 'Абітурієнт';
+  }
+  function hasCourse(it) { return typeof it.src.current_course === 'number' && it.src.current_course > 0; }
   function rowMeta(it) {
-    if (it.kind === 'group') return it.src.current_course ? it.src.current_course + ' курс' : '';
+    if (it.kind === 'group') return courseText(it.src.current_course);
     var gs = it.src.groups_details || [];
     return gs.length ? gs.map(function (g) { return g.name; }).join(', ') : 'Без груп';
   }
@@ -142,7 +154,7 @@
     var sem = find(ref.semesters, semId);
     var sub;
     if (it.kind === 'group') {
-      sub = [it.src.current_course ? it.src.current_course + ' курс' : '', it.src.amount != null ? plural(it.src.amount, 'студент', 'студенти', 'студентів') : '']
+      sub = [courseText(it.src.current_course), it.src.amount != null ? plural(it.src.amount, 'студент', 'студенти', 'студентів') : '']
         .filter(Boolean).join(' · ');
     } else {
       sub = 'Потік' + (it.src.total_students != null ? ' · ' + plural(it.src.total_students, 'студент', 'студенти', 'студентів') : '');
@@ -238,7 +250,7 @@
       return;
     }
     var scopeRow = '';
-    if (st.drafts.length && st.it.kind === 'group' && st.it.src.current_course) {
+    if (st.drafts.length && st.it.kind === 'group' && hasCourse(st.it)) {
       scopeRow = '<tr class="sp-scope"><td colspan="7"><label>Новий запис для ' +
         '<select class="select sm" data-scope aria-label="Для кого створити запис">' +
           '<option value="one"' + (st.scope === 'one' ? ' selected' : '') + '>групи ' + esc(st.it.name) + '</option>' +
@@ -345,9 +357,11 @@
     })) return;
     var ctx = st.ctx;
     ctx.status('saving');
-    if (p._tmp && st.scope === 'course' && st.it.kind === 'group') return saveForCourse(st, tr, p, body);
+    if (p._tmp && st.scope === 'course' && hasCourse(st.it)) return saveForCourse(st, tr, p, body);
+    var sem = semId;
     var req = p._tmp ? apiRequest('/study_plans/', 'POST', body) : apiRequest('/study_plans/' + p.id + '/', 'PUT', body);
     return req.then(function (saved) {
+      if (sem !== semId) return; // semester switched meanwhile: its list was reloaded
       if (p._tmp) {
         st.drafts = st.drafts.filter(function (d) { return d !== p; });
         plans.push(saved);
@@ -372,7 +386,7 @@
   }
 
   function saveForCourse(st, tr, p, body) {
-    var ctx = st.ctx;
+    var ctx = st.ctx, sem = semId;
     var payload = Object.assign({}, body, { course_number: st.it.src.current_course });
     delete payload.group; delete payload.stream;
     return apiRequest('/study_plans/', 'POST', payload).then(function (res) {
@@ -380,7 +394,9 @@
       var n = res && res.created_count != null ? res.created_count : 0;
       var skipped = res && res.skipped_count ? ', пропущено ' + res.skipped_count + ' (вже є)' : '';
       UI.toast('Створено ' + plural(n, 'запис', 'записи', 'записів') + ' для ' + st.it.src.current_course + ' курсу' + skipped, { type: 'ok' });
-      return apiRequest('/study_plans/?semester=' + encodeURIComponent(semId)).then(function (d) {
+      if (sem !== semId) return;
+      return apiRequest('/study_plans/?semester=' + encodeURIComponent(sem)).then(function (d) {
+        if (sem !== semId) return;
         plans = list(d);
         md.items().forEach(function (x) { md.refresh(x); });
         if (ctx.alive()) { renderPlan(st); ctx.status('saved'); }
@@ -481,13 +497,15 @@
     function close() { listEl.classList.remove('is-open'); input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); }
     function pick(g) {
       chosen = g; input.value = g.name; close();
+      // Same key as the backend's duplicate check: subject + class type + teacher.
+      var key = function (p) { return [p.subject, p.class_type, p.teacher == null ? '' : p.teacher].join('|'); };
       var have = {};
-      plansOf(st.it).forEach(function (p) { have[p.subject] = true; });
+      plansOf(st.it).forEach(function (p) { have[key(p)] = true; });
       var src = plans.filter(function (p) { return p.group === g.id; });
-      todo = src.filter(function (p) { return !have[p.subject]; });
+      todo = src.filter(function (p) { return !have[key(p)]; });
       var skip = src.length - todo.length;
       preview.textContent = 'Буде скопійовано ' + todo.length + ' з ' + src.length +
-        (skip ? '; ' + plural(skip, 'запис пропущено', 'записи пропущено', 'записів пропущено') + ' — ці предмети вже є в плані' : '');
+        (skip ? '; ' + plural(skip, 'запис пропущено', 'записи пропущено', 'записів пропущено') + ' — такі заняття (предмет, тип, викладач) вже є в плані' : '');
       go.disabled = !todo.length;
       go.textContent = todo.length ? 'Скопіювати ' + todo.length : 'Нічого копіювати';
     }
@@ -518,21 +536,22 @@
   }
 
   function runCopy(st, src, todo) {
-    var ctx = st.ctx, made = 0, failed = 0, lastErr = null;
+    var ctx = st.ctx, made = 0, failed = 0, lastErr = null, sem = semId;
     ctx.status('saving');
     var chain = Promise.resolve();
     todo.forEach(function (p) {
       chain = chain.then(function () {
+        if (sem !== semId) return; // stop copying into a semester that is no longer shown
         return apiRequest('/study_plans/', 'POST', {
           semester: p.semester, group: st.it.id, stream: null, subject: p.subject, teacher: p.teacher,
           class_type: p.class_type, required_room_type: p.required_room_type, amount: p.amount, duration: p.duration,
           constraints: p.constraints || {}
-        }).then(function (saved) { plans.push(saved); fresh[saved.id] = true; made++; },
+        }).then(function (saved) { made++; if (sem === semId) { plans.push(saved); fresh[saved.id] = true; } },
           function (err) { failed++; lastErr = err; });
       });
     });
     return chain.then(function () {
-      md.refresh(st.it);
+      if (sem === semId) md.refresh(st.it);
       if (made) UI.toast('Скопійовано з ' + src.name + ': ' + plural(made, 'запис', 'записи', 'записів'), { type: 'ok' });
       if (failed) UI.toast('Не скопійовано ' + plural(failed, 'запис', 'записи', 'записів') + ': ' + errText(lastErr, 'помилка'), { type: 'err' });
       if (ctx.alive()) { renderPlan(st); ctx.status(made ? 'saved' : 'error'); }
@@ -568,5 +587,12 @@
     renderRow: renderRow,
     renderDetail: renderDetail,
     mount: mount
+  });
+
+  // Registered after MasterDetail's own handler, so the item from the URL is selected first.
+  window.addEventListener('popstate', function () {
+    if (!ref) return;
+    var want = find(ref.semesters, new URLSearchParams(window.location.search).get('semester'));
+    if (want && String(want.id) !== semId) switchSem(want.id);
   });
 })();
