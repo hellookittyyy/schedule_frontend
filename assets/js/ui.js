@@ -340,16 +340,4 @@
 
   window.UI = { toast: toast, confirmInline: confirmInline, drawer: drawer, state: state, dnd: dnd, escapeHtml: escapeHtml };
 
-  /* Migration aliases: only where admin/common.js has not defined them. */
-  if (typeof window.showToast !== 'function') {
-    window.showToast = function (msg, type) {
-      toast(msg, { type: type === 'error' ? 'err' : type === 'success' ? 'ok' : type === 'warning' ? 'warn' : type });
-    };
-  }
-  if (typeof window.showModal !== 'function') {
-    window.showModal = function (id) { var m = document.getElementById(id); if (m) m.classList.add('show'); };
-  }
-  if (typeof window.hideModal !== 'function') {
-    window.hideModal = function (id) { var m = document.getElementById(id); if (m) m.classList.remove('show'); };
-  }
 })();

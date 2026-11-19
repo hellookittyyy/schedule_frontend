@@ -24,9 +24,6 @@
     ] }
   ];
 
-  // Pages below a nav item that need their own title / crumbs.
-  var SUBPAGES = {};
-
   var state = { app: null, nav: null, top: null, menuBtn: null };
 
   function esc(s) {
@@ -188,14 +185,8 @@
         themeBtn.innerHTML = themeIcon();
       });
 
-      var sub = SUBPAGES[path];
       var hit = findActive(path);
-      if (sub) {
-        setTitle(sub.title);
-        setCrumbs(sub.crumbs.map(function (t, i) {
-          return i === 0 && hit ? { text: t, href: hit.item.href } : t;
-        }));
-      } else if (hit) {
+      if (hit) {
         setTitle(hit.item.text);
         setCrumbs(hit.group.label ? [hit.group.label] : []);
       } else {
