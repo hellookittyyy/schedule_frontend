@@ -1,0 +1,5 @@
+#!/bin/sh
+# Refuse a commit when a page's ?v= hashes do not match its CSS/JS files.
+# Enable once per clone:  git config core.hooksPath .githooks
+if command -v py >/dev/null 2>&1; then PY=py; else PY=python3; fi
+exec "$PY" scripts/version-assets.py --check

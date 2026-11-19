@@ -293,7 +293,7 @@ Deviations (phases 3–9):
 - (c) Backend: no stream filter on `/lessons/` and `study_plan_details.stream` is a name only, so the public page matches stream lessons by name (wrong if two streams share a name). Add a `study_plan__stream__groups` filter or a stream id.
 - (d) Backend: deleting a room type that is in use returns an HTML 500 (ProtectedError); it should be 409/400 with a detail message.
 - (e) Backend: `/lessons/` has no teacher-id filter; public `?t=` uses `teacher_name` with an exact client-side match.
-- (f) No cache-busting on script/style URLs: after deploy, users with cached old JS get errors until a hard reload; consider `?v=` query strings.
+- (f) Done 2026-11-20: every local CSS/JS URL carries a content hash `?v=` (`scripts/version-assets.py`, checked by `.githooks/pre-commit`); local `scripts/dev-server.py` sends `Cache-Control: no-store`. The HTML pages themselves are still cached by the production server's defaults (no `Cache-Control` set there).
 - (g) Lighthouse accessibility audit not run (tool unavailable); keyboard focus ring checked on nav/buttons only.
 - (h) Nothing pushed; deploy happens on push to `main`. Run `docs/regression-checklist.md` against the real backend before pushing.
 - (i) The old in-body duplicate `<h1>` issue is gone (all pages rebuilt).
