@@ -78,7 +78,7 @@
 
 .add-subject-section select:focus {
     outline: none;
-    border-color: var(--accent);
+    border-color: var(--old-accent);
 }
 
 .btn-add-subject {

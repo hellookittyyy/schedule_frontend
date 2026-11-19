@@ -24,7 +24,7 @@
     color: var(--text-main); 
 }
 
-.stat-card.blue { border-color: var(--accent); }
+.stat-card.blue { border-color: var(--old-accent); }
 .stat-card.green { border-color: var(--success); }
 .stat-card.orange { border-color: var(--warning); }
 .stat-card.purple { border-color: var(--purple); }
@@ -51,7 +51,7 @@
 }
 
 .month-nav {
-    background: var(--accent);
+    background: var(--old-accent);
     color: white;
     border: none;
     padding: 8px 12px;
@@ -62,7 +62,7 @@
 }
 
 .month-nav:hover {
-    background: var(--accent-hover);
+    background: var(--old-accent-hover);
 }
 
 .calendar { 
@@ -104,7 +104,7 @@
 }
 
 .calendar-day.today { 
-    background: var(--accent); 
+    background: var(--old-accent); 
     color: white; 
     font-weight: bold;
     box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
@@ -155,7 +155,7 @@
     padding: 15px; 
     background: var(--gray-light); 
     border-radius: 8px; 
-    border-left: 3px solid var(--accent);
+    border-left: 3px solid var(--old-accent);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -177,7 +177,7 @@
     border-radius: 4px;
     font-size: 12px;
     font-weight: 600;
-    background: var(--accent);
+    background: var(--old-accent);
     color: white;
     margin-left: 8px;
 }

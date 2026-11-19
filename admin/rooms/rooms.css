@@ -44,7 +44,7 @@
 
 .room-type-badge {
     padding: 5px 14px;
-    background: var(--accent);
+    background: var(--old-accent);
     color: white;
     border-radius: 14px;
     font-size: 12px;
@@ -57,7 +57,7 @@
 }
 
 .room-type-badge:hover {
-    background: var(--accent-hover);
+    background: var(--old-accent-hover);
     transform: scale(1.05);
 }
 
@@ -118,7 +118,7 @@
 }
 
 .type-item:hover {
-    border-color: var(--accent);
+    border-color: var(--old-accent);
     background: #f8f9ff;
     transform: translateX(4px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -234,7 +234,7 @@
 #roomForm input:focus,
 #roomForm select:focus,
 #roomForm textarea:focus {
-    border-color: var(--accent);
+    border-color: var(--old-accent);
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 

@@ -24,7 +24,7 @@
 }
 
 .groups-checkbox-container:focus-within {
-    border-color: var(--accent);
+    border-color: var(--old-accent);
 }
 
 .groups-checkbox-container::-webkit-scrollbar {
@@ -63,7 +63,7 @@
 }
 
 .checkbox-item:hover {
-    border-color: var(--accent);
+    border-color: var(--old-accent);
     background: #f8f9ff;
     transform: translateX(4px);
     box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
@@ -84,12 +84,12 @@
 }
 
 .checkbox-item input[type="checkbox"]:hover {
-    border-color: var(--accent);
+    border-color: var(--old-accent);
 }
 
 .checkbox-item input[type="checkbox"]:checked {
-    background-color: var(--accent);
-    border-color: var(--accent);
+    background-color: var(--old-accent);
+    border-color: var(--old-accent);
 }
 
 .checkbox-item input[type="checkbox"]:checked::after {
@@ -116,7 +116,7 @@
 }
 
 .checkbox-item input:checked + label {
-    color: var(--accent);
+    color: var(--old-accent);
     font-weight: 600;
 }
 
@@ -132,7 +132,7 @@
 
 .checkbox-item input:checked + label .student-badge {
     background: #d4e9ff;
-    color: var(--accent-hover);
+    color: var(--old-accent-hover);
     font-weight: 600;
 }
 
@@ -144,7 +144,7 @@
 }
 
 .group-tag {
-    background: var(--accent);
+    background: var(--old-accent);
     color: white;
     padding: 5px 12px;
     border-radius: 14px;
@@ -157,7 +157,7 @@
 }
 
 .group-tag:hover {
-    background: var(--accent-hover);
+    background: var(--old-accent-hover);
     transform: scale(1.05);
 }
 
