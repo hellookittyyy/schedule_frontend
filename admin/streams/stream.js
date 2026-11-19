@@ -1,195 +1,208 @@
+/* «Потоки»: master–detail (assets/js/master-detail.js). */
+(function () {
+  'use strict';
 
-let streams = [];
-let groups = [];
-let currentEditId = null;
-let currentDeleteId = null;
+  var esc = UI.escapeHtml;
+  function ic(name, size) { return Icons.svg(name, { size: size || 16 }); }
 
-async function init() {
-    showLoading('tableContainer', 'Завантаження даних...');
-    try {
-        const [groupsData, streamsData] = await Promise.all([
-            apiRequest('/groups/'),
-            apiRequest('/streams/')
-        ]);
-        
-        groups = groupsData;
-        streams = streamsData;
-        
-        renderTable(streams);
-    } catch (error) {
-        showError('tableContainer', 'Не вдалося завантажити дані');
-        showToast('Помилка ініціалізації: ' + error.message, 'error');
+  var allGroups = [];
+  var md;
+
+  function plural(n, one, few, many) {
+    var m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+    return many;
+  }
+  function groupsOf(s) { return s.groups_details || []; }
+  function byName(a, b) { return String(a.name || '').localeCompare(String(b.name || ''), 'uk', { numeric: true }); }
+  function total(s) { return groupsOf(s).reduce(function (n, g) { return n + (g.amount || 0); }, 0); }
+  function groupsText(n) { return n + ' ' + plural(n, 'група', 'групи', 'груп'); }
+  function summary(s) {
+    var n = groupsOf(s).length;
+    return n ? groupsText(n) + ' · ' + total(s) + ' студ.' : 'Без груп';
+  }
+  function errText(err, fb) { return MasterDetail.errorText(err, fb); }
+
+  function renderRow(s) {
+    var g = groupsOf(s);
+    return '<div class="grow"><div class="name">' + esc(s.name) + '</div>' +
+      '<div class="meta">' + (g.length ? esc(g.map(function (x) { return x.name; }).join(', ')) : 'Без груп') + '</div></div>' +
+      '<span class="num">' + g.length + '</span>';
+  }
+
+  function renderDetail(s, ctx) {
+    return '' +
+      '<div class="detail-head">' +
+        '<div class="grow"><h2 class="detail-name" id="s-title">' + esc(s.name || 'Новий потік') + '</h2>' +
+        '<div class="muted" id="s-sub">' + esc(summary(s)) + '</div></div>' +
+        '<span class="saved" data-md-saved hidden></span>' +
+      '</div>' +
+      '<div class="section"><div class="section-title">Основне</div>' +
+        '<div class="fields">' +
+          '<label class="f-label" for="s-name">Назва</label>' +
+          '<div class="f-value"><input class="input" id="s-name" data-md-field="name" required autocomplete="off" ' +
+            'placeholder="Наприклад: Потік КН-2 курс" value="' + esc(s.name || '') + '"></div>' +
+        '</div></div>' +
+      '<div class="section"><div class="section-title">Групи у потоці</div>' +
+        '<div class="chips" id="s-chips"></div>' +
+        (allGroups.length
+          ? '<div class="combo inline mt"><input class="input sm" id="s-add" role="combobox" aria-expanded="false" aria-controls="s-list" ' +
+              'aria-autocomplete="list" autocomplete="off" placeholder="Додати групу…">' +
+              '<div class="combo-list" id="s-list" role="listbox" aria-label="Групи"></div></div>'
+          : '<p class="muted sm mt">У довіднику ще немає груп. <a href="/admin/groups/">Додати групи</a></p>') +
+      '</div>' +
+      ctx.danger({ title: 'Видалити потік', text: 'Самі групи залишаться в довіднику.' });
+  }
+
+  function mount(el, s, ctx) {
+    var name = el.querySelector('#s-name');
+    name.addEventListener('input', function () {
+      el.querySelector('#s-title').textContent = name.value.trim() || 'Новий потік';
+    });
+    renderChips(s, ctx);
+    wireCombo(s, ctx);
+  }
+
+  function renderChips(s, ctx) {
+    var box = ctx.el.querySelector('#s-chips');
+    if (!box || !ctx.alive()) return;
+    var g = groupsOf(s);
+    box.innerHTML = g.length ? g.map(function (x) {
+      return '<span class="chip static"><a href="/admin/groups/?id=' + esc(x.id) + '">' + esc(x.name) + '</a>' +
+        '<span class="n">' + esc(x.amount || 0) + '</span>' +
+        '<button type="button" class="x" data-rm="' + esc(x.id) + '" aria-label="Прибрати «' + esc(x.name) + '»">' + ic('x', 12) + '</button></span>';
+    }).join('') : '<span class="muted sm">Груп немає</span>';
+    var sub = ctx.el.querySelector('#s-sub');
+    if (sub) sub.textContent = summary(s);
+  }
+
+  function wireCombo(s, ctx) {
+    var el = ctx.el;
+    el.querySelector('#s-chips').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-rm]');
+      if (b) removeGroup(s, ctx, Number(b.getAttribute('data-rm')));
+    });
+    var input = el.querySelector('#s-add');
+    if (!input) return;
+    var list = el.querySelector('#s-list');
+    var active = 0, opts = [];
+    function available() {
+      var have = groupsOf(s).map(function (g) { return g.id; });
+      var q = input.value.trim().toLowerCase();
+      return allGroups.filter(function (g) {
+        return have.indexOf(g.id) < 0 && (!q || String(g.name).toLowerCase().indexOf(q) >= 0);
+      });
     }
-}
-
-async function loadStreams() {
-    try {
-        streams = await apiRequest('/streams/');
-        renderTable(streams);
-    } catch (error) {
-        console.error('Error loading streams:', error);
+    function open() {
+      opts = available();
+      active = Math.min(active, Math.max(opts.length - 1, 0));
+      list.innerHTML = opts.length ? opts.map(function (g, i) {
+        return '<div class="combo-item' + (i === active ? ' is-active' : '') + '" role="option" id="s-o' + i + '" aria-selected="' + (i === active) + '" data-add="' + esc(g.id) + '">' +
+          esc(g.name) + ' <span class="muted sm">' + esc(g.amount || 0) + ' студ.</span></div>';
+      }).join('') : '<div class="combo-empty">' + (input.value.trim() ? 'Нічого не знайдено' : 'Усі групи вже в потоці') + '</div>';
+      list.classList.add('is-open');
+      input.setAttribute('aria-expanded', 'true');
+      if (opts.length) input.setAttribute('aria-activedescendant', 's-o' + active); else input.removeAttribute('aria-activedescendant');
+      var a = list.querySelector('.is-active');
+      if (a) a.scrollIntoView({ block: 'nearest' });
     }
-}
-
-function renderTable(data) {
-    const container = document.getElementById('tableContainer');
-    
-    if (data.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">🌊</div>
-                <h3>Створіть перший потік</h3>
-                <p>Натисніть кнопку "Додати потік"</p>
-            </div>
-        `;
-        return;
+    function close() {
+      list.classList.remove('is-open');
+      input.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
     }
-
-    const table = `
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Назва потоку</th>
-                    <th>Групи</th>
-                    <th>Студентів</th>
-                    <th>Дії</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${data.map(stream => {
-                    const groupTags = (stream.groups_details && stream.groups_details.length > 0)
-                        ? stream.groups_details.map(g => `<span class="badge badge-info" style="background:#e3f2fd; color:#0d47a1; margin-right:4px;">${g.name}</span>`).join('')
-                        : '<span style="color: #999;">Немає груп</span>';
-
-                    const totalStudents = stream.total_students !== undefined 
-                        ? stream.total_students
-                        : (stream.groups_details 
-                            ? stream.groups_details.reduce((sum, g) => sum + (g.amount || 0), 0)
-                            : 0);
-
-                    const safeName = (stream.name || '').replace(/'/g, "\\'");
-
-                    return `
-                    <tr>
-                        <td>#${stream.id}</td>
-                        <td><strong>${stream.name}</strong></td>
-                        <td><div class="group-tags">${groupTags}</div></td>
-                        <td><span class="student-count">${totalStudents} студ.</span></td>
-                        <td>
-                            <div class="table-actions">
-                                <button class="btn btn-edit" onclick="openEditModal(${stream.id})">✏️</button>
-                                <button class="btn btn-delete" onclick="openDeleteModal(${stream.id}, '${safeName}')">🗑️</button>
-                            </div>
-                        </td>
-                    </tr>
-                `}).join('')}
-            </tbody>
-        </table>
-    `;
-    
-    container.innerHTML = table;
-}
-
-function renderGroupCheckboxes(selectedGroupIds = []) {
-    const container = document.getElementById('groupsCheckboxContainer');
-    
-    if (groups.length === 0) {
-        container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Немає доступних груп. Спочатку створіть групи.</p>';
-        return;
+    function pick(id) {
+      input.value = ''; active = 0;
+      addGroup(s, ctx, id).then(function () { if (document.activeElement === input) open(); });
     }
+    input.addEventListener('focus', open);
+    input.addEventListener('input', function () { active = 0; open(); });
+    input.addEventListener('blur', function () { setTimeout(close, 120); });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, opts.length - 1); open(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); open(); }
+      else if (e.key === 'Enter') { e.preventDefault(); if (opts[active]) pick(opts[active].id); }
+      else if (e.key === 'Escape') { if (list.classList.contains('is-open')) { e.stopPropagation(); close(); } }
+    });
+    list.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    list.addEventListener('click', function (e) {
+      var it = e.target.closest('[data-add]');
+      if (it) pick(Number(it.getAttribute('data-add')));
+    });
+  }
 
-    container.innerHTML = groups.map(group => {
-        const isChecked = selectedGroupIds.includes(group.id);
-        const studentCount = group.amount || 0;
-        
-        return `
-        <div class="checkbox-item" style="margin-bottom: 8px;">
-            <input 
-                type="checkbox" 
-                id="group_${group.id}" 
-                value="${group.id}"
-                ${isChecked ? 'checked' : ''}
-                style="margin-right: 8px;"
-            >
-            <label for="group_${group.id}" style="cursor: pointer;">
-                <strong>${group.name}</strong>
-                <span style="font-size: 0.85em; color: #666; margin-left: 5px;">(${studentCount} студ.)</span>
-            </label>
-        </div>
-    `}).join('');
-}
+  /* Membership is saved as the whole `groups` id list (PUT), like the old page. */
+  function putGroups(s, ctx, list) {
+    ctx.status('saving');
+    return apiRequest('/streams/' + s.id + '/', 'PUT', { name: s.name, groups: list.map(function (g) { return g.id; }) })
+      .then(function () { return apiRequest('/streams/' + s.id + '/'); })
+      .then(function (fresh) {
+        Object.assign(s, fresh);
+        md.refresh(s);
+        if (ctx.alive()) { renderChips(s, ctx); ctx.status('saved'); }
+      });
+  }
 
-function openAddModal() {
-    currentEditId = null;
-    document.getElementById('modalTitle').textContent = 'Додати потік';
-    document.getElementById('streamForm').reset();
-    renderGroupCheckboxes([]);
-    showModal('streamModal');
-}
+  function addGroup(s, ctx, groupId) {
+    var grp = allGroups.find(function (g) { return g.id === groupId; });
+    if (!grp || groupsOf(s).some(function (g) { return g.id === groupId; })) return Promise.resolve();
+    var next = groupsOf(s).concat([grp]);
+    if (ctx.isDraft) { s.groups_details = next; renderChips(s, ctx); return Promise.resolve(); }
+    return putGroups(s, ctx, next)
+      .catch(function (err) { ctx.status('error'); UI.toast(errText(err, 'Не вдалося додати групу'), { type: 'err' }); });
+  }
 
-function openEditModal(id) {
-    const stream = streams.find(s => s.id === id);
-    if (!stream) return;
+  function removeGroup(s, ctx, groupId) {
+    var grp = groupsOf(s).find(function (g) { return g.id === groupId; });
+    if (!grp) return;
+    var next = groupsOf(s).filter(function (g) { return g.id !== groupId; });
+    if (ctx.isDraft) { s.groups_details = next; renderChips(s, ctx); return; }
+    putGroups(s, ctx, next)
+      .then(function () {
+        UI.toast('Групу «' + grp.name + '» прибрано з потоку', {
+          type: 'ok',
+          action: { label: 'Повернути', onClick: function () { addGroup(s, ctx, groupId); } }
+        });
+      })
+      .catch(function (err) { ctx.status('error'); UI.toast(errText(err, 'Не вдалося прибрати групу'), { type: 'err' }); });
+  }
 
-    currentEditId = id;
-    document.getElementById('modalTitle').textContent = 'Редагувати потік';
-    document.getElementById('streamName').value = stream.name;
-    
-    renderGroupCheckboxes(stream.groups || []);
-    
-    showModal('streamModal');
-}
-
-function openDeleteModal(id, name) {
-    currentDeleteId = id;
-    document.getElementById('deleteStreamName').textContent = name;
-    showModal('deleteModal');
-}
-
-document.getElementById('streamForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const name = document.getElementById('streamName').value.trim();
-    
-    const checkedBoxes = document.querySelectorAll('#groupsCheckboxContainer input[type="checkbox"]:checked');
-    const selectedGroups = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
-
-    if (!name) return showToast('Введіть назву потоку!', 'error');
-
-    const data = {
-        name: name,
-        groups: selectedGroups
-    };
-
-    try {
-        if (currentEditId) {
-            await apiRequest(`/streams/${currentEditId}/`, 'PUT', data);
-            showToast('Потік оновлено', 'success');
-        } else {
-            await apiRequest('/streams/', 'POST', data);
-            showToast('Потік створено', 'success');
-        }
-
-        hideModal('streamModal');
-        loadStreams(); 
-
-    } catch (error) {
-        showToast('Помилка: ' + error.message, 'error');
-    }
-});
-
-async function confirmDelete() {
-    if (!currentDeleteId) return;
-
-    try {
-        await apiRequest(`/streams/${currentDeleteId}/`, 'DELETE');
-        hideModal('deleteModal');
-        loadStreams();
-        showToast('Потік видалено', 'success');
-    } catch (error) {
-        showToast('Помилка видалення: ' + error.message, 'error');
-    }
-}
-
-init();
+  md = MasterDetail.create({
+    root: '#streams',
+    title: 'Потоки',
+    color: '--c6',
+    searchPlaceholder: 'Пошук потоку або групи',
+    addLabel: 'Додати потік',
+    draftLabel: 'Новий потік',
+    emptyText: 'Потоків поки немає',
+    removedText: 'Потік видалено',
+    removeQuestion: 'Точно видалити потік?',
+    countLabel: function (n) { return n + ' ' + plural(n, 'потік', 'потоки', 'потоків'); },
+    load: function () {
+      return Promise.all([
+        apiRequest('/streams/'),
+        apiRequest('/groups/').catch(function () { UI.toast('Не вдалося завантажити групи', { type: 'warn' }); return []; })
+      ]).then(function (r) {
+        allGroups = ((r[1] && r[1].results) || r[1] || []).slice().sort(byName);
+        return r[0];
+      });
+    },
+    sort: byName,
+    search: function (s, q) {
+      if (String(s.name || '').toLowerCase().indexOf(q) >= 0) return true;
+      return groupsOf(s).some(function (g) { return String(g.name).toLowerCase().indexOf(q) >= 0; });
+    },
+    filters: [{ id: 'nogroups', label: 'Без груп', test: function (s) { return !groupsOf(s).length; } }],
+    renderRow: renderRow,
+    renderDetail: renderDetail,
+    mount: mount,
+    onCreate: function () { return { name: '', groups_details: [] }; },
+    save: function (s, ch) {
+      var ids = groupsOf(s).map(function (g) { return g.id; });
+      if (s.id == null) return apiRequest('/streams/', 'POST', { name: ch.name, groups: ids });
+      return apiRequest('/streams/' + s.id + '/', 'PUT', { name: ch.name != null ? ch.name : s.name, groups: ids });
+    },
+    remove: function (s) { return apiRequest('/streams/' + s.id + '/', 'DELETE'); }
+  });
+})();
