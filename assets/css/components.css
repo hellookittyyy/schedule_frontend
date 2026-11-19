@@ -64,6 +64,7 @@
 .status::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--ok)}
 .status.st-warn::before{background:var(--mid)}.status.st-err::before{background:var(--high)}.status.st-off::before{background:var(--faint)}
 .saved{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--ok)}
+.saved.is-busy{color:var(--muted)}
 
 /* ---------- chips ---------- */
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -71,8 +72,11 @@
 .chip:hover{border-color:var(--faint)}
 .chip.is-on{background:var(--c4);border-color:var(--c4);color:var(--on-c)}
 .chip-add{border-style:dashed}.chip.link{color:var(--text)}
+a.chip{text-decoration:none}
 .chip .x{display:inline-grid;place-items:center;opacity:.55;background:none;border:0;padding:0;cursor:pointer;color:inherit}
 .chip .x:hover{opacity:1}
+.chip .n{font-variant-numeric:tabular-nums;opacity:.75}
+.chip.static{cursor:default}.chip.static:hover{border-color:var(--line)}
 
 /* ---------- progress ---------- */
 .progress{height:6px;border-radius:var(--pill);background:var(--surface-2);overflow:hidden}
@@ -236,6 +240,15 @@ tr:hover .row-actions,tr:focus-within .row-actions{opacity:1}
 .f-value.editable{border-radius:0}
 .f-value.editable:hover{background:var(--surface-2);cursor:text}
 .f-value .input,.f-value .select{max-width:360px}
+/* master-detail.js: section colour (--sec), keyboard focus, draft row, inline combobox */
+.md .md-filters .chip.is-on{background:var(--sec,var(--c4));border-color:var(--sec,var(--c4));color:var(--on-c)}
+.md-row:focus-visible{outline:2px solid var(--text);outline-offset:-2px}
+.md-row.is-draft .avatar{background:var(--surface-2);color:var(--muted)}
+.md-row.is-draft .name{color:var(--muted)}
+.md-add{margin:0 14px 10px}
+.md-none .empty{padding-top:28px}
+.md-detail .section-title .select{width:auto;margin-left:auto}
+.combo.inline{width:260px}
 
 /* ---------- day × pair grid (availability, room load, constraints) ---------- */
 .avail{display:grid;grid-template-columns:48px repeat(var(--days,6),1fr);gap:3px;max-width:520px}
@@ -243,9 +256,14 @@ tr:hover .row-actions,tr:focus-within .row-actions{opacity:1}
 .avail .hd.tm{text-align:left}
 .avail .c{height:28px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line);cursor:pointer;transition:background .12s}
 .avail .c:hover{border-color:var(--faint)}
-.avail .c.off{background:repeating-linear-gradient(135deg,var(--line) 0 3px,var(--surface) 3px 7px)}
-.avail .c.block{background:color-mix(in srgb,var(--high) 18%,var(--surface));border-color:color-mix(in srgb,var(--high) 40%,var(--line))}
-.avail.ro .c{cursor:default}
+.avail .c.off,.legend i.off{background:repeating-linear-gradient(135deg,var(--line) 0 3px,var(--surface) 3px 7px)}
+.avail .c.block,.legend i.block{background:color-mix(in srgb,var(--high) 18%,var(--surface));border-color:color-mix(in srgb,var(--high) 40%,var(--line))}
+.legend i.free{background:var(--surface-2)}
+.avail.ro .c,.avail .c:disabled{cursor:default}
+.avail button.c{padding:0;font:inherit;width:100%}
+.avail button.hd{background:none;border:0;padding:2px 0;border-radius:4px;font:inherit;font-size:11px;color:var(--muted);cursor:pointer}
+.avail button.hd:hover{color:var(--text)}
+.avail .hd.is-off{color:var(--high);text-decoration:line-through}
 .legend{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--muted);margin-top:10px;flex-wrap:wrap}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:14px;height:12px;border-radius:3px;border:1px solid var(--line);display:inline-block}
