@@ -106,14 +106,25 @@
 
     var trigger = dangerEl.querySelector('[data-confirm]');
     var pending = false;
-    function cancel() {
-      if (pending) return;
+    if (dangerEl._uiConfirmOff) dangerEl._uiConfirmOff();
+    function finish() {
       dangerEl.classList.remove('is-confirm');
       dangerEl.removeEventListener('keydown', onKey);
-      if (trigger) trigger.focus();
+      if (dangerEl._uiConfirmOff === off) dangerEl._uiConfirmOff = null;
+      if (trigger && document.contains(trigger)) { trigger.focus(); return; }
+      // Trigger gone (row re-rendered): fall back to a focusable ancestor, else body.
+      var host = document.contains(dangerEl) && dangerEl.parentElement && dangerEl.parentElement.closest(FOCUSABLE + ',[tabindex="-1"]');
+      if (host) host.focus();
+      else if (document.activeElement && dangerEl.contains(document.activeElement)) document.activeElement.blur();
+    }
+    function off() { dangerEl.removeEventListener('keydown', onKey); }
+    dangerEl._uiConfirmOff = off;
+    function cancel() {
+      if (pending) return;
+      finish();
     }
     function onKey(e) {
-      if (e.key === 'Escape') { e.stopPropagation(); cancel(); }
+      if (e.key === 'Escape' || e.key === 'Esc') { e.stopPropagation(); cancel(); }
     }
     no.addEventListener('click', cancel);
     yes.addEventListener('click', function () {
@@ -122,13 +133,12 @@
       try { r = opts.onYes && opts.onYes(); } catch (err) { console.error(err); r = null; }
       if (r && typeof r.then === 'function') {
         pending = true; yes.disabled = no.disabled = true;
-        var fin = function () {
+        r.then(function () {
           pending = false; yes.disabled = no.disabled = false;
-          dangerEl.classList.remove('is-confirm');
-        };
-        r.then(fin, function (err) { console.error(err); pending = false; yes.disabled = no.disabled = false; });
+          finish();
+        }, function (err) { console.error(err); pending = false; yes.disabled = no.disabled = false; });
       } else {
-        dangerEl.classList.remove('is-confirm');
+        finish();
       }
     });
     dangerEl.addEventListener('keydown', onKey);
@@ -188,7 +198,11 @@
       if (opts.onClose) opts.onClose();
     }
     function onKey(e) {
-      if (e.key === 'Escape') { e.stopPropagation(); close(); return; }
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        // An open inline confirm inside the drawer handles its own Esc.
+        if (e.target && e.target.closest && e.target.closest('.danger.is-confirm') && el.contains(e.target)) return;
+        e.stopPropagation(); close(); return;
+      }
       if (e.key !== 'Tab') return;
       var f = Array.prototype.filter.call(el.querySelectorAll(FOCUSABLE), function (n) { return n.offsetParent !== null || n === document.activeElement; });
       if (!f.length) { e.preventDefault(); el.focus(); return; }
@@ -230,12 +244,95 @@
     if (b && opts.onAction) b.addEventListener('click', opts.onAction);
   }
 
-  window.UI = { toast: toast, confirmInline: confirmInline, drawer: drawer, state: state, escapeHtml: escapeHtml };
+  /* Drag & drop: UI.dnd(root, {draggable, dropzone, canDrop(card, zone), onDrop(card, zone)}).
+     canDrop false marks the zone .is-conflict; onDrop throwing/rejecting reverts the move. */
+  function dnd(root, opts) {
+    opts = opts || {};
+    if (!root) return { destroy: function () {} };
+    var dragSel = opts.draggable || '.ls';
+    var dropSel = opts.dropzone || '.wk .cell, .dropzone';
+    var dragged = null, origin = null, originNext = null;
+    function zoneOf(t) { var z = t && t.closest ? t.closest(dropSel) : null; return z && root.contains(z) ? z : null; }
+    function clear() {
+      Array.prototype.forEach.call(root.querySelectorAll('.is-over, .is-conflict'), function (n) {
+        n.classList.remove('is-over'); n.classList.remove('is-conflict');
+      });
+    }
+    function revert(card, from, next) {
+      if (!from) return;
+      if (next && next.parentNode === from) from.insertBefore(card, next); else from.appendChild(card);
+    }
+    function onStart(e) {
+      var c = e.target && e.target.closest ? e.target.closest(dragSel) : null;
+      if (!c || !root.contains(c)) return;
+      if (c.classList.contains('is-locked')) { e.preventDefault(); return; }
+      dragged = c; origin = c.parentNode; originNext = c.nextSibling;
+      c.classList.add('is-dragging');
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', c.getAttribute('data-id') || ''); } catch (err) { /* IE */ }
+      }
+    }
+    function onEnd() {
+      if (dragged) dragged.classList.remove('is-dragging');
+      dragged = null; clear();
+    }
+    function onOver(e) {
+      var z = zoneOf(e.target);
+      if (!z || !dragged) return;
+      if (opts.canDrop && !opts.canDrop(dragged, z)) {
+        z.classList.remove('is-over'); z.classList.add('is-conflict');
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'none';
+        return;
+      }
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      z.classList.remove('is-conflict'); z.classList.add('is-over');
+    }
+    function onLeave(e) {
+      var z = zoneOf(e.target);
+      if (!z || (e.relatedTarget && z.contains(e.relatedTarget))) return;
+      z.classList.remove('is-over'); z.classList.remove('is-conflict');
+    }
+    function onDropEv(e) {
+      var z = zoneOf(e.target);
+      if (!z || !dragged) return;
+      e.preventDefault();
+      clear();
+      if (opts.canDrop && !opts.canDrop(dragged, z)) return;
+      var card = dragged, from = origin, next = originNext;
+      card.classList.remove('is-dragging');
+      z.appendChild(card);
+      function fail(err) {
+        revert(card, from, next);
+        toast((err && err.message) || 'Не вдалося перемістити', { type: 'err' });
+      }
+      var r;
+      try { r = opts.onDrop ? opts.onDrop(card, z) : null; } catch (err) { fail(err); return; }
+      if (r && typeof r.then === 'function') r.then(null, fail);
+    }
+    root.addEventListener('dragstart', onStart);
+    root.addEventListener('dragend', onEnd);
+    root.addEventListener('dragover', onOver);
+    root.addEventListener('dragleave', onLeave);
+    root.addEventListener('drop', onDropEv);
+    return {
+      destroy: function () {
+        root.removeEventListener('dragstart', onStart);
+        root.removeEventListener('dragend', onEnd);
+        root.removeEventListener('dragover', onOver);
+        root.removeEventListener('dragleave', onLeave);
+        root.removeEventListener('drop', onDropEv);
+      }
+    };
+  }
+
+  window.UI = { toast: toast, confirmInline: confirmInline, drawer: drawer, state: state, dnd: dnd, escapeHtml: escapeHtml };
 
   /* Migration aliases: only where admin/common.js has not defined them. */
   if (typeof window.showToast !== 'function') {
     window.showToast = function (msg, type) {
-      toast(msg, { type: type === 'error' ? 'err' : type === 'success' ? 'ok' : type });
+      toast(msg, { type: type === 'error' ? 'err' : type === 'success' ? 'ok' : type === 'warning' ? 'warn' : type });
     };
   }
   if (typeof window.showModal !== 'function') {
