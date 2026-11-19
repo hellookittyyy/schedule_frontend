@@ -7,7 +7,7 @@
   var NAV = [
     { items: [
       { id: 'home', text: 'Головна', href: '/admin/', icon: 'home', c: 2, exact: true },
-      { id: 'tasks', text: 'Задачі', href: '/admin/tasks/', icon: 'tasks', c: 1, hidden: true },
+      { id: 'tasks', text: 'Задачі', href: '/admin/tasks/', icon: 'tasks', c: 1 },
       { id: 'semester', text: 'Семестр', href: '/admin/semesters/', icon: 'semester', c: 3 }
     ] },
     { label: 'Довідники', items: [
@@ -25,9 +25,7 @@
   ];
 
   // Pages below a nav item that need their own title / crumbs.
-  var SUBPAGES = {
-    '/admin/semesters/detail.html': { title: 'Деталі семестру', crumbs: ['Семестр', 'Деталі'] }
-  };
+  var SUBPAGES = {};
 
   var state = { app: null, nav: null, top: null, menuBtn: null };
 
