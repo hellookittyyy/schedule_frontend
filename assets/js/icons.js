@@ -60,12 +60,15 @@
     });
   }
 
+  function own(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
+
   function svg(name, opts) {
     if (typeof opts === 'string') opts = { cls: opts };
     opts = opts || {};
-    var d = P[A[name] || name];
-    if (!d) {
-      if (!warned[name]) { warned[name] = 1; console.warn('Icons: unknown icon "' + name + '"'); }
+    var key = own(A, name) ? A[name] : name;
+    var d = own(P, key) ? P[key] : null;
+    if (!d || typeof d !== 'string') {
+      if (!own(warned, name)) { warned[name] = 1; console.warn('Icons: unknown icon "' + name + '"'); }
       return '';
     }
     var size = opts.size || 18;
