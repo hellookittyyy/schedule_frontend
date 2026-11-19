@@ -46,6 +46,6 @@ py -m http.server 5500
 
 ## Наступний крок
 
-1. Обрати один варіант або гібрид.
-2. Перенести його токени з `tokens.css` у [`design/ui-kit/ui-kit.css`](../ui-kit/ui-kit.css), в змінні `--ui-*`.
-3. Верстати справжні сторінки адмінки та публічної частини за обраною структурою UX.
+Реалізація йде за планом [`docs/plans/0001-mosaic-redesign.md`](../../docs/plans/0001-mosaic-redesign.md).
+Продакшн-файли — у `assets/css` і `assets/js`; живий довідник компонентів — [`design/system.html`](../system.html).
+`design/ui-kit` лишається лише як застарілий референс.
