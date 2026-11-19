@@ -107,7 +107,9 @@
     var trigger = dangerEl.querySelector('[data-confirm]');
     var pending = false;
     if (dangerEl._uiConfirmOff) dangerEl._uiConfirmOff();
+    var myId = dangerEl._uiConfirmId = (dangerEl._uiConfirmId || 0) + 1;
     function finish() {
+      if (dangerEl._uiConfirmId !== myId) return;
       dangerEl.classList.remove('is-confirm');
       dangerEl.removeEventListener('keydown', onKey);
       if (dangerEl._uiConfirmOff === off) dangerEl._uiConfirmOff = null;
@@ -279,7 +281,7 @@
     }
     function onOver(e) {
       var z = zoneOf(e.target);
-      if (!z || !dragged) return;
+      if (!z || !dragged || !root.contains(dragged)) return;
       if (opts.canDrop && !opts.canDrop(dragged, z)) {
         z.classList.remove('is-over'); z.classList.add('is-conflict');
         if (e.dataTransfer) e.dataTransfer.dropEffect = 'none';
@@ -296,12 +298,14 @@
     }
     function onDropEv(e) {
       var z = zoneOf(e.target);
-      if (!z || !dragged) return;
+      if (!z || !dragged || !root.contains(dragged)) return;
       e.preventDefault();
       clear();
-      if (opts.canDrop && !opts.canDrop(dragged, z)) return;
       var card = dragged, from = origin, next = originNext;
+      dragged = origin = originNext = null;
       card.classList.remove('is-dragging');
+      if (z === from) return;
+      if (opts.canDrop && !opts.canDrop(card, z)) return;
       z.appendChild(card);
       function fail(err) {
         revert(card, from, next);
@@ -309,7 +313,11 @@
       }
       var r;
       try { r = opts.onDrop ? opts.onDrop(card, z) : null; } catch (err) { fail(err); return; }
-      if (r && typeof r.then === 'function') r.then(null, fail);
+      if (r && typeof r.then === 'function') {
+        card.classList.add('is-locked');
+        r.then(function () { card.classList.remove('is-locked'); },
+          function (err) { card.classList.remove('is-locked'); fail(err); });
+      }
     }
     root.addEventListener('dragstart', onStart);
     root.addEventListener('dragend', onEnd);
@@ -323,6 +331,9 @@
         root.removeEventListener('dragover', onOver);
         root.removeEventListener('dragleave', onLeave);
         root.removeEventListener('drop', onDropEv);
+        clear();
+        if (dragged) dragged.classList.remove('is-dragging');
+        dragged = origin = originNext = null;
       }
     };
   }
