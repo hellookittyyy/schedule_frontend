@@ -43,11 +43,21 @@
   }
 
   /* ---------- detail ---------- */
-  function renderDetail(t, ctx) {
-    var draft = ctx.isDraft;
+  // Sections that exist only for a saved teacher (also inserted in place after a draft's first save).
+  function savedHtml() {
+    if (!semesters.length) return '';
     var semOptions = semesters.map(function (s) {
       return '<option value="' + esc(s.id) + '"' + (String(s.id) === String(semId) ? ' selected' : '') + '>' + esc(s.name) + '</option>';
     }).join('');
+    return '<div class="section"><div class="section-title">Доступність <span class="muted sm">клік по клітинці — недоступна пара, по дню — вихідний</span>' +
+        '<select class="select sm" id="t-sem" aria-label="Семестр">' + semOptions + '</select></div>' +
+        '<div id="t-avail"></div></div>' +
+      '<div class="section"><div class="section-title">Веде в групах <span class="muted sm" id="t-groups-sem"></span></div>' +
+        '<div id="t-groups"></div></div>';
+  }
+
+  function renderDetail(t, ctx) {
+    var draft = ctx.isDraft;
     return '' +
       '<div class="detail-head">' +
         '<span class="avatar lg sec">' + (draft && !t.name ? ic('user', 22) : esc(initials(t.name))) + '</span>' +
@@ -69,13 +79,7 @@
               '<div class="combo-list" id="t-subj-list" role="listbox" aria-label="Предмети"></div></div>'
           : '<p class="muted sm mt">У довіднику ще немає предметів. <a href="/admin/subjects/">Додати предмети</a></p>') +
       '</div>' +
-      (!draft && semesters.length
-        ? '<div class="section"><div class="section-title">Доступність <span class="muted sm">клік по клітинці — недоступна пара, по дню — вихідний</span>' +
-            '<select class="select sm" id="t-sem" aria-label="Семестр">' + semOptions + '</select></div>' +
-            '<div id="t-avail"></div></div>' +
-          '<div class="section"><div class="section-title">Веде в групах <span class="muted sm" id="t-groups-sem"></span></div>' +
-            '<div id="t-groups"></div></div>'
-        : '') +
+      (draft ? '' : savedHtml()) +
       ctx.danger({ title: 'Видалити викладача', text: 'Разом із викладачем буде видалено його навчальні плани й заняття в розкладі.' });
   }
 
@@ -86,7 +90,10 @@
     });
     renderSubjectChips(t, ctx);
     wireCombo(t, ctx);
-    if (ctx.isDraft) return;
+    if (!ctx.isDraft) mountSaved(el, t, ctx);
+  }
+
+  function mountSaved(el, t, ctx) {
     var sel = el.querySelector('#t-sem');
     if (sel) {
       sel.addEventListener('change', function () {
@@ -425,6 +432,30 @@
     });
   }
 
+  /* ---------- first save of a draft: saved-only sections + chips changed during the POST ---------- */
+  var posted = new WeakMap();
+  function onCreated(t, ctx) {
+    var html = savedHtml();
+    if (html) {
+      var anchor = ctx.el.querySelector('[data-md-danger]');
+      if (anchor) anchor.insertAdjacentHTML('beforebegin', html); else ctx.el.insertAdjacentHTML('beforeend', html);
+      mountSaved(ctx.el, t, ctx);
+    }
+    var res = posted.get(t);
+    posted.delete(t);
+    var server = ((res && res.subjects_details) || []).map(function (s) { return s.id; });
+    var local = subjOf(t).map(function (s) { return s.id; });
+    var ops = local.filter(function (id) { return server.indexOf(id) < 0; }).map(function (id) { return { subject_id: id, action: 'add' }; })
+      .concat(server.filter(function (id) { return local.indexOf(id) < 0; }).map(function (id) { return { subject_id: id, action: 'remove' }; }));
+    if (!ops.length) return;
+    ctx.status('saving');
+    ops.reduce(function (p, body) {
+      return p.then(function () { return apiRequest('/teachers/' + t.id + '/manage_subjects/', 'POST', body); });
+    }, Promise.resolve())
+      .then(function () { return syncTeacher(t, ctx); })
+      .catch(function (err) { ctx.status('error'); UI.toast(errText(err, 'Не вдалося зберегти предмети'), { type: 'err' }); });
+  }
+
   /* ---------- controller ---------- */
   md = MasterDetail.create({
     root: '#teachers',
@@ -462,11 +493,12 @@
     renderDetail: renderDetail,
     mount: mount,
     onCreate: function () { return { name: '', subjects_details: [] }; },
+    onCreated: onCreated,
     save: function (t, ch) {
       if (t.id == null) {
         var payload = { name: ch.name };
         if (subjOf(t).length) payload.subjects = subjOf(t).map(function (s) { return s.id; });
-        return apiRequest('/teachers/', 'POST', payload);
+        return apiRequest('/teachers/', 'POST', payload).then(function (r) { posted.set(t, r); return r; });
       }
       return apiRequest('/teachers/' + t.id + '/', 'PUT', { name: ch.name != null ? ch.name : t.name });
     },
