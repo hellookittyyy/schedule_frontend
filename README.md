@@ -53,6 +53,11 @@ py scripts/version-assets.py
 git config core.hooksPath .githooks
 ```
 
+## Тести
+
+`py scripts/run-tests.py` відкриває `tests/` у headless-браузері й друкує результат; для того самого в браузері — `py scripts/dev-server.py` і `http://localhost:5500/tests/`.
+Тести підміняють `apiRequest` фейковим API (`tests/fake-api.js`), тож бекенд не потрібен.
+
 ## Важливо!
 
 Для повноцінної роботи потребується запущена бекенд-частина для отримання та оновлення даних.

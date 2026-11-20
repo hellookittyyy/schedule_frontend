@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тести — schedule_frontend</title>
+    <script src="/assets/js/theme-boot.js?v=5f07e596"></script>
+    <link rel="stylesheet" href="/assets/css/tokens.css?v=9b325578">
+    <style>
+        body { margin: 0; padding: 32px 20px; background: var(--bg); color: var(--text); font: 14px/1.5 ui-sans-serif, system-ui, sans-serif; }
+        .t-wrap { max-width: 860px; margin: 0 auto; }
+        h1 { margin: 0 0 20px; font-size: 22px; font-weight: 600; }
+        #tests pre { margin: 0 0 20px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: inherit; font: 600 14px/1.5 ui-monospace, monospace; white-space: pre-wrap; }
+        .t-row { display: flex; flex-wrap: wrap; gap: 4px 10px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); margin-bottom: 8px; }
+        .t-status { flex: none; width: 42px; font: 600 12px/1.8 ui-monospace, monospace; color: var(--muted); }
+        .t-row.pass .t-status { color: var(--ok); }
+        .t-row.fail .t-status { color: var(--high); }
+        .t-name { flex: 1; }
+        .t-msg { flex: 0 0 100%; margin-left: 52px; color: var(--high); white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div class="t-wrap">
+        <h1>Тести</h1>
+        <div id="tests"></div>
+    </div>
+
+    <script src="/assets/js/api.js?v=55e24ce9"></script>
+    <script src="/assets/js/ui.js?v=ec4d50f9"></script>
+    <script src="/assets/js/icons.js?v=eb6ccbed"></script>
+    <script src="/assets/js/checks.js?v=48d83d22"></script>
+    <script src="fake-api.js?v=5372b49f"></script>
+    <script src="runner.js?v=7928dec1"></script>
+    <script src="ui.test.js?v=4dc48552"></script>
+    <script src="fake-api.test.js?v=aaa1a75f"></script>
+</body>
+</html>
