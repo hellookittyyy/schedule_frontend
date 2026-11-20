@@ -93,7 +93,7 @@
     if (sel) {
       sel.addEventListener('change', function () {
         semId = sel.value;
-        loadSemesterParts(t, ctx);
+        md.setScope(semId);
       });
       loadSemesterParts(t, ctx);
     }
@@ -184,10 +184,18 @@
       renderSubjectChips(t, ctx);
       return Promise.resolve();
     }
-    ctx.status('saving');
-    return apiRequest('/teachers/' + t.id + '/manage_subjects/', 'POST', { subject_id: subjectId, action: 'add' })
-      .then(function () { return syncTeacher(t, ctx); })
-      .catch(function (err) { ctx.status('error'); UI.toast(errText(err, 'Не вдалося додати предмет'), { type: 'err' }); });
+    if (!subjOf(t).some(function (s) { return s.id === subjectId; })) {
+      t.subjects_details = subjOf(t).concat([subj]);
+    }
+    return ctx.queue(function () {
+      return apiRequest('/teachers/' + t.id + '/', 'PUT', { name: t.name, subjects: subjOf(t).map(function (s) { return s.id; }) });
+    }, { errorText: 'Не вдалося додати предмет' }).then(function (fresh) {
+      Object.assign(t, fresh);
+      md.refresh(t);
+      if (ctx.alive()) renderSubjectChips(t, ctx);
+    }, function () {
+      return syncTeacher(t, ctx).catch(function () {});
+    });
   }
 
   function removeSubject(t, ctx, subjectId) {
@@ -198,16 +206,20 @@
       renderSubjectChips(t, ctx);
       return;
     }
-    ctx.status('saving');
-    apiRequest('/teachers/' + t.id + '/manage_subjects/', 'POST', { subject_id: subjectId, action: 'remove' })
-      .then(function () { return syncTeacher(t, ctx); })
-      .then(function () {
-        UI.toast('Предмет «' + subj.name + '» прибрано', {
-          type: 'ok',
-          action: { label: 'Повернути', onClick: function () { addSubject(t, ctx, subjectId); } }
-        });
-      })
-      .catch(function (err) { ctx.status('error'); UI.toast(errText(err, 'Не вдалося прибрати предмет'), { type: 'err' }); });
+    t.subjects_details = subjOf(t).filter(function (s) { return s.id !== subjectId; });
+    ctx.queue(function () {
+      return apiRequest('/teachers/' + t.id + '/', 'PUT', { name: t.name, subjects: subjOf(t).map(function (s) { return s.id; }) });
+    }, { errorText: 'Не вдалося прибрати предмет' }).then(function (fresh) {
+      Object.assign(t, fresh);
+      md.refresh(t);
+      if (ctx.alive()) renderSubjectChips(t, ctx);
+      UI.toast('Предмет «' + subj.name + '» прибрано', {
+        type: 'ok',
+        action: { label: 'Повернути', onClick: function () { addSubject(t, ctx, subjectId); } }
+      });
+    }, function () {
+      syncTeacher(t, ctx).catch(function () {});
+    });
   }
 
   /* ---------- semester grid: days × periods from the semester's timeslots ---------- */
@@ -247,22 +259,19 @@
     var box = ctx.el.querySelector('#t-avail');
     if (!box) return;
     UI.state(box, 'loading');
-    Promise.all([
+    ctx.load(Promise.all([
       semesterGrid(sid),
       apiRequest('/semester_constraints/?semester=' + encodeURIComponent(sid) + '&teacher=' + t.id + '&is_active=true')
-    ]).then(function (r) {
-      if (!ctx.alive() || semId !== sid) return;
+    ])).then(function (r) {
       var cons = (r[1] && r[1].results) || r[1] || [];
       new AvailGrid(box, t, sid, r[0], cons, ctx);
     }, function (err) {
-      if (!ctx.alive() || semId !== sid) return;
       UI.state(box, 'error', { text: errText(err, 'Не вдалося завантажити доступність'), actionLabel: 'Спробувати ще', onAction: function () { loadAvailability(t, ctx, sid); } });
     });
   }
 
   function AvailGrid(box, t, sid, grid, cons, ctx) {
     this.box = box; this.t = t; this.sid = sid; this.grid = grid; this.cons = cons; this.ctx = ctx;
-    this.chain = Promise.resolve(); this.pending = 0;
     if (!grid.periods.length) {
       UI.state(box, 'empty', { text: 'У семестрі ще немає розкладу дзвінків' });
       return;
@@ -279,11 +288,21 @@
       if (c) {
         var on = !c.classList.contains('off');
         c.classList.toggle('off', on); c.setAttribute('aria-pressed', String(on));
-        self.queue(function () { return self.setBlocked(Number(c.dataset.day), Number(c.dataset.p), on); });
+        self.ctx.queue(function () { return self.setBlocked(Number(c.dataset.day), Number(c.dataset.p), on); },
+          { errorText: 'Не вдалося зберегти доступність' }).then(function () {
+            if (self.ctx.pending === 0 && self.ctx.alive() && document.contains(self.box)) self.render();
+          }, function () {
+            if (self.ctx.alive()) loadAvailability(self.t, self.ctx, self.sid);
+          });
       } else if (h) {
         var off = !h.classList.contains('is-off');
         h.classList.toggle('is-off', off); h.setAttribute('aria-pressed', String(off));
-        self.queue(function () { return self.setDayOff(Number(h.dataset.day), off); });
+        self.ctx.queue(function () { return self.setDayOff(Number(h.dataset.day), off); },
+          { errorText: 'Не вдалося зберегти доступність' }).then(function () {
+            if (self.ctx.pending === 0 && self.ctx.alive() && document.contains(self.box)) self.render();
+          }, function () {
+            if (self.ctx.alive()) loadAvailability(self.t, self.ctx, self.sid);
+          });
       }
     });
   }
@@ -322,21 +341,6 @@
     this.box.innerHTML = '<div class="avail" style="--days:' + g.days.length + '">' + h + '</div>' +
       '<div class="legend"><span><i class="free"></i>доступний</span><span><i class="off"></i>недоступний</span><span><i class="block"></i>вихідний день</span></div>';
   };
-  AvailGrid.prototype.queue = function (op) {
-    var self = this;
-    this.pending++;
-    this.ctx.status('saving');
-    this.chain = this.chain.then(op).then(function () {
-      if (--self.pending === 0 && self.alive()) { self.render(); self.ctx.status('saved'); }
-    }, function (err) {
-      self.pending--;
-      UI.toast(errText(err, 'Не вдалося зберегти доступність'), { type: 'err' });
-      if (self.alive()) { self.ctx.status('error'); loadAvailability(self.t, self.ctx, self.sid); }
-      self.pending = 0;
-      self.chain = Promise.resolve();
-    });
-  };
-  AvailGrid.prototype.alive = function () { return this.ctx.alive() && semId === this.sid && document.contains(this.box); };
   AvailGrid.prototype.replace = function (old, fresh) {
     var i = this.cons.indexOf(old);
     if (fresh) { if (i >= 0) this.cons[i] = fresh; else this.cons.push(fresh); }
@@ -403,8 +407,7 @@
     var box = ctx.el.querySelector('#t-groups');
     if (!box) return;
     UI.state(box, 'loading');
-    apiRequest('/study_plans/?semester=' + encodeURIComponent(sid) + '&teacher=' + t.id).then(function (plans) {
-      if (!ctx.alive() || semId !== sid) return;
+    ctx.load(apiRequest('/study_plans/?semester=' + encodeURIComponent(sid) + '&teacher=' + t.id)).then(function (plans) {
       plans = (plans && plans.results) || plans || [];
       var seen = {}, list = [];
       plans.forEach(function (p) {
@@ -422,7 +425,6 @@
           esc(g.name) + (g.stream ? ' <span class="muted">потік</span>' : '') + ic('chevR', 12) + '</a>';
       }).join('') + '</div>';
     }, function (err) {
-      if (!ctx.alive() || semId !== sid) return;
       UI.state(box, 'error', { text: errText(err, 'Не вдалося завантажити навчальні плани'), actionLabel: 'Спробувати ще', onAction: function () { loadGroups(t, ctx, sid); } });
     });
   }
