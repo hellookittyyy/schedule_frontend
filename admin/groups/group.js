@@ -202,7 +202,7 @@
       var anchor = el.querySelector('[data-md-danger]');
       if (anchor) anchor.insertAdjacentHTML('beforebegin', savedHtml(g)); else el.insertAdjacentHTML('beforeend', savedHtml(g));
     },
-    save: function (g, ch) {
+    save: function (g, ch, ctx) {
       if (g.id == null) {
         // Draft: the API requires all three fields; use the values mount() captured on the item.
         var p = Object.assign({ name: '', amount: '', start_year: '' }, g._form);
@@ -218,10 +218,10 @@
       var body = { name: g.name, amount: g.amount, start_year: g.start_year };
       Object.assign(body, ch);
       return apiRequest('/groups/' + g.id + '/', 'PUT', body).then(function (saved) {
-        var cur = md.current();
-        var sub = document.getElementById('g-sub'), c = document.getElementById('g-course');
-        if (saved && cur && cur.id === g.id) {
+        if (ctx.alive()) {
+          var sub = ctx.el.querySelector('#g-sub');
           if (sub) sub.textContent = subText(saved);
+          var c = ctx.el.querySelector('#g-course');
           if (c) c.textContent = courseLabel(course(saved));
         }
         return saved;
