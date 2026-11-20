@@ -4,6 +4,8 @@
   'use strict';
 
   var DRAFT = '__draft';
+  // Returned by ctx.load when its result is stale: the promise never settles, so no page callback runs.
+  var NEVER = new Promise(function () {});
 
   function esc(s) { return window.UI ? UI.escapeHtml(s) : String(s == null ? '' : s); }
   function icon(name, size) { return window.Icons ? Icons.svg(name, { size: size || 16 }) : ''; }
@@ -31,6 +33,14 @@
     var selectedId = null, beforeDraft = null, draft = null, ctx = null, renderToken = 0, loadToken = 0;
     var saveChain = Promise.resolve();
     var timers = {};
+    var scope = null;
+
+    // One write chain for everything this master–detail sends: field saves, page ops and DELETE.
+    function chain(fn) {
+      var p = saveChain.then(fn);
+      saveChain = p.then(null, function () {});
+      return p;
+    }
 
     root.classList.add('card', 'md');
     if (opts.color) root.style.setProperty('--sec', 'var(' + opts.color + ')');
@@ -242,7 +252,17 @@
         sent: {},
         pending: 0,
         alive: function () { return token === renderToken; },
+        load: function (p) {
+          // The result only reaches the page while this render is still on screen.
+          return Promise.resolve(p).then(function (v) {
+            return c.alive() ? v : NEVER;
+          }, function (err) {
+            if (c.alive()) throw err;
+            return NEVER;
+          });
+        },
         save: function (changes) { return doSave(c, changes); },
+        queue: function (op, o) { return queue(c, op, o); },
         status: function (kind) { setStatus(c, kind); },
         refresh: function (it) { return refresh(it || c.item); },
         rerender: function () { if (c.alive()) renderDetail(); },
@@ -252,6 +272,7 @@
     }
 
     function renderDetail() {
+      if (ctx) flushPending();
       var token = ++renderToken;
       clearTimers();
       var item = current();
@@ -388,14 +409,28 @@
       if (opts.onCreated) opts.onCreated(c.item, c);
     }
 
-    function doSave(c, changes) {
-      if (!opts.save) return Promise.reject(new Error('MasterDetail: save is not configured'));
+    // Every page write goes through this: status chip, error toast, and «batch had a failure».
+    function queue(c, op, o) {
+      o = o || {};
       c.pending++;
       setStatus(c, 'saving');
+      return chain(function () { return op(); }).then(function (v) {
+        if (--c.pending === 0) { setStatus(c, c.batchFailed ? 'error' : 'saved'); c.batchFailed = false; }
+        return v;
+      }, function (err) {
+        c.batchFailed = --c.pending > 0;
+        setStatus(c, 'error');
+        UI.toast(errorText(err, o.errorText || 'Не вдалося зберегти'), { type: 'err' });
+        throw err;
+      });
+    }
+
+    function doSave(c, changes) {
+      if (!opts.save) return Promise.reject(new Error('MasterDetail: save is not configured'));
       // Merge inside the chain so a queued save sees the id assigned by a draft's POST.
-      var p = saveChain.then(function () {
+      return queue(c, function () {
         var snap = snapshot(c.item);
-        return Promise.resolve(opts.save(c.item, changes)).then(function (saved) {
+        return Promise.resolve(opts.save(c.item, changes, c)).then(function (saved) {
           merge(c.item, saved || changes, saved ? snap : null);
           if (c.isDraft) promote(c);
           else {
@@ -405,25 +440,13 @@
           return c.item;
         });
       });
-      saveChain = p.then(null, function () {});
-      return p.then(function (item) {
-        // A failed save earlier in this batch keeps the batch from ending as «Збережено».
-        if (--c.pending === 0) { setStatus(c, c.batchFailed ? 'error' : 'saved'); c.batchFailed = false; }
-        return item;
-      }, function (err) {
-        c.batchFailed = --c.pending > 0;
-        setStatus(c, 'error');
-        UI.toast(errorText(err, 'Не вдалося зберегти'), { type: 'err' });
-        throw err;
-      });
     }
 
     function doRemove(c) {
       var item = c.item;
       // Queue behind pending saves (e.g. the blur-save from clicking «Видалити»), so DELETE goes last.
       flushPending();
-      var p = saveChain.then(function () { return opts.remove(item); });
-      saveChain = p.then(null, function () {});
+      var p = chain(function () { return opts.remove(item); });
       return p.then(function () {
         var vis = visibleItems();
         var idx = vis.indexOf(item);
@@ -480,6 +503,13 @@
       return ex || item;
     }
 
+    // The page's current scope (a semester id): a change invalidates every pending ctx.load.
+    function setScope(key) {
+      if (same(scope, key)) return;
+      scope = key;
+      renderDetail();
+    }
+
     function reload() {
       var token = ++loadToken;
       loaded = false;
@@ -516,6 +546,7 @@
       current: current,
       refresh: refresh,
       rerender: function () { renderDetail(); },
+      setScope: function (key) { setScope(key); },
       setFilters: function (f) { filtersSrc = f; renderRows(); },
       items: function () { return items.slice(); },
       create: startDraft
