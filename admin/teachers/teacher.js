@@ -166,11 +166,11 @@
     });
   }
 
-  function syncTeacher(t, ctx) {
+  function syncTeacher(t, ctx, quiet) {
     return apiRequest('/teachers/' + t.id + '/').then(function (fresh) {
       Object.assign(t, fresh);
       md.refresh(t);
-      if (ctx.alive()) { renderSubjectChips(t, ctx); ctx.status('saved'); }
+      if (ctx.alive()) { renderSubjectChips(t, ctx); if (!quiet) ctx.status('saved'); }
     });
   }
 
@@ -196,7 +196,7 @@
       md.refresh(t);
       if (ctx.alive()) renderSubjectChips(t, ctx);
     }, function () {
-      return syncTeacher(t, ctx).catch(function () {});
+      return syncTeacher(t, ctx, true).catch(function () {});
     });
   }
 
@@ -222,7 +222,7 @@
         action: { label: 'Повернути', onClick: function () { addSubject(t, ctx, subjectId); } }
       });
     }, function () {
-      syncTeacher(t, ctx).catch(function () {});
+      syncTeacher(t, ctx, true).catch(function () {});
     });
   }
 
