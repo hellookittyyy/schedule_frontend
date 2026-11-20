@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | In progress — phases 0-2 done |
+| Status | In progress — phases 0-3 done |
 | Date | 2026-11-20 |
 | Baseline | frontend `290756b` (branch `deepen-master-detail`; app code identical to `fd6da26`, `main` after plan 0001) |
 | Source | Architecture review 2026-11-20, the three «Strong» candidates: (1) Draft creation inside MasterDetail, (2) detail-scoped async on `ctx`, (3) Readiness and stages beside Checks |
@@ -172,8 +172,9 @@ One commit per page; each deletes its workaround:
 - Phase 0 — `af90e6d` test harness (`tests/runner.js`, `tests/fake-api.js`, `tests/index.html`, two smoke tests) and `scripts/run-tests.py` (dev-server on a free port, headless Chrome/Edge, `PASS n/m` marker, exit 0 only on PASS); `c7a16dc` rewrote `docs/regression-checklist.md` for the Mosaic UI. Verify: `PASS 2/2`.
 - Phase 1 — `3f6372b` `Checks.evaluate`/`readiness`/`stages` exported; `admin/home.js`, `admin/tasks/tasks.js` and `admin/semesters/semester.js` render from them (Tasks readiness via `Checks.readiness`, Semester's Generate button via `Checks.isBlocked`); `tests/checks.test.js` (7 tests). Verify: `PASS 9/9`.
 - Phase 2 — `f2050a0` one write chain (`chain`), `ctx.queue(op, {errorText})`, `ctx.load(promise)` (never settles when stale), `md.setScope(key)`; `renderDetail()` flushes pending debounced fields; `save` receives `ctx` as third argument. `tests/master-detail.test.js` (9 tests). Verify: `PASS 18/18`.
+- Phase 3 — one commit per page: `9345a0a` subjects, `d0d80fa` rooms, `9921e8d` constraints, `2970a30` groups, `fde7e31` study plans, `3d40abc` streams, `01a2c60` teachers; fixes `e16d066` (teacher chips keep the list built while a PUT was in flight), `83ed58a` (a failed chip write no longer ends «Збережено»), `743a0dc` (study-plan copy freezes source, list and semester at click time). Detail loads go through `ctx.load`, writes through `ctx.queue`, Teachers switches semester with `md.setScope`; `AvailGrid.chain/pending/alive`, stream `enqueue/_posting/_name`, study-plan `tr._chain` and the private copy chain are gone. Kept: study-plan's `sem !== semId` / `sem === semId` on write completions and `lc.isCurrent()` on the list load, Constraint's in-render type/semester checks and `sid !== semId`, no `setScope` on study plans or constraints. Verify: `PASS 18/18`. Note: the done-grep's `_name\b` also matches legitimate API fields (`subject_name`, `teacher_name`); the intent check `grep -rnE "\._name\b|\b_name\b" admin` is empty.
 
-Remaining: phases 3-6 (pages onto `ctx.load`/`ctx.queue`/`setScope`, Draft lifecycle, clean-up).
+Remaining: phases 4-6 (Draft lifecycle, pages onto it, clean-up).
 
 ## Revision log
 
