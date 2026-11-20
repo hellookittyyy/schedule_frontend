@@ -91,6 +91,8 @@ def main() -> int:
             time.sleep(0.1)
 
         if not ready:
+            # Terminate first: reading the pipe blocks until EOF, i.e. until the child exits.
+            stop(proc)
             err = proc.stderr.read().decode("utf-8", errors="replace") if proc.stderr else ""
             print("Server did not answer at " + url, file=sys.stderr)
             if err:
@@ -131,9 +133,9 @@ def main() -> int:
         ok = first.group(1) == "PASS" and first.group(2) == first.group(3) and int(first.group(3)) > 0
         return 0 if ok else 1
     finally:
+        stop(proc)
         if proc.stderr:
             proc.stderr.close()
-        stop(proc)
         if tmp:
             shutil.rmtree(tmp, ignore_errors=True)
 

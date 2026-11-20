@@ -93,7 +93,7 @@
 
     document.title = head;
     window.__testResult = {
-      ok: c.failed === 0,
+      ok: finished && c.failed === 0 && c.passed === total && total > 0,
       passed: c.passed,
       total: total,
       failures: c.failures
