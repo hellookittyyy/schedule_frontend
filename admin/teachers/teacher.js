@@ -187,8 +187,9 @@
       return apiRequest('/teachers/' + t.id + '/', 'PUT', { name: t.name, subjects: subjOf(t).map(function (s) { return s.id; }) });
     }, { errorText: failText }).then(function (fresh) {
       var local = subjOf(t);
+      var localIds = subjectIds(t);
       Object.assign(t, fresh);
-      if (sent !== subjectIds(t)) t.subjects_details = local;
+      if (localIds !== sent) t.subjects_details = local; // a newer chip write owns the list; its response follows
       md.refresh(t);
       if (ctx.alive()) renderSubjectChips(t, ctx);
     }, function () {
