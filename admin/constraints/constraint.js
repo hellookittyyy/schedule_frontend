@@ -451,8 +451,8 @@
   function editTimeBlock(ctx, box) {
     var w = ctx.w, sid = w.semester;
     UI.state(box, 'loading');
-    semesterGrid(sid).then(function (g) {
-      if (!ctx.alive() || w.type !== 'time_block' || w.semester !== sid) return;
+    ctx.load(semesterGrid(sid)).then(function (g) {
+      if (w.type !== 'time_block' || w.semester !== sid) return;
       var v = w.cfg.value || (w.cfg.value = {});
       // Keep periods/days stored in the value even if the semester grid lacks them.
       var days = g.days.slice(), pers = g.periods.slice();
@@ -513,7 +513,6 @@
         commit(ctx);
       };
     }, function (err) {
-      if (!ctx.alive()) return;
       UI.state(box, 'error', { text: errText(err, 'Не вдалося завантажити розклад дзвінків'), actionLabel: 'Спробувати ще', onAction: function () { paintEditor(ctx); } });
     });
   }
@@ -522,8 +521,8 @@
     var w = ctx.w, sid = w.semester;
     if (!w.cfg.value) w.cfg.value = { time_gap: 1 };
     UI.state(box, 'loading');
-    plansFor(sid).then(function (plans) {
-      if (!ctx.alive() || w.type !== 'sequential_lessons' || w.semester !== sid) return;
+    ctx.load(plansFor(sid)).then(function (plans) {
+      if (w.type !== 'sequential_lessons' || w.semester !== sid) return;
       var v = w.cfg.value;
       if (!plans.length) { UI.state(box, 'empty', { text: 'У семестрі ще немає навчальних планів' }); return; }
       plans = plans.slice().sort(function (a, b) { return planOption(a).localeCompare(planOption(b), 'uk'); });
@@ -570,7 +569,6 @@
         commit(ctx);
       };
     }, function (err) {
-      if (!ctx.alive()) return;
       UI.state(box, 'error', { text: errText(err, 'Не вдалося завантажити навчальні плани'), actionLabel: 'Спробувати ще', onAction: function () { paintEditor(ctx); } });
     });
   }
