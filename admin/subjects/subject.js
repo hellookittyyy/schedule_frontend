@@ -85,8 +85,7 @@
   }
 
   function loadPlans(el, s, ctx) {
-    apiRequest('/study_plans/?subject=' + encodeURIComponent(s.id)).then(function (plans) {
-      if (!ctx.alive()) return;
+    ctx.load(apiRequest('/study_plans/?subject=' + encodeURIComponent(s.id))).then(function (plans) {
       plans = list(plans);
       if (!plans.length) return;
       var seen = {}, rows = [];
