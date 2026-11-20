@@ -106,7 +106,7 @@
     // Draft: backend needs all four required fields at once, so create via an explicit button.
     var btn = el.querySelector('#r-create');
     function submit() {
-      if (!ctx.isDraft || !ctx.alive() || btn.disabled) return;
+      if (!ctx.isDraft || btn.disabled) return;
       var bad = ['r-name', 'r-bld', 'r-type', 'r-cap'].filter(function (id) {
         var node = el.querySelector('#' + id), empty = node.value.trim() === '';
         node.classList.toggle('is-err', empty);
