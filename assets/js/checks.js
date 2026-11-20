@@ -1,5 +1,6 @@
 /* Preflight checks for a semester, computed client-side from list endpoints (plan 0001 §6).
-   Classic script: window.Checks. Needs api.js (apiRequest). Results cached per semester. */
+   Also owns Readiness and the semester Stages (plan 0002 §4.5).
+   Classic script: window.Checks. Needs api.js (apiRequest) and ui.js (UI.plural). Results cached per semester. */
 (function () {
   'use strict';
 
@@ -161,7 +162,46 @@
 
   function isBlocked(list) { return (list || []).some(function (c) { return c.severity === 'block'; }); }
 
+  // Readiness as shown on Tasks: a blocker caps the percentage at 50.
+  function readiness(list) {
+    list = list || [];
+    var total = list.length;
+    var passed = 0, blocks = 0;
+    list.forEach(function (c) {
+      if (c.severity === 'ok') passed++;
+      else if (c.severity === 'block') blocks++;
+    });
+    var pct = total ? Math.round(passed / total * 100) : 0;
+    var capped = blocks > 0 && pct > 50;
+    if (capped) pct = 50;
+    return { pct: pct, passed: passed, total: total, blocks: blocks, capped: capped };
+  }
+
+  // The five semester stages, without links: pages map ids to their own destinations.
+  function stages(d, checks, opts) {
+    opts = opts || {};
+    var constraints = opts.constraints || 0;
+    var lessons = opts.lessons || 0;
+    var blocks = (checks || []).filter(function (c) { return c.severity === 'block'; }).length;
+    var per = plansPerGroup(d);
+    var ready = d.groups.filter(function (g) { return per[g.id] > 0; }).length;
+    return [
+      { id: 'calendar', name: 'Календар', done: d.slots.length > 0, req: true,
+        meta: d.slots.length ? UI.plural(d.slots.length, 'слот', 'слоти', 'слотів') : 'немає слотів' },
+      { id: 'resources', name: 'Ресурси',
+        done: !!(d.rooms.length && d.teachers.length && d.groups.length && d.subjects.length), req: true,
+        meta: UI.plural(d.rooms.length, 'аудиторія', 'аудиторії', 'аудиторій') + ' · ' +
+          UI.plural(d.teachers.length, 'викладач', 'викладачі', 'викладачів') },
+      { id: 'plans', name: 'Плани', done: d.plans.length > 0 && ready === d.groups.length, req: true,
+        meta: d.plans.length ? ready + ' з ' + d.groups.length + ' груп' : 'немає планів' },
+      { id: 'constraints', name: 'Обмеження', done: constraints > 0,
+        meta: constraints ? UI.plural(constraints, 'обмеження', 'обмеження', 'обмежень') : 'не задано' },
+      { id: 'generation', name: 'Генерація', done: lessons > 0, req: true,
+        meta: lessons ? UI.plural(lessons, 'заняття', 'заняття', 'занять') : blocks ? 'блокерів: ' + blocks : 'не запускали' }
+    ];
+  }
+
   window.Checks = { run: run, data: data, plansPerGroup: plansPerGroup, invalidate: invalidate,
-    summary: summary, isBlocked: isBlocked,
+    summary: summary, isBlocked: isBlocked, evaluate: evaluate, readiness: readiness, stages: stages,
     subjectIds: subjectIds, roomTypeId: roomTypeId };
 })();
