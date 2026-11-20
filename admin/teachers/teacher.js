@@ -174,6 +174,30 @@
     });
   }
 
+  function subjectIds(t) {
+    return subjOf(t).map(function (s) { return s.id; }).join(',');
+  }
+
+  // One PUT per chip edit. Chip edits queue, so a newer edit may already be in flight when this
+  // op fails; that newer op carries the failed change, so only re-read the server when it does not.
+  function saveSubjects(t, ctx, failText) {
+    var sent = null;
+    return ctx.queue(function () {
+      sent = subjectIds(t);
+      return apiRequest('/teachers/' + t.id + '/', 'PUT', { name: t.name, subjects: subjOf(t).map(function (s) { return s.id; }) });
+    }, { errorText: failText }).then(function (fresh) {
+      var local = subjOf(t);
+      Object.assign(t, fresh);
+      if (sent !== subjectIds(t)) t.subjects_details = local;
+      md.refresh(t);
+      if (ctx.alive()) renderSubjectChips(t, ctx);
+    }, function () {
+      // No newer chip edit: re-read the server truth. Otherwise the queued op already carries the failed change.
+      if (sent == null || sent !== subjectIds(t)) return;
+      return syncTeacher(t, ctx, true).catch(function () {});
+    });
+  }
+
   function addSubject(t, ctx, subjectId) {
     var subj = allSubjects.find(function (s) { return s.id === subjectId; });
     if (!subj) return Promise.resolve();
@@ -187,17 +211,7 @@
     if (!subjOf(t).some(function (s) { return s.id === subjectId; })) {
       t.subjects_details = subjOf(t).concat([subj]);
     }
-    return ctx.queue(function () {
-      return apiRequest('/teachers/' + t.id + '/', 'PUT', { name: t.name, subjects: subjOf(t).map(function (s) { return s.id; }) });
-    }, { errorText: 'Не вдалося додати предмет' }).then(function (fresh) {
-      var chips = subjOf(t);
-      Object.assign(t, fresh);
-      t.subjects_details = chips;
-      md.refresh(t);
-      if (ctx.alive()) renderSubjectChips(t, ctx);
-    }, function () {
-      return syncTeacher(t, ctx, true).catch(function () {});
-    });
+    return saveSubjects(t, ctx, 'Не вдалося додати предмет');
   }
 
   function removeSubject(t, ctx, subjectId) {
@@ -209,21 +223,12 @@
       return;
     }
     t.subjects_details = subjOf(t).filter(function (s) { return s.id !== subjectId; });
-    ctx.queue(function () {
-      return apiRequest('/teachers/' + t.id + '/', 'PUT', { name: t.name, subjects: subjOf(t).map(function (s) { return s.id; }) });
-    }, { errorText: 'Не вдалося прибрати предмет' }).then(function (fresh) {
-      var chips = subjOf(t);
-      Object.assign(t, fresh);
-      t.subjects_details = chips;
-      md.refresh(t);
-      if (ctx.alive()) renderSubjectChips(t, ctx);
+    saveSubjects(t, ctx, 'Не вдалося прибрати предмет').then(function () {
       UI.toast('Предмет «' + subj.name + '» прибрано', {
         type: 'ok',
         action: { label: 'Повернути', onClick: function () { addSubject(t, ctx, subjectId); } }
       });
-    }, function () {
-      syncTeacher(t, ctx, true).catch(function () {});
-    });
+    }, function () {});
   }
 
   /* ---------- semester grid: days × periods from the semester's timeslots ---------- */
