@@ -527,8 +527,12 @@
     panel.querySelector('[data-copy-close]').addEventListener('click', function () { toggleCopy(st, btn); btn.focus(); });
     go.addEventListener('click', function () {
       if (!chosen || !todo.length) return;
+      var src = chosen, list = todo.slice(), sem = semId;
       go.disabled = true; go.classList.add('is-busy');
-      st.ctx.queue(function () { return runCopy(st, chosen, todo.slice()); }, { errorText: 'Не вдалося скопіювати план' }).then(function () {
+      st.ctx.queue(function () {
+        if (String(sem) !== String(semId)) return null; // semester switched while the op waited
+        return runCopy(st, src, list);
+      }, { errorText: 'Не вдалося скопіювати план' }).then(function () {
         if (!st.ctx.alive()) return;
         panel.hidden = true; btn.setAttribute('aria-expanded', 'false');
       }, function () {
