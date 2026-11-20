@@ -190,7 +190,9 @@
     return ctx.queue(function () {
       return apiRequest('/teachers/' + t.id + '/', 'PUT', { name: t.name, subjects: subjOf(t).map(function (s) { return s.id; }) });
     }, { errorText: 'Не вдалося додати предмет' }).then(function (fresh) {
+      var chips = subjOf(t);
       Object.assign(t, fresh);
+      t.subjects_details = chips;
       md.refresh(t);
       if (ctx.alive()) renderSubjectChips(t, ctx);
     }, function () {
@@ -210,7 +212,9 @@
     ctx.queue(function () {
       return apiRequest('/teachers/' + t.id + '/', 'PUT', { name: t.name, subjects: subjOf(t).map(function (s) { return s.id; }) });
     }, { errorText: 'Не вдалося прибрати предмет' }).then(function (fresh) {
+      var chips = subjOf(t);
       Object.assign(t, fresh);
+      t.subjects_details = chips;
       md.refresh(t);
       if (ctx.alive()) renderSubjectChips(t, ctx);
       UI.toast('Предмет «' + subj.name + '» прибрано', {
