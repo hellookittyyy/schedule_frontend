@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UX 4 — Список і деталі</title>
+<style>
+:root{--ink:#1d1d1f;--mid:#6e6e73;--soft:#a1a1a6;--line:#d2d2d7;--fill:#f2f2f4;--paper:#fff;--bg:#f7f7f8;--note:#fff3a3;--mark:#e11d48}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+.doc{max-width:1240px;margin:0 auto;padding:28px 20px 80px}.back{font-size:13px;color:var(--mid);text-decoration:none}
+h1{font-size:26px;margin:8px 0 4px}.idea{color:var(--mid);max-width:820px;margin:0 0 8px}h2{font-size:17px;margin:34px 0 10px}
+.maps{display:grid;grid-template-columns:1fr 1fr;gap:16px}.maps>div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px}
+.tree,.tree ul{list-style:none;margin:0;padding-left:16px}.tree{padding:0}.tree ul{border-left:1px solid var(--soft);margin-left:6px}
+.tree li{position:relative;padding:3px 0 3px 12px}.tree ul>li::before{content:'';position:absolute;left:0;top:13px;width:9px;border-top:1px solid var(--soft)}
+.new{font-size:10px;background:var(--ink);color:#fff;border-radius:3px;padding:0 5px;margin-left:4px;vertical-align:1px}
+.stabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.stabs button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:5px 12px;cursor:pointer;font:inherit;font-size:13px}
+.stabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.scr{display:none}.scr.on{display:grid;grid-template-columns:1fr 290px;gap:16px}
+.frame{border:1.5px solid var(--ink);border-radius:10px;background:var(--paper);overflow:hidden;min-height:470px;display:flex;flex-direction:column}
+.bar{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--line);font-size:12px}.bar i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.url{flex:1;background:var(--fill);border-radius:6px;padding:2px 10px;color:var(--mid)}
+.box{border:1px solid var(--line);border-radius:6px;padding:10px;background:#fff}.fill{background:var(--fill)}
+.btn{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--ink);border-radius:5px;padding:4px 10px;background:#fff;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn.pri{background:var(--ink);color:#fff}.btn.ghost{border-color:var(--line)}
+.in{border:1px solid var(--line);border-radius:5px;padding:5px 9px;color:var(--soft);font-size:13px;background:#fff}
+.m{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--mark);color:#fff;font-size:11px;font-style:normal;font-weight:700;vertical-align:middle;margin:0 3px;flex:none}
+.notes{background:var(--note);padding:14px 14px 14px 30px;border-radius:4px;font-size:13px;align-self:start;margin:0;box-shadow:2px 3px 0 rgba(0,0,0,.06)}
+.notes li{margin-bottom:8px}.notes li::marker{font-weight:700;color:var(--mark)}
+[data-go]{cursor:pointer}[data-go]:not(button):hover{outline:1.5px dashed var(--mark);outline-offset:2px}
+.muted{color:var(--mid)}.small{font-size:12px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.col{display:flex;flex-direction:column;gap:8px}.grow{flex:1}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl td,.tbl th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}.tbl th{color:var(--mid);font-weight:600}
+.pill{border:1px solid var(--line);border-radius:99px;padding:1px 8px;font-size:12px;white-space:nowrap}.pill.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.scen{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);font-size:13px}.scen td,.scen th{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}.scen th{background:var(--fill)}
+.pc{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.pc>div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px}.pc h4{margin:0 0 6px}.pc ul{margin:0;padding-left:18px}
+@media(max-width:900px){.scr.on,.maps,.pc{grid-template-columns:1fr}}
+/* variant */
+.three{display:grid;grid-template-columns:150px 250px 1fr;flex:1;min-height:0;font-size:13px}
+.three>div{border-right:1px solid var(--line);min-width:0}
+.nav{padding:10px;display:flex;flex-direction:column;gap:2px;font-size:12px}.nav span{padding:4px 8px;border-radius:4px}.nav .on{background:var(--ink);color:#fff}.nav .g{color:var(--soft);font-size:10px;text-transform:uppercase;margin-top:8px}
+.list .it{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer}.list .it.on{background:var(--fill);box-shadow:inset 3px 0 0 var(--ink)}
+.list .it input{margin:0}
+.det{padding:14px;display:flex;flex-direction:column;gap:10px}
+.fld{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center}
+.fld label{color:var(--mid);font-size:12px}
+.fld .v{border:1px solid transparent;border-radius:4px;padding:4px 6px}.fld .v:hover{border-color:var(--line)}.fld .v.edit{border-color:var(--ink)}
+.sent{font-size:14px;line-height:2}.sent u{text-decoration:none;border:1px solid var(--ink);border-radius:4px;padding:1px 6px;cursor:pointer;background:#fff}
+.bulk{display:flex;gap:6px;align-items:center;padding:6px 10px;background:var(--ink);color:#fff;font-size:12px}
+.bulk .btn{border-color:#fff;background:transparent;color:#fff;padding:2px 8px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="doc">
+<a class="back" href="index.html">← Усі варіанти UX</a>
+<h1>Варіант 4 · Список і деталі (три панелі)</h1>
+<p class="idea"><b>Ідея:</b> усі довідники працюють за одним шаблоном, як поштовий клієнт: <b>навігація | список | деталі</b>. Жодних модалок: вибрав рядок і редагуєш праворуч, зміни зберігаються автоматично. Можна виділити кілька рядків і застосувати до них масову дію. Обмеження записуються <b>реченнями</b> на кшталт «Викладач [Кравчук] не працює [у четвер]», а не формою з JSON-конфігурацією.</p>
+<p class="idea"><b>Для кого:</b> адмін, який багато вводить: заповнює довідники на початку року, імпортує, масово редагує.</p>
+
+<h2>Карта сторінок</h2>
+<div class="maps">
+<div><b>Адмінка</b> (усі розділи — один шаблон)
+<ul class="tree">
+  <li><b>Люди й групи</b>: Викладачі · Групи · Потоки</li>
+  <li><b>Ресурси</b>: Аудиторії · Предмети</li>
+  <li><b>Планування</b>: Семестри · Навчальні плани · Обмеження</li>
+  <li><b>Розклад</b>: сітка (окремий екран на всю ширину)</li>
+  <li>У кожному розділі:
+    <ul><li>Список: пошук, фільтри-чипи, мультивибір <span class="new">нове</span></li><li>Деталі: поля з редагуванням на місці, пов'язані записи</li><li>Масові дії: призначити, скопіювати, видалити <span class="new">нове</span></li><li>Імпорт CSV / Excel <span class="new">нове</span></li></ul></li>
+</ul></div>
+<div><b>Публічна частина</b>
+<ul class="tree"><li>Той самий принцип: зліва список (групи / викладачі), справа розклад</li><li>На мобільному — дві сторінки: список → розклад</li></ul>
+<p class="small muted">Зараз у кожної сторінки своя логіка: десь модалка, десь окрема сторінка (семестр), десь чекбокси. Тут один патерн, і його досить вивчити один раз.</p></div>
+</div>
+
+<h2>Клікабельний прототип</h2>
+<div class="stabs" id="stabs"><button class="on" data-go="a">A. Викладачі</button><button data-go="b">B. Масова дія</button><button data-go="c">C. Обмеження реченнями</button><button data-go="d">D. Новий запис</button><button data-go="e">E. Студент</button></div>
+
+<section class="scr on" id="a"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin/teachers/12</span></div>
+  <div class="three">
+    <div class="nav"><span class="g">Люди</span><span class="on">Викладачі</span><span data-go="b">Групи</span><span>Потоки</span><span class="g">Ресурси</span><span>Аудиторії</span><span>Предмети</span><span class="g">Планування</span><span>Семестри</span><span>Плани</span><span data-go="c">Обмеження</span><span class="g">—</span><span>🗓 Розклад</span></div>
+    <div class="list"><div style="padding:8px" class="col"><div class="in">🔍 пошук  /</div><div class="row small"><span class="pill dark">Усі 42</span><span class="pill">Без предметів 3</span><span class="pill">Перевантажені 2</span> <i class="m">1</i></div></div>
+      <div class="it on"><input type="checkbox"><div><b>Коваленко О. П.</b><div class="small muted">БД, ІС · 16/20</div></div></div>
+      <div class="it"><input type="checkbox"><div>Мельник А. В.<div class="small muted">Веб, БД · 22/22 ⚠</div></div></div>
+      <div class="it"><input type="checkbox"><div>Шевченко Т. І.<div class="small muted">Математика · 12/18</div></div></div>
+      <div class="it"><input type="checkbox"><div>Кравчук Д. Ю.<div class="small muted">ОС · 8/18</div></div></div>
+      <div style="padding:8px"><button class="btn ghost" data-go="d">+ Новий (N)</button></div></div>
+    <div class="det"><div class="row"><b style="font-size:17px">Коваленко Олена Петрівна</b><span class="grow"></span><span class="small muted">збережено ✓ <i class="m">2</i></span><button class="btn ghost">⋯</button></div>
+      <div class="fld"><label>ПІБ</label><div class="v edit">Коваленко Олена Петрівна|</div></div>
+      <div class="fld"><label>Кафедра</label><div class="v">Компʼютерних наук ▾</div></div>
+      <div class="fld"><label>Предмети</label><div class="v"><span class="pill">БД ✕</span> <span class="pill">ІС ✕</span> <span class="pill">+</span></div></div>
+      <div class="fld"><label>Макс. год/тижд.</label><div class="v">20</div></div>
+      <b style="margin-top:6px">Пов'язане <i class="m">3</i></b>
+      <div class="small">Обмеження (1): <u data-go="c">не працює у четвер</u> · Плани (4): КН-31, КН-32, Потік КН-3… · <u>розклад →</u></div></div>
+  </div></div>
+  <ol class="notes"><li>Швидкі фільтри у вигляді чипів відповідають на реальні питання: «хто без предметів?»</li><li>Поля редагуються на місці й зберігаються автоматично. Кнопки «Зберегти» та модалки немає.</li><li>Пов'язані записи видно одразу, з посиланнями на них.</li></ol>
+</section>
+
+<section class="scr" id="b"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin/groups?selected=3</span></div>
+  <div class="three">
+    <div class="nav"><span class="g">Люди</span><span data-go="a">Викладачі</span><span class="on">Групи</span><span>Потоки</span></div>
+    <div class="list"><div class="bulk">Вибрано 3 <span class="grow"></span>Esc <i class="m">1</i></div>
+      <div class="it on"><input type="checkbox" checked><div><b>КН-31</b><div class="small muted">3 курс · 26</div></div></div>
+      <div class="it on"><input type="checkbox" checked><div><b>КН-32</b><div class="small muted">3 курс · 24</div></div></div>
+      <div class="it on"><input type="checkbox" checked><div><b>КН-33</b><div class="small muted">3 курс · 22</div></div></div>
+      <div class="it"><input type="checkbox"><div>ПІ-21<div class="small muted">2 курс · 22</div></div></div></div>
+    <div class="det"><b style="font-size:16px">3 групи вибрано · 72 студенти</b>
+      <span class="small muted">Що зробити з ними? <i class="m">2</i></span>
+      <div class="box col"><b>Обʼєднати в потік</b><div class="row"><div class="in grow">Потік КН-3</div><button class="btn pri">Створити потік</button></div></div>
+      <div class="box col"><b>Скопіювати навчальний план</b><div class="row"><span class="small">з</span><div class="in">КН-31 ▾</div><span class="small">у решту 2</span><button class="btn">Копіювати</button></div></div>
+      <div class="box col"><b>Додати обмеження</b><div class="small">Не більше <u>4</u> пар на день для всіх вибраних</div></div>
+      <div class="row"><button class="btn ghost">Експорт CSV</button><button class="btn ghost">Видалити…</button></div></div>
+  </div></div>
+  <ol class="notes"><li>Мультивибір прямо у списку. Зараз потік створюється на окремій сторінці через модалку з чекбоксами.</li><li>Права панель для кількох записів показує <b>масові дії</b>: потік, копіювання плану, спільне обмеження.</li></ol>
+</section>
+
+<section class="scr" id="c"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin/constraints/7</span></div>
+  <div class="three">
+    <div class="nav"><span class="g">Планування</span><span>Семестри</span><span>Плани</span><span class="on">Обмеження</span></div>
+    <div class="list"><div style="padding:8px"><div class="row small"><span class="pill dark">Усі</span><span class="pill">Викладачі</span><span class="pill">Групи</span><span class="pill">Глобальні</span></div></div>
+      <div class="it on"><div><b>Кравчук не працює у Чт</b><div class="small muted">вихідний день</div></div></div>
+      <div class="it"><div>КН-31: ≤ 4 пари на день<div class="small muted">макс. пар</div></div></div>
+      <div class="it"><div>Лек БД → Лаб БД підряд<div class="small muted">ланцюжок</div></div></div></div>
+    <div class="det"><b style="font-size:16px">Правило <i class="m">1</i></b>
+      <div class="sent">Для <u>👨‍🏫 викладача ▾</u> <u>Кравчук Д. Ю. ▾</u> у семестрі <u>Осінь 2026 ▾</u><br>
+        <u>не працює ▾</u> у <u>четвер ▾</u> <u>весь день ▾</u>.</div>
+      <span class="small muted">Варіанти дії: <i>не працює · максимум N пар · тільки з … до … · після … ставити …</i> <i class="m">2</i></span>
+      <div class="box fill small">Перевірка: зараз у розкладі <b>0</b> пар Кравчука в четвер ✓ <i class="m">3</i></div>
+      <div class="row"><span class="small muted">Примітка:</span><div class="in grow">на кафедрі в Чт засідання</div></div></div>
+  </div></div>
+  <ol class="notes"><li>Чотири типи обмежень (day_off, max_daily_lessons, time_block, sequential_lessons) складаються в одне речення з підставними значеннями. Його легко прочитати й перевірити.</li><li>Решта речення змінюється залежно від вибраної дії, і зайвих полів не з'являється.</li><li>Одразу видно, як правило вплине на поточний розклад.</li></ol>
+</section>
+
+<section class="scr" id="d"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin/teachers/new</span></div>
+  <div class="three">
+    <div class="nav"><span class="on">Викладачі</span></div>
+    <div class="list"><div class="it on"><div><b>Новий викладач</b><div class="small muted">чернетка</div></div></div><div class="it"><div>Коваленко О. П.</div></div><div class="it"><div>Мельник А. В.</div></div></div>
+    <div class="det"><b style="font-size:16px">Новий викладач</b>
+      <div class="fld"><label>ПІБ *</label><div class="v edit">Литвиненко Р|</div></div>
+      <div class="box fill small">Схоже на вже наявного: <u>Литвиненко Роман Сергійович</u>. Це він? <i class="m">1</i></div>
+      <div class="fld"><label>Предмети</label><div class="v"><span class="pill">+</span></div></div>
+      <div class="row"><button class="btn pri">Створити (Ctrl+Enter)</button><button class="btn ghost">Створити й додати ще <i class="m">2</i></button></div>
+      <hr style="border:0;border-top:1px dashed var(--line);width:100%"><span class="small muted">Або <u>імпортувати список із CSV / Excel</u> (ПІБ; предмети) <i class="m">3</i></span></div>
+  </div></div>
+  <ol class="notes"><li>Попередження про дублікати ще до збереження.</li><li>Кнопка «Створити й додати ще» для серійного вводу без повернення до списку.</li><li>Імпорт для першого наповнення: 42 викладачі вручну — це довго.</li></ol>
+</section>
+
+<section class="scr" id="e"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">rozklad.ua/kn-31</span></div>
+  <div style="display:grid;grid-template-columns:200px 1fr;flex:1;font-size:13px">
+    <div class="list" style="border-right:1px solid var(--line)"><div style="padding:8px" class="col"><div class="row small"><span class="pill dark">Групи</span><span class="pill">Викладачі</span></div><div class="in">🔍</div></div>
+      <div class="it"><div class="small muted">3 курс</div></div><div class="it on"><b>КН-31</b></div><div class="it">КН-32</div><div class="it">ПІ-21</div></div>
+    <div class="det"><div class="row"><b style="font-size:17px">КН-31</b><span class="grow"></span><span class="pill">‹ Тиждень 12 ›</span></div>
+      <table class="tbl"><tr><th></th><th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th></tr><tr><td>1</td><td>БД</td><td></td><td>ОС</td><td></td><td>ОС</td></tr><tr><td>2</td><td>БД</td><td>Алг</td><td>Веб</td><td>Мережі</td><td>Мережі</td></tr><tr><td>3</td><td>Мат</td><td>Англ</td><td>Веб</td><td><b>Алг</b></td><td></td></tr></table>
+      <span class="small muted">Клік по парі → деталі праворуч. На телефоні список і розклад відкриваються як два екрани <i class="m">1</i></span></div>
+  </div></div>
+  <ol class="notes"><li>Публічна частина побудована за тим самим шаблоном. Студент перемикається між групами без нового пошуку.</li></ol>
+</section>
+
+<h2>Ключові сценарії: кількість кроків</h2>
+<table class="scen"><tr><th>Сценарій</th><th>Зараз</th><th>У цьому варіанті</th></tr>
+<tr><td>Студент бачить пари на сьогодні</td><td>5 дій</td><td>Клік по групі у списку (1–2)</td></tr>
+<tr><td>Додати викладача з недоступністю</td><td>~12 дій, 2 сторінки</td><td>N → ПІБ → предмети → «Пов'язане» → + обмеження реченням (~6)</td></tr>
+<tr><td>Створити потік із 3 груп</td><td>Потоки → Додати → чекбокси в модалці</td><td>Відмітити 3 групи → «Обʼєднати в потік» (2)</td></tr>
+<tr><td>Внести 40 викладачів</td><td>40 модалок</td><td>Імпорт CSV (1) або «Створити й додати ще»</td></tr></table>
+
+<h2>Оцінка</h2>
+<div class="pc">
+<div><h4>👍 Плюси</h4><ul><li>Один шаблон для всіх розділів: простіше і в коді, і для користувача</li><li>Немає модалок, видно контекст</li><li>Масові дії та імпорт</li><li>Найпростіший для поступового впровадження</li></ul></div>
+<div><h4>👎 Мінуси</h4><ul><li>Не підказує порядок роботи</li><li>Сам розклад лишається окремим екраном</li><li>Три колонки потребують широкого екрана</li></ul></div>
+<div><h4>🎯 Коли обирати</h4><ul><li>Основна робота — ведення довідників</li><li>Хочеться швидко покращити наявні 10 сторінок без переписування логіки</li></ul></div>
+</div>
+</div>
+<script>
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));document.querySelectorAll('#stabs button').forEach(b=>b.classList.toggle('on',b.dataset.go===id))}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)});
+</script>
+</body>
+</html>

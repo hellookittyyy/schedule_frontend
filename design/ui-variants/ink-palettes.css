@@ -1,0 +1,64 @@
+/* =====================================================================
+   10 palettes for the «Чорнило» variant.
+   Each palette = 3 base colours:
+     --ink    dark sidebar / text colour
+     --paper  light page colour
+     --seed   accent (buttons, active states)
+   Everything else is derived below, for light and dark themes.
+   ===================================================================== */
+html[data-palette="graphite"]  { --ink:#2b2824; --paper:#f3efe7; --seed:#34312c; }
+html[data-palette="mocha"]     { --ink:#2e241d; --paper:#f4ede5; --seed:#5b4433; }
+html[data-palette="terracotta"]{ --ink:#33231d; --paper:#f6eee7; --seed:#9c4e2b; }
+html[data-palette="wine"]      { --ink:#2d1c21; --paper:#f5efed; --seed:#6e2836; }
+html[data-palette="plum"]      { --ink:#2a2130; --paper:#f3eff2; --seed:#5f4472; }
+html[data-palette="olive"]     { --ink:#2c2f22; --paper:#f2f1e7; --seed:#535d2f; }
+html[data-palette="pine"]      { --ink:#1e2c27; --paper:#eef1ec; --seed:#2f4c41; }
+html[data-palette="petrol"]    { --ink:#1d2c2f; --paper:#edf1f0; --seed:#2c5458; }
+html[data-palette="slate"]     { --ink:#262a2f; --paper:#eff0f0; --seed:#3d4651; }
+html[data-palette="ochre"]     { --ink:#2e281b; --paper:#f5f0e3; --seed:#755815; }
+
+/* ---------- light: paper page, ink sidebar ---------- */
+html[data-theme][data-palette]{
+  --bg:var(--paper);
+  --surface:color-mix(in srgb,var(--paper) 40%,#fff);
+  --surface-2:color-mix(in srgb,var(--paper) 94%,var(--ink));
+  --line:color-mix(in srgb,var(--paper) 85%,var(--ink));
+  --text:var(--ink);
+  --muted:color-mix(in srgb,var(--ink) 70%,var(--paper));
+  --faint:color-mix(in srgb,var(--ink) 44%,var(--paper));
+  --accent:var(--seed); --accent-ink:color-mix(in srgb,var(--paper) 40%,#fff);
+  --accent-soft:color-mix(in srgb,var(--seed) 10%,var(--surface));
+  --nav-bg:var(--ink);
+  --nav-text:color-mix(in srgb,var(--paper) 64%,var(--ink));
+  --nav-strong:var(--paper); --nav-active-text:var(--paper);
+  --nav-active-bg:color-mix(in srgb,var(--paper) 9%,transparent);
+  --nav-line:color-mix(in srgb,var(--paper) 11%,transparent);
+  --nav-mark:color-mix(in srgb,var(--seed) 35%,var(--paper));
+  --hero-bg:var(--surface); --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:var(--surface-2); --hero-bar:var(--accent);
+  --track:var(--surface-2); --bar:var(--accent);
+}
+/* ---------- dark: the ink becomes the room, paper becomes the chalk ---------- */
+html[data-theme="dark"][data-palette]{
+  --bg:color-mix(in srgb,var(--ink) 86%,#000);
+  --surface:color-mix(in srgb,var(--ink) 94%,#fff);
+  --surface-2:color-mix(in srgb,var(--ink) 90%,#fff);
+  --line:color-mix(in srgb,var(--ink) 80%,#fff);
+  --text:color-mix(in srgb,var(--paper) 92%,var(--ink));
+  --muted:color-mix(in srgb,var(--paper) 69%,var(--ink));
+  --faint:color-mix(in srgb,var(--paper) 40%,var(--ink));
+  --accent:color-mix(in srgb,var(--seed) 38%,var(--paper)); --accent-ink:color-mix(in srgb,var(--ink) 86%,#000);
+  --accent-soft:color-mix(in srgb,var(--accent) 12%,var(--surface));
+  --lec-soft:color-mix(in srgb,var(--lec) 9%,var(--surface)); --pr-soft:color-mix(in srgb,var(--pr) 9%,var(--surface)); --lab-soft:color-mix(in srgb,var(--lab) 9%,var(--surface));
+  --nav-bg:color-mix(in srgb,var(--ink) 70%,#000);
+  --nav-text:color-mix(in srgb,var(--paper) 56%,var(--ink));
+  --nav-active-bg:color-mix(in srgb,var(--paper) 7%,transparent);
+  --nav-line:color-mix(in srgb,var(--paper) 9%,transparent);
+  --hero-bg:var(--surface); --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:var(--surface-2); --hero-bar:var(--accent);
+}
+html[data-palette]{
+  --heat0:var(--surface-2);
+  --heat1:color-mix(in srgb,var(--accent) 20%,var(--surface-2)); --heat2:color-mix(in srgb,var(--accent) 42%,var(--surface-2));
+  --heat3:color-mix(in srgb,var(--accent) 68%,var(--surface-2)); --heat4:var(--accent);
+}
+/* public page has no dark sidebar behind the logo — use the accent instead of paper */
+html[data-palette] .pub-head .brand-mark{background:var(--accent);color:var(--accent-ink)}

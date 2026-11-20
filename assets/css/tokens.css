@@ -1,0 +1,51 @@
+/* =====================================================================
+   «Мозаїка» design tokens (light + dark). Source: design/final/pages/mosaic.css.
+   Theme: <html data-theme="light|dark">; no attribute = light.
+   Commissioner is linked by each page (Google Fonts), not imported here.
+   ===================================================================== */
+
+:root{
+  --font:"Commissioner",system-ui,sans-serif;
+  --radius:12px; --radius-sm:8px; --btn-radius:8px; --pill:6px;
+  --pad:22px; --gap:16px; --nav-w:236px;
+  --title-size:28px; --h2-size:15px;
+  /* identity colours: fills only, never text on the page background */
+  --c1:#ff8f70; --c2:#ffd166; --c3:#7fd1ae; --c4:#a9a6f2; --c5:#f4a6c8; --c6:#c5e384;
+  --on-c:#222024;
+}
+
+html[data-theme="light"],html:not([data-theme]){
+  color-scheme:light;
+  --bg:#f6f4ef; --surface:#ffffff; --surface-2:#f0ede6; --line:#e4e0d7;
+  --text:#222024; --muted:#5d5a60; --faint:#9b989e;
+  --accent:#222024; --accent-ink:#ffffff; --accent-soft:#e9e9e9;
+  --nav-bg:#222024; --nav-text:#b2aeb5; --nav-strong:#ffffff; --nav-active-bg:rgba(246,244,239,.09); --nav-active-text:#f6f4ef; --nav-line:rgba(246,244,239,.11);
+  --hero-bg:#ffd166; --hero-text:#222024; --hero-muted:rgba(34,32,36,.72); --hero-track:rgba(34,32,36,.16); --hero-bar:#222024;
+  --tint-1:#ffe1d8; --tint-2:#d9f2e7; --tint-3:#e4e3fb; --tint-now:#d9f2e7; --tint-next:#fff0c7; --tint-row:#fde3ee;
+  --lec:#4a4cb0; --lec-soft:#e9eaf6; --pr:#1f7350; --pr-soft:#e2ede8; --lab:#b0422a; --lab-soft:#f6e8e5;
+  --exam:#8b3a86; --exam-soft:#f4e6f2;
+  --high:#c43a2c; --mid:#946200; --ok:#1f7350; --low:#9b989e;
+  --on-high:#ffffff;
+  --heat0:#f0ede6; --heat1:#c7c4bf; --heat2:#999795; --heat3:#646262; --heat4:#222024;
+  --toast-bg:#222024; --toast-text:#f6f4ef; --toast-action:#ffd166; --toast-ok:#7fd1ae; --toast-err:#ff8f70; --toast-warn:#ffd166;
+  --scrim:rgba(34,32,36,.45);
+  --shadow:0 10px 30px rgba(34,32,36,.12);
+}
+
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#19181b; --surface:#222125; --surface-2:#2a292e; --line:#343338;
+  --text:#efedf0; --muted:#aaa7ad; --faint:#75727a;
+  --accent:#efedf0; --accent-ink:#19181b; --accent-soft:#3b393d;
+  --nav-bg:#111013; --nav-text:#9c99a0; --nav-strong:#ffffff; --nav-active-bg:rgba(246,244,239,.07); --nav-active-text:#f6f4ef; --nav-line:rgba(246,244,239,.09);
+  --hero-bg:#3a3219; --hero-text:#ffe7a8; --hero-muted:rgba(255,231,168,.7); --hero-track:rgba(255,231,168,.16); --hero-bar:#ffd166;
+  --tint-1:#3a231d; --tint-2:#1c3329; --tint-3:#2a2a42; --tint-now:#1c3329; --tint-next:#3a3219; --tint-row:#3a2230;
+  --lec:#b8b6ff; --lec-soft:#2f2e39; --pr:#86dcb6; --pr-soft:#2b3232; --lab:#ffa48a; --lab-soft:#362d2e;
+  --exam:#eaa6e2; --exam-soft:#352a35;
+  --high:#ff8070; --mid:#ffd166; --ok:#86dcb6; --low:#75727a;
+  --on-high:#19181b;
+  --heat0:#2a292e; --heat1:#515055; --heat2:#7d7b7f; --heat3:#b0aeb2; --heat4:#efedf0;
+  --toast-bg:#efedf0; --toast-text:#19181b; --toast-action:#946200; --toast-ok:#1f7350; --toast-err:#c43a2c; --toast-warn:#946200;
+  --scrim:rgba(0,0,0,.6);
+  --shadow:0 10px 30px rgba(0,0,0,.45);
+}

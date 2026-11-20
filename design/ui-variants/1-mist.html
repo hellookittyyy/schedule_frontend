@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 1 — Mist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="look.css">
+<style>
+/* 1 · MIST — пилово-блакитний, тонкі контури, великі радіуси, заголовки капсом */
+:root{
+  --font:'Onest',system-ui,sans-serif;
+  --bg:#e6ecf2; --surface:#f8f9fb; --surface-2:#edf1f5; --line:#d2dae3; --text:#1f2a3c; --muted:#66748a; --faint:#9aa6b6;
+  --accent:#2c3a52; --accent-ink:#fff; --accent-soft:#dbe5ef;
+  --nav-bg:#bccfe2; --nav-text:#3a4a63; --nav-strong:#1f2a3c; --nav-active-bg:#f8f9fb; --nav-active-text:#1f2a3c; --nav-line:rgba(31,42,60,.12);
+  --radius:20px; --radius-sm:10px; --btn-radius:10px; --card-border:1px solid var(--line);
+  --lec:#3d6aa8; --lec-soft:#dde8f4; --pr:#3f7d6a; --pr-soft:#dcece6; --lab:#946a33; --lab-soft:#f0e6d7;
+  --high:#c4524f; --mid:#c58a36; --ok:#3f7d6a;
+  --hero-bg:#2c3a52; --hero-muted:rgba(255,255,255,.62); --hero-track:rgba(255,255,255,.18); --hero-bar:#bccfe2;
+  --heat0:#edf1f5; --heat1:#d5e1ee; --heat2:#aac2db; --heat3:#7096bd; --heat4:#2c3a52;
+  --title-size:22px; --h2-size:12px; --h-transform:uppercase; --h-spacing:.04em;
+}
+body{background:var(--bg)}
+.app{margin:18px;border-radius:28px;overflow:hidden;border:1px solid #c5d1dd;background:#f2f5f8;min-height:calc(100vh - 36px)}
+.nav{height:calc(100vh - 36px);top:18px;border-right:0;padding:26px 14px}
+.brand-mark{border-radius:50%;background:var(--accent)}
+.brand-name{text-transform:uppercase;letter-spacing:.08em;font-size:14px}
+.nav-label{color:#5f7390}
+.nav-item{border-radius:12px}
+.nav-item.is-active{box-shadow:0 1px 0 rgba(31,42,60,.06)}
+.nav-count{color:#5f7390}
+.nav-user{border-top-color:rgba(31,42,60,.15)}
+.avatar{background:#dbe5ef;color:#2c3a52}
+.page-title{text-transform:uppercase;letter-spacing:.03em;font-weight:600}
+.crumbs{text-transform:lowercase}
+/* signature: light-blue pill buttons with navy outline (як MONTH / WEEK у референсі) */
+.btn{border-color:var(--accent);height:34px;font-size:13px}
+.btn-ghost{background:#d4e1ee;color:var(--accent)}
+.btn-primary{background:var(--accent)}
+.btn-sm{height:28px;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.btn-hero{border-color:rgba(255,255,255,.35)}
+.search{border-radius:12px}
+.seg{background:transparent;gap:6px;padding:0}
+.seg button{border:1px solid var(--accent);background:transparent;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);padding:4px 10px;border-radius:8px}
+.seg button.is-on{background:#bccfe2;box-shadow:none}
+.card-title{color:var(--text)}
+.kpi-label,.hero-label{text-transform:uppercase;font-size:11px;letter-spacing:.06em}
+.kpi-value{font-weight:500}
+.task{border-top-style:dashed}
+.chip{border-color:var(--accent);color:var(--accent);background:transparent}
+.chip.is-on{background:#bccfe2;color:var(--accent);border-color:var(--accent)}
+.md-row.is-active{background:#e2eaf3;box-shadow:inset 3px 0 0 var(--accent)}
+.md-search{background:#fff;border:1px solid var(--line)}
+.step.is-cur{background:#e2eaf3}
+.step.is-done .step-n{background:var(--accent);border-color:var(--accent)}
+.badge{border-radius:8px}
+.day{border-radius:14px}
+.day.is-active{background:#bccfe2;border-color:var(--accent);color:var(--accent)}
+.pub-wrap{background:var(--bg)}
+.now-card{border-radius:24px}
+</style>
+</head>
+<body>
+<script src="shell.js"></script>
+<script>renderApp({ name: '1 · Mist' })</script>
+</body>
+</html>

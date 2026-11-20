@@ -1,284 +1,556 @@
+/* Семестр page (plan 0001 phase 4): semester list, semester overview (steps, preflight,
+   plans by group), «Календар» step, create/edit drawer, generation. Needs checks.js, calendar.js. */
+(function () {
+  'use strict';
 
-let semesters = [];
-let currentEditId = null;
-let currentDeleteId = null;
+  var esc = function (s) { return UI.escapeHtml(s); };
+  var ic = function (n, size) { return Icons.svg(n, { size: size || 16 }); };
+  var errText = function (e) { return SemCalendar.errText(e); };
+  var page = document.getElementById('semPage');
 
-async function loadSemesters() {
-    showLoading('tableContainer', 'Завантаження семестрів...');
-    try {
-        semesters = await apiRequest('/semesters/');
-        renderTable(semesters);
-    } catch (error) {
-        showError('tableContainer', 'Не вдалося завантажити список семестрів');
-        showToast('Помилка завантаження даних', 'error');
+  var DEFAULT_TIMES = [['08:30', '09:50'], ['10:10', '11:30'], ['11:50', '13:10'], ['13:30', '14:50']];
+  var DAYS = [['Monday', 'Пн'], ['Tuesday', 'Вт'], ['Wednesday', 'Ср'], ['Thursday', 'Чт'],
+    ['Friday', 'Пт'], ['Saturday', 'Сб'], ['Sunday', 'Нд']];
+
+  var st = { semesters: [], sem: null, view: 'overview', checks: null, data: null, lessons: null,
+    constraints: null, calendar: null, token: 0, generating: false };
+
+  /* ---------- routing ---------- */
+  function params() { return new URLSearchParams(location.search); }
+
+  function go(query, replace) {
+    var url = location.pathname + (query ? '?' + query : '');
+    history[replace ? 'replaceState' : 'pushState'](null, '', url);
+    route();
+  }
+
+  function route() {
+    var p = params();
+    if (st.calendar) { st.calendar.close(); st.calendar = null; }
+    if (p.has('list')) return renderList();
+    var id = p.get('id');
+    var sem = id ? st.semesters.find(function (s) { return String(s.id) === id; })
+      : st.semesters.find(function (s) { return s.is_current; });
+    if (id && !sem) {
+      UI.toast('Семестр не знайдено', { type: 'err' });
+      return go('list=1', true);
     }
-}
+    if (!sem) return renderList();
+    renderSemester(sem, p.get('view') === 'calendar' ? 'calendar' : 'overview');
+  }
 
-function renderTable(data) {
-    const container = document.getElementById('tableContainer');
-    
-    if (data.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">📅</div>
-                <h3>Семестрів поки немає</h3>
-                <p>Додайте перший семестр, натиснувши кнопку "Додати семестр"</p>
-            </div>
-        `;
-        return;
+  function loadSemesters() {
+    return apiRequest('/semesters/').then(function (list) { st.semesters = list || []; });
+  }
+
+  function init() {
+    UI.state(page, 'loading', { text: 'Завантаження семестрів…' });
+    loadSemesters().then(route, function () {
+      UI.state(page, 'error', { text: 'Не вдалося завантажити семестри', actionLabel: 'Спробувати ще', onAction: init });
+    });
+  }
+
+  function setActions(html) {
+    var a = Shell.actionsEl();
+    if (a) a.innerHTML = html || '';
+    return a;
+  }
+
+  function fmtShort(s) {
+    return new Date(s + 'T00:00:00').toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+  var plural = UI.plural;
+
+  /* ---------- semester list ---------- */
+  function renderList() {
+    st.sem = null; st.checks = null; st.token++;
+    document.title = 'Семестри — Адмін панель';
+    Shell.setTitle('Семестри');
+    Shell.setCrumbs(st.semesters.some(function (s) { return s.is_current; })
+      ? [{ text: 'Поточний семестр', href: '/admin/semesters/' }] : []);
+    setActions('<button type="button" class="btn btn-primary" data-new>' + ic('plus') + 'Новий семестр</button>')
+      .querySelector('[data-new]').addEventListener('click', function () { openForm(null); });
+
+    if (!st.semesters.length) {
+      UI.state(page, 'empty', { text: 'Семестрів поки немає', actionLabel: 'Створити семестр', onAction: function () { openForm(null); } });
+      return;
     }
+    var rows = st.semesters.slice().sort(function (a, b) { return b.start_date.localeCompare(a.start_date); });
+    page.innerHTML = (st.semesters.some(function (s) { return s.is_current; }) ? '' :
+      '<div class="hint warn">' + ic('alert') + '<span><b>Поточний семестр не вибрано.</b> Оберіть семестр, з яким працюють усі сторінки за замовчуванням.</span></div>') +
+      '<div class="card flush sem-list"><div class="sem-row sem-head"><span>Семестр</span><span>Період</span><span>Статус</span><span></span></div>' +
+      rows.map(function (s) {
+        var href = '/admin/semesters/?id=' + encodeURIComponent(s.id);
+        return '<div class="sem-item danger" data-sem="' + s.id + '"><div class="sem-row' + (s.is_current ? ' is-current' : '') + '">' +
+          '<span class="sem-name"><a href="' + href + '" data-open>' + esc(s.name || 'Без назви') + '</a></span>' +
+          '<span class="muted num">' + esc(fmtShort(s.start_date)) + ' — ' + esc(fmtShort(s.end_date)) + '</span>' +
+          '<span>' + (s.is_current ? '<span class="badge badge-ok">Поточний</span>' : '') + '</span>' +
+          '<span class="sem-row-actions">' + (s.is_current ? '' :
+            '<button type="button" class="btn btn-sm btn-ghost" data-confirm data-set-current>Зробити поточним</button>') +
+          '<a class="btn btn-sm" href="' + href + '" data-open>Відкрити' + ic('chevron-right', 14) + '</a></span></div></div>';
+      }).join('') + '</div>';
+  }
 
-    const table = `
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 50px;">Статус</th> 
-                    <th>Назва</th>
-                    <th>Дати</th>
-                    <th style="width: 200px; text-align: center;">Дії</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${data.map(semester => `
-                    <tr class="${semester.is_current ? 'active-row' : ''}">
-                        <td style="text-align: center;">
-                            ${semester.is_current 
-                                ? '<span class="status-badge active" title="Поточний семестр">★</span>' 
-                                : `<button class="btn-icon-small" onclick="setAsCurrent(${semester.id})" title="Зробити поточним">☆</button>`
-                            }
-                        </td>
-                        <td>
-                            <strong>${semester.name || 'Без назви'}</strong>
-                            ${semester.is_current ? '<span class="text-green">(Поточний)</span>' : ''}
-                        </td>
-                        <td>
-                            <div class="semester-dates">
-                                <span class="date-badge">З: ${semester.start_date}</span>
-                                <span class="date-badge">По: ${semester.end_date}</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="table-actions" style="justify-content: center;">
-                                <a href="detail.html?id=${semester.id}" class="btn btn-view" title="Деталі">👁️</a>
-                                <button class="btn btn-edit" onclick="openEditModal(${semester.id})" title="Редагувати">✏️</button>
-                                <button class="btn btn-delete" onclick="openDeleteModal(${semester.id}, '${semester.name}')" title="Видалити">🗑️</button>
-                                <button class="btn btn-warning" onclick="generateSchedule(${semester.id})" title="Генерувати розклад">⚡</button>
-                            </div>
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
-    container.innerHTML = table;
-}
-
-async function setAsCurrent(id) {
-    if (!confirm('Зробити цей семестр поточним? Це змінить активний розклад для всіх користувачів.')) return;
-
-    try {
-        await apiRequest(`/semesters/${id}/set_current/`, 'POST');
-        loadSemesters();
-        showToast('Поточний семестр змінено', 'success');
-    } catch (error) {
-        showToast('Помилка оновлення статусу', 'error');
+  page.addEventListener('click', function (e) {
+    var open = e.target.closest('a[data-open]');
+    if (open && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+      e.preventDefault();
+      go(open.getAttribute('href').split('?')[1] || '');
+      return;
     }
-}
-
-function toggleConfig() {
-    const checkbox = document.getElementById('enableGeneration');
-    const content = document.getElementById('configContent');
-    
-    if (checkbox.checked) {
-        content.classList.add('show');
-    } else {
-        content.classList.remove('show');
+    var sc = e.target.closest('[data-set-current]');
+    if (sc) {
+      var host = sc.closest('[data-sem]');
+      confirmSetCurrent(host, Number(host.getAttribute('data-sem')));
     }
-}
+  });
 
-function addTimeSlot(start = '', end = '') {
-    const container = document.getElementById('timeSlotsList');
-    const div = document.createElement('div');
-    div.className = 'time-slot-item';
-    div.style.marginBottom = '10px';
-    div.style.display = 'flex';
-    div.style.gap = '10px';
-    div.style.alignItems = 'center';
-    
-    div.innerHTML = `
-        <input type="time" class="slot-start form-input" value="${start}" required>
-        <span>—</span>
-        <input type="time" class="slot-end form-input" value="${end}" required>
-        <button type="button" class="btn btn-delete btn-sm" onclick="this.parentElement.remove()">✕</button>
-    `;
-    container.appendChild(div);
-}
+  window.addEventListener('popstate', function () { if (st.semesters.length) route(); });
 
-function openAddModal() {
-    currentEditId = null;
-    document.getElementById('modalTitle').textContent = 'Додати семестр';
-    document.getElementById('semesterForm').reset();
-    
-    document.getElementById('enableGeneration').checked = false;
-    document.getElementById('configContent').classList.remove('show');
-    
-    document.getElementById('timeSlotsList').innerHTML = '';
-    const defaultSlots = [
-        ["08:30", "09:50"],
-        ["10:10", "11:30"],
-        ["11:50", "13:10"],
-        ["13:30", "14:50"]
-    ];
-    defaultSlots.forEach(slot => addTimeSlot(slot[0], slot[1]));
-    
-    document.querySelectorAll('input[name="weekend"]').forEach(cb => {
-        cb.checked = ['Saturday', 'Sunday'].includes(cb.value);
+  function confirmSetCurrent(host, id) {
+    UI.confirmInline(host, {
+      warning: 'Поточний семестр бачать усі користувачі за замовчуванням: це змінить активний розклад для всіх.',
+      question: 'Зробити семестр поточним?', yes: 'Так, зробити поточним', no: 'Скасувати',
+      onYes: function () {
+        return apiRequest('/semesters/' + id + '/set_current/', 'POST').then(function () {
+          UI.toast('Поточний семестр змінено', { type: 'ok' });
+          return loadSemesters().then(route);
+        }, function (err) { UI.toast('Помилка оновлення статусу: ' + errText(err), { type: 'err' }); });
+      }
+    });
+  }
+
+  /* ---------- semester page ---------- */
+  function renderSemester(sem, view) {
+    var same = st.sem && st.sem.id === sem.id;
+    st.sem = sem; st.view = view;
+    var token = ++st.token;
+    if (!same) { st.checks = st.data = st.lessons = st.constraints = null; }
+
+    document.title = (sem.name || 'Семестр') + ' — Адмін панель';
+    Shell.setTitle(sem.name || 'Без назви');
+    var h = document.querySelector('.sh-title');
+    if (h && sem.is_current) h.insertAdjacentHTML('beforeend', '<span class="badge badge-ok">Поточний</span>');
+    Shell.setCrumbs([{ text: 'Усі семестри', href: '/admin/semesters/?list=1' }]);
+
+    var a = setActions(
+      (view === 'calendar'
+        ? '<button type="button" class="btn btn-ghost" data-view="overview">' + ic('chevron-left') + 'Огляд</button>'
+        : '<button type="button" class="btn btn-ghost" data-view="calendar">' + ic('calendar') + 'Календар</button>') +
+      '<button type="button" class="btn btn-primary' + (st.generating ? ' is-busy' : '') + '" data-generate disabled>' + ic('bolt') + 'Згенерувати</button>');
+    a.querySelector('[data-view]').addEventListener('click', function (e) { setView(e.currentTarget.getAttribute('data-view')); });
+    a.querySelector('[data-generate]').addEventListener('click', askGenerate);
+
+    page.innerHTML =
+      '<div class="danger sem-confirm" id="genConfirm"></div>' +
+      '<div class="card steps" id="semSteps" aria-label="Етапи семестру"><div class="loading" style="grid-column:1/-1"><span class="spinner"></span>Перевірка семестру…</div></div>' +
+      (sem.is_current ? '' :
+        '<div class="hint sem-hint">' + ic('info') + '<span class="grow"><b>Цей семестр не поточний.</b> Інші сторінки за замовчуванням працюють з поточним семестром.</span>' +
+        '<div class="danger" data-sem="' + sem.id + '"><button type="button" class="btn btn-sm" data-confirm data-set-current>Зробити поточним</button></div></div>') +
+      '<div id="semView"></div>';
+
+    var viewEl = document.getElementById('semView');
+    if (view === 'calendar') renderCalendarView(viewEl, sem);
+    else viewEl.innerHTML = '<div class="sem-grid"><div class="card" id="preflight"></div><div class="card" id="groupPlans"></div></div>';
+
+    page.querySelector('#semSteps').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-step-view]');
+      if (b) setView(b.getAttribute('data-step-view'));
     });
 
-    showModal('semesterModal');
-}
-
-function openEditModal(id) {
-    const semester = semesters.find(s => s.id === id);
-    if (!semester) return;
-
-    currentEditId = id;
-    document.getElementById('modalTitle').textContent = 'Редагувати семестр';
-    document.getElementById('semesterName').value = semester.name || '';
-    document.getElementById('startDate').value = semester.start_date || '';
-    document.getElementById('endDate').value = semester.end_date || '';
-    
-    document.getElementById('enableGeneration').checked = false;
-    document.getElementById('configContent').classList.remove('show');
-    
-    const config = semester.configuration || {};
-    
-    document.getElementById('timeSlotsList').innerHTML = '';
-    const slots = config.time_schedule || [
-        ["08:30", "09:50"],
-        ["10:10", "11:30"],
-        ["11:50", "13:10"],
-        ["13:30", "14:50"]
-    ];
-    slots.forEach(slot => addTimeSlot(slot[0], slot[1]));
-
-    const weekends = config.weekends || ['Saturday', 'Sunday'];
-    document.querySelectorAll('input[name="weekend"]').forEach(cb => {
-        cb.checked = weekends.includes(cb.value);
+    if (st.checks && same) { paint(); return; }
+    if (view !== 'calendar') {
+      UI.state(document.getElementById('preflight'), 'loading', { text: 'Передперевірка…' });
+      UI.state(document.getElementById('groupPlans'), 'loading');
+    }
+    loadSemesterData(sem.id).then(function () { if (token === st.token) paint(); }, function (err) {
+      if (token !== st.token) return;
+      // Lessons unknown: allow editing anyway; the server's 409/500 handling still protects.
+      var edit = document.querySelector('[data-edit]');
+      if (edit) { edit.disabled = false; edit.title = 'Не вдалося перевірити заняття семестру — попередження про них не буде показано'; }
+      var box = document.getElementById('semSteps');
+      UI.state(box, 'error', { text: 'Не вдалося перевірити семестр: ' + errText(err), actionLabel: 'Спробувати ще',
+        onAction: function () { Checks.invalidate(sem.id); st.checks = null; renderSemester(sem, st.view); } });
+      box.firstChild.style.gridColumn = '1/-1';
+      var pf = document.getElementById('preflight');
+      if (pf) pf.closest('.sem-grid').remove();
     });
+  }
 
-    document.getElementById('excludedDates').value = (config.dates_excluded || []).join('\n');
-    document.getElementById('includedDates').value = (config.dates_included || []).join('\n');
+  function setView(view) {
+    if (!st.sem || view === st.view) return;
+    go('id=' + encodeURIComponent(st.sem.id) + (view === 'calendar' ? '&view=calendar' : ''));
+  }
 
-    showModal('semesterModal');
-}
+  // {total, locked}. The current semester's total comes from /stats/, so only locked lessons are
+  // listed; other semesters have no count endpoint and still need the full lesson list.
+  function lessonCounts(id) {
+    var q = '/lessons/?semester=' + encodeURIComponent(id);
+    var sem = st.semesters.find(function (s) { return String(s.id) === String(id); });
+    if (sem && sem.is_current) {
+      return Promise.all([apiRequest('/stats/'), apiRequest(q + '&is_locked=true')]).then(function (r) {
+        return { total: (r[0] && r[0].classes_scheduled) || 0, locked: (r[1] || []).length };
+      });
+    }
+    return apiRequest(q).then(function (ls) {
+      return { total: ls.length, locked: ls.filter(function (l) { return l.is_locked; }).length };
+    });
+  }
 
-function openDeleteModal(id, name) {
-    currentDeleteId = id;
-    document.getElementById('deleteSemesterName').textContent = name;
-    showModal('deleteModal');
-}
+  function loadSemesterData(id, force) {
+    if (force) Checks.invalidate(id);
+    return Promise.all([
+      Checks.run(id, { includeOk: true }), Checks.data(id),
+      lessonCounts(id),
+      apiRequest('/semester_constraints/?semester=' + encodeURIComponent(id))
+    ]).then(function (r) {
+      st.checks = r[0]; st.data = r[1];
+      st.lessons = r[2];
+      st.constraints = r[3].length;
+    });
+  }
 
-document.getElementById('semesterForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  function paint() {
+    renderSteps();
+    renderPreflight();
+    renderGroupPlans();
+    var gen = document.querySelector('[data-generate]');
+    if (gen) {
+      var blocks = st.checks.filter(function (c) { return c.severity === 'block'; }).length;
+      gen.disabled = st.generating || blocks > 0;
+      gen.classList.toggle('is-busy', st.generating);
+      gen.title = st.generating ? 'Генерація триває…' : blocks ? 'Спершу усуньте блокери: ' + blocks : '';
+    }
+    var edit = document.querySelector('[data-edit]');
+    if (edit && st.lessons) { edit.disabled = false; edit.title = ''; }
+  }
 
-    const data = {
-        name: document.getElementById('semesterName').value.trim(),
-        start_date: document.getElementById('startDate').value,
-        end_date: document.getElementById('endDate').value
+  function groupStats() {
+    var per = Checks.plansPerGroup(st.data);
+    var total = st.data.groups.length;
+    var ready = st.data.groups.filter(function (g) { return per[g.id] > 0; }).length;
+    return { per: per, total: total, ready: ready };
+  }
+
+  function renderSteps() {
+    var d = st.data, g = groupStats();
+    var blocks = st.checks.filter(function (c) { return c.severity === 'block'; }).length;
+    var resOk = d.rooms.length && d.teachers.length && d.groups.length && d.subjects.length;
+    var steps = [
+      { name: 'Календар', done: d.slots.length > 0, meta: d.slots.length ? plural(d.slots.length, 'слот', 'слоти', 'слотів') : 'немає слотів',
+        view: 'calendar', req: true },
+      { name: 'Ресурси', done: !!resOk, meta: plural(d.rooms.length, 'аудиторія', 'аудиторії', 'аудиторій') + ' · ' +
+        plural(d.teachers.length, 'викладач', 'викладачі', 'викладачів'), view: 'overview', req: true },
+      { name: 'Плани', done: d.plans.length > 0 && g.ready === g.total, meta: d.plans.length ? g.ready + ' з ' + g.total + ' груп' : 'немає планів',
+        href: '/admin/study-plans/?semester=' + encodeURIComponent(st.sem.id), req: true },
+      { name: 'Обмеження', done: st.constraints > 0, meta: st.constraints ? plural(st.constraints, 'обмеження', 'обмеження', 'обмежень') : 'не задано',
+        href: '/admin/constraints/?semester=' + encodeURIComponent(st.sem.id) },
+      { name: 'Генерація', done: st.lessons.total > 0, meta: st.lessons.total ? plural(st.lessons.total, 'заняття', 'заняття', 'занять')
+        : blocks ? 'блокерів: ' + blocks : 'не запускали', view: 'overview', req: true }
+    ];
+    var cur = steps.find(function (s) { return s.req && !s.done; });
+    document.getElementById('semSteps').innerHTML = steps.map(function (s, i) {
+      var cls = 'step ' + (s.done ? 'is-done' : s === cur ? 'is-cur' : 'is-todo') + (s.view === 'calendar' && st.view === 'calendar' ? ' is-view' : '');
+      var inner = '<span class="step-n">' + (s.done ? Icons.svg('check', { cls: 'xs', size: 14 }) : i + 1) + '</span>' +
+        '<span class="step-name">' + s.name + '</span><span class="step-meta">' + esc(s.meta) + '</span>';
+      return s.href ? '<a class="' + cls + '" href="' + s.href + '">' + inner + '</a>'
+        : '<button type="button" class="' + cls + '" data-step-view="' + s.view + '"' +
+          (s.view === st.view && s.view === 'calendar' ? ' aria-current="page"' : '') + '>' + inner + '</button>';
+    }).join('');
+  }
+
+  var SEV = { block: ['is-err', 'x'], warn: ['is-warn', 'alert'], tip: ['is-tip', 'info'], ok: ['is-ok', 'check'] };
+
+  function renderPreflight() {
+    var box = document.getElementById('preflight');
+    if (!box) return;
+    var sum = Checks.summary(st.checks);
+    var head = [];
+    if (sum.block) head.push('блокує: ' + sum.block);
+    if (sum.warn) head.push('попереджень: ' + sum.warn);
+    if (sum.tip) head.push('порад: ' + sum.tip);
+    box.innerHTML = '<div class="card-head"><h2 class="card-title">Передперевірка</h2><span class="sp"></span>' +
+      '<span class="muted sm">' + esc(head.length ? head.join(' · ') : 'усе гаразд') + '</span>' +
+      '<button type="button" class="icon-btn sm bare" data-recheck aria-label="Перевірити ще раз" title="Перевірити ще раз">' + ic('clock', 15) + '</button></div>' +
+      (sum.block ? '<div class="hint err" style="margin-bottom:6px">' + ic('alert') + '<span><b>Генерацію заблоковано.</b> Усуньте блокери нижче, і кнопка «Згенерувати» стане активною.</span></div>' : '') +
+      st.checks.map(function (c) {
+        var sv = SEV[c.severity];
+        var preview = c.items && c.items.length ? c.items.slice(0, 4).map(function (it) { return it.label; }).join(', ') +
+          (c.items.length > 4 ? ' та ще ' + (c.items.length - 4) : '') : '';
+        return '<div class="check ' + sv[0] + '"><span class="check-ico">' + Icons.svg(sv[1], { cls: 'xs', size: 14 }) + '</span>' +
+          '<span>' + esc(c.title) + (preview ? '<span class="check-sub">' + esc(preview) + '</span>' : '') + '</span>' +
+          (c.severity !== 'ok' && c.action ? '<a class="btn btn-sm btn-ghost" href="' + esc(c.action.href) + '">' + esc(c.action.label) + '</a>' : '<span></span>') +
+          '</div>';
+      }).join('');
+    box.querySelector('[data-recheck]').addEventListener('click', function () { refresh(true); });
+  }
+
+  function refresh(announce) {
+    var token = st.token, sem = st.sem;
+    return loadSemesterData(sem.id, true).then(function () {
+      if (token === st.token) { paint(); if (announce) UI.toast('Перевірку оновлено', { type: 'ok', timeout: 2000 }); }
+    }, function (err) { UI.toast('Не вдалося перевірити семестр: ' + errText(err), { type: 'err' }); });
+  }
+
+  function renderGroupPlans() {
+    var box = document.getElementById('groupPlans');
+    if (!box) return;
+    var g = groupStats();
+    if (!g.total) {
+      box.innerHTML = '<div class="card-head"><h2 class="card-title">Навчальні плани по групах</h2></div>';
+      box.insertAdjacentHTML('beforeend', '<div></div>');
+      UI.state(box.lastChild, 'empty', { text: 'Груп ще немає' });
+      return;
+    }
+    var list = st.data.groups.slice().sort(function (a, b) {
+      var x = g.per[a.id] > 0, y = g.per[b.id] > 0;
+      return x === y ? String(a.name).localeCompare(String(b.name), 'uk') : x ? 1 : -1;
+    });
+    box.innerHTML = '<div class="card-head"><h2 class="card-title">Навчальні плани по групах</h2><span class="sp"></span>' +
+      '<span class="muted sm num">' + g.ready + ' / ' + g.total + '</span></div>' +
+      '<div class="grp-sum"><div class="progress' + (g.ready < g.total ? ' warn' : '') + '"><i style="width:' + Math.round(g.ready / g.total * 100) + '%"></i></div></div>' +
+      '<p class="muted sm" style="margin-bottom:8px">Група має план, якщо в цьому семестрі для неї є хоча б один план (власний або її потоку).</p>' +
+      list.map(function (gr) {
+        var n = g.per[gr.id] || 0;
+        return '<div class="grp-row"><span class="g">' + esc(gr.name) + '</span>' +
+          (n ? '<span class="muted num">' + esc(plural(n, 'план', 'плани', 'планів')) + '</span>' : '<span class="t-err">немає планів</span>') + '</div>';
+      }).join('') +
+      '<div class="form-actions"><a class="btn btn-sm" href="/admin/study-plans/?semester=' + encodeURIComponent(st.sem.id) + '">' + ic('clipboard') + 'Навчальні плани</a></div>';
+  }
+
+  /* ---------- «Календар» step ---------- */
+  function renderCalendarView(el, sem) {
+    var days = Math.round((new Date(sem.end_date + 'T00:00:00') - new Date(sem.start_date + 'T00:00:00')) / 864e5);
+    el.innerHTML = '<div class="stack">' +
+      '<div class="card"><div class="card-head"><h2 class="card-title">Про семестр</h2><span class="sp"></span>' +
+      '<button type="button" class="btn btn-sm" data-edit' + (st.lessons ? '' : ' disabled title="Завантаження даних семестру…"') + '>' + ic('edit', 14) + 'Редагувати</button></div>' +
+      '<dl class="kv"><dt>Назва</dt><dd>' + esc(sem.name) + '</dd><dt>Початок</dt><dd>' + esc(SemCalendar.fmtDate(sem.start_date)) + '</dd>' +
+      '<dt>Кінець</dt><dd>' + esc(SemCalendar.fmtDate(sem.end_date)) + '</dd><dt>Тривалість</dt><dd class="num">' + esc(plural(days, 'день', 'дні', 'днів')) + '</dd>' +
+      '<dt>Статус</dt><dd>' + (sem.is_current ? 'поточний' : 'не поточний') + '</dd></dl></div>' +
+      '<div data-calendar class="stack"></div>' +
+      '<div class="danger" id="semDanger" style="margin-top:8px"><div class="grow"><b>Видалити семестр</b><div class="muted sm">Разом із семестром буде видалено всі його слоти та заняття.</div></div>' +
+      '<button type="button" class="btn btn-sm btn-danger-ghost" data-confirm data-del>' + ic('trash', 14) + 'Видалити</button></div></div>';
+    el.querySelector('[data-edit]').addEventListener('click', function () { openForm(sem); });
+    el.querySelector('[data-del]').addEventListener('click', function () { confirmDelete(sem); });
+    st.calendar = SemCalendar.mount(el.querySelector('[data-calendar]'), sem, {
+      onChange: function () { refresh(); }
+    });
+  }
+
+  function confirmDelete(sem) {
+    UI.confirmInline(document.getElementById('semDanger'), {
+      warning: 'Це призведе до видалення всіх слотів та занять цього семестру. Дію не можна скасувати.',
+      question: 'Видалити семестр «' + (sem.name || '') + '»?', yes: 'Так, видалити', no: 'Скасувати',
+      onYes: function () {
+        return apiRequest('/semesters/' + sem.id + '/', 'DELETE').then(function () {
+          UI.toast('Семестр видалено', { type: 'ok' });
+          Checks.invalidate(sem.id);
+          return loadSemesters().then(function () { go('list=1'); });
+        }, function (err) { UI.toast('Помилка при видаленні: ' + errText(err), { type: 'err' }); });
+      }
+    });
+  }
+
+  /* ---------- generation ---------- */
+  function askGenerate() {
+    var btn = document.querySelector('[data-generate]');
+    if (!st.sem || !st.lessons || st.generating || (btn && btn.disabled)) return;
+    var L = st.lessons, unlocked = L.total - L.locked;
+    var warning = L.total
+      ? 'Буде видалено ' + plural(unlocked, 'незаблоковане заняття', 'незаблоковані заняття', 'незаблокованих занять') +
+        ' цього семестру, і розклад буде складено заново з навчальних планів.' +
+        (L.locked ? ' Заблоковані заняття (' + L.locked + ') залишаться.' : '')
+      : 'Розклад цього семестру буде складено з навчальних планів. Генерація може тривати кілька хвилин.';
+    var host = document.getElementById('genConfirm');
+    UI.confirmInline(host, { warning: warning, question: 'Згенерувати розклад для «' + st.sem.name + '»?',
+      yes: 'Так, згенерувати', no: 'Скасувати', onYes: runGenerate });
+    host.scrollIntoView({ block: 'nearest' });
+  }
+
+  function runGenerate() {
+    var sem = st.sem, btn = document.querySelector('[data-generate]');
+    if (st.generating) return;
+    st.generating = true;
+    if (btn) { btn.disabled = true; btn.classList.add('is-busy'); btn.title = 'Генерація триває…'; }
+    UI.toast('Генерація розпочата, зачекайте…', { timeout: 6000 });
+    return apiRequest('/generate-schedule/', 'POST', { semester_id: sem.id }).then(function (data) {
+      if (data && data.success) {
+        var miss = data.failed || data.unassigned || 0;
+        UI.toast('Розклад згенеровано! Створено: ' + data.created + (miss ? ', не розміщено: ' + miss : ''), { type: miss ? 'warn' : 'ok', timeout: 8000 });
+        console.log('Generation Logs:', data.logs);
+      } else {
+        UI.toast('Генерацію не виконано: ' + ((data && data.error) || 'невідома помилка'), { type: 'err', timeout: 8000 });
+      }
+    }, function (err) {
+      UI.toast('Помилка генерації: ' + errText(err), { type: 'err', timeout: 8000 });
+    }).then(function () {
+      st.generating = false;
+      // The button may have been re-rendered meanwhile; paint() restores its state.
+      if (st.checks && st.sem && st.sem.id === sem.id && document.getElementById('semSteps')) paint();
+      if (st.sem && st.sem.id === sem.id) return refresh();
+    });
+  }
+
+  /* ---------- create / edit drawer ---------- */
+  function timeRow(a, b) {
+    return '<div class="time-row"><span class="n"></span>' +
+      '<input type="time" class="input slot-start" value="' + esc(a || '') + '" required aria-label="Початок пари">' +
+      '<span class="muted">–</span><input type="time" class="input slot-end" value="' + esc(b || '') + '" required aria-label="Кінець пари">' +
+      '<button type="button" class="icon-btn sm bare" data-rm-time aria-label="Прибрати пару">' + ic('x', 14) + '</button></div>';
+  }
+
+  function formHtml(sem) {
+    var c = (sem && sem.configuration) || {};
+    var times = c.time_schedule && c.time_schedule.length ? c.time_schedule : DEFAULT_TIMES;
+    var weekends = c.weekends || ['Saturday', 'Sunday'];
+    return '<form class="sem-form" id="semForm" novalidate>' +
+      '<div class="field"><label for="fName">Назва семестру <span class="req">*</span></label>' +
+      '<input class="input" id="fName" required placeholder="Наприклад: Осінній 2025" value="' + esc(sem ? sem.name : '') + '"></div>' +
+      '<div class="form-grid"><div class="field"><label for="fStart">Дата початку <span class="req">*</span></label>' +
+      '<input type="date" class="input" id="fStart" required value="' + esc(sem ? sem.start_date : '') + '"></div>' +
+      '<div class="field"><label for="fEnd">Дата завершення <span class="req">*</span></label>' +
+      '<input type="date" class="input" id="fEnd" required value="' + esc(sem ? sem.end_date : '') + '"></div></div>' +
+      '<label class="check-row"><input type="checkbox" id="fGen"> Згенерувати часові слоти</label>' +
+      (sem ? '<p class="muted sm" style="margin-top:-8px">Без цієї позначки слоти синхронізуються з уже збереженими налаштуваннями.</p>' : '') +
+      '<div class="cfg-block" id="fCfg" hidden>' +
+      '<div class="field"><span class="label">Вихідні дні</span><div class="days" role="group" aria-label="Вихідні дні">' +
+      DAYS.map(function (d) {
+        var on = weekends.indexOf(d[0]) !== -1;
+        return '<button type="button" class="' + (on ? 'is-on' : '') + '" aria-pressed="' + on + '" data-day="' + d[0] + '">' + d[1] + '</button>';
+      }).join('') + '</div></div>' +
+      '<div class="field"><span class="label">Розклад дзвінків</span><div class="time-rows" id="fTimes">' +
+      times.map(function (t) { return timeRow(t[0], t[1]); }).join('') + '</div>' +
+      '<div><button type="button" class="btn btn-sm btn-ghost" data-add-time>' + ic('plus', 14) + 'Додати пару</button></div></div>' +
+      '<div class="field"><label for="fExcl">Виключити дати (свята)</label><textarea class="textarea" id="fExcl" placeholder="2025-12-25">' +
+      esc((c.dates_excluded || []).join('\n')) + '</textarea><span class="help">Кожна дата з нового рядка (РРРР-ММ-ДД)</span></div>' +
+      '<div class="field"><label for="fIncl">Включити дати (відпрацювання)</label><textarea class="textarea" id="fIncl" placeholder="2025-12-28">' +
+      esc((c.dates_included || []).join('\n')) + '</textarea><span class="help">Кожна дата з нового рядка (РРРР-ММ-ДД)</span></div>' +
+      '</div></form>';
+  }
+
+  function numberTimes(form) {
+    Array.prototype.forEach.call(form.querySelectorAll('.time-row .n'), function (n, i) { n.textContent = (i + 1) + '.'; });
+  }
+
+  function lines(v) { return v.split('\n').map(function (x) { return x.trim(); }).filter(Boolean); }
+
+  function collect(form) {
+    var data = {
+      name: form.querySelector('#fName').value.trim(),
+      start_date: form.querySelector('#fStart').value,
+      end_date: form.querySelector('#fEnd').value
     };
-
-    if (document.getElementById('enableGeneration').checked) {
-        const weekends = Array.from(document.querySelectorAll('input[name="weekend"]:checked'))
-            .map(cb => cb.value);
-
-        const timeSchedule = Array.from(document.querySelectorAll('.time-slot-item')).map(div => {
-            return [
-                div.querySelector('.slot-start').value,
-                div.querySelector('.slot-end').value
-            ];
-        });
-
-        const excludedDates = document.getElementById('excludedDates').value
-            .split('\n').map(d => d.trim()).filter(d => d);
-        
-        const includedDates = document.getElementById('includedDates').value
-            .split('\n').map(d => d.trim()).filter(d => d);
-
-        data.generation_config = {
-            weekends: weekends,
-            time_schedule: timeSchedule,
-            dates_excluded: excludedDates,
-            dates_included: includedDates,
-            day_time_excluded: {}, 
-            date_time_excluded: {}
-        };
+    if (form.querySelector('#fGen').checked) {
+      data.generation_config = {
+        weekends: Array.prototype.map.call(form.querySelectorAll('[data-day].is-on'), function (b) { return b.getAttribute('data-day'); }),
+        time_schedule: Array.prototype.map.call(form.querySelectorAll('.time-row'), function (r) {
+          return [r.querySelector('.slot-start').value, r.querySelector('.slot-end').value];
+        }),
+        dates_excluded: lines(form.querySelector('#fExcl').value),
+        dates_included: lines(form.querySelector('#fIncl').value),
+        day_time_excluded: {},
+        date_time_excluded: {}
+      };
     }
+    return data;
+  }
 
-    try {
-        const btnSave = e.target.querySelector('.btn-save');
-        const originalText = btnSave.textContent;
-        btnSave.textContent = '⏳ Збереження...';
-        btnSave.disabled = true;
-
-        if (currentEditId) {
-            await apiRequest(`/semesters/${currentEditId}/`, 'PUT', data);
-            showToast('Семестр оновлено', 'success');
-        } else {
-            await apiRequest('/semesters/', 'POST', data);
-            showToast('Семестр створено', 'success');
-        }
-        
-        hideModal('semesterModal');
-        loadSemesters();
-        
-        btnSave.textContent = originalText;
-        btnSave.disabled = false;
-
-    } catch (error) {
-        showToast('Помилка: ' + error.message, 'error');
-        e.target.querySelector('.btn-save').disabled = false;
-        e.target.querySelector('.btn-save').textContent = '💾 Зберегти';
+  function validate(form, data) {
+    var bad = null;
+    ['#fName', '#fStart', '#fEnd'].forEach(function (s) {
+      var el = form.querySelector(s), empty = !el.value.trim();
+      el.classList.toggle('is-err', empty);
+      if (empty && !bad) bad = el;
+    });
+    if (bad) { bad.focus(); UI.toast('Заповніть обовʼязкові поля', { type: 'err' }); return false; }
+    if (data.end_date < data.start_date) {
+      form.querySelector('#fEnd').classList.add('is-err');
+      UI.toast('Дата завершення раніше за дату початку', { type: 'err' });
+      return false;
     }
-});
-
-async function confirmDelete() {
-    if (!currentDeleteId) return;
-
-    try {
-        await apiRequest(`/semesters/${currentDeleteId}/`, 'DELETE');
-        hideModal('deleteModal');
-        loadSemesters();
-        showToast('Семестр видалено', 'success');
-    } catch (error) {
-        showToast('Помилка при видаленні: ' + error.message, 'error');
+    if (data.generation_config && data.generation_config.time_schedule.some(function (t) { return !t[0] || !t[1]; })) {
+      UI.toast('Вкажіть початок і кінець кожної пари', { type: 'err' });
+      return false;
     }
-}
+    return true;
+  }
 
-async function generateSchedule(semesterId) {
-    if (!confirm('⚠️ УВАГА: Це видалить поточний чорновик розкладу для цього семестру. Продовжити?')) {
+  function openForm(sem) {
+    var foot = '<div class="danger sem-confirm" id="fFoot"><span data-confirm class="row">' +
+      '<button type="button" class="btn btn-ghost" data-cancel>Скасувати</button>' +
+      '<button type="submit" form="semForm" class="btn btn-primary" data-save>Зберегти</button></span></div>';
+    var dr = UI.drawer({ title: sem ? 'Редагувати семестр' : 'Новий семестр', body: formHtml(sem), foot: foot });
+    var form = dr.el.querySelector('#semForm');
+    var cfg = form.querySelector('#fCfg');
+    numberTimes(form);
+
+    form.querySelector('#fGen').addEventListener('change', function (e) { cfg.hidden = !e.target.checked; });
+    form.addEventListener('click', function (e) {
+      var day = e.target.closest('[data-day]');
+      if (day) { var on = day.classList.toggle('is-on'); day.setAttribute('aria-pressed', String(on)); return; }
+      if (e.target.closest('[data-add-time]')) {
+        form.querySelector('#fTimes').insertAdjacentHTML('beforeend', timeRow('', ''));
+        numberTimes(form);
+        form.querySelector('#fTimes .time-row:last-child .slot-start').focus();
         return;
-    }
-    
-    showToast('Генерація розпочата, зачекайте...', 'info');
+      }
+      var rm = e.target.closest('[data-rm-time]');
+      if (rm) { rm.closest('.time-row').remove(); numberTimes(form); }
+    });
+    dr.el.querySelector('[data-cancel]').addEventListener('click', dr.close);
 
-    try {
-        const data = await apiRequest('/generate-schedule/', 'POST', { semester_id: semesterId });
+    var footHost = dr.el.querySelector('#fFoot');
+    var saveBtn = dr.el.querySelector('[data-save]');
 
-        if (data.success) {
-            let msg = `Розклад згенеровано! Створено: ${data.created}`;
-            if (data.failed > 0) msg += `, Помилок: ${data.failed}`;
-            
-            showToast(msg, data.failed > 0 ? 'warning' : 'success');
-            console.log("Generation Logs:", data.logs);
+    function askScheduleDeletion(data) {
+      UI.confirmInline(footHost, {
+        warning: 'Цей семестр вже має згенерований розклад. Редагування параметрів семестру призведе до повного видалення поточного розкладу.',
+        question: 'Продовжити?', yes: 'Так, видалити та змінити', no: 'Скасувати',
+        onYes: function () {
+          var d = Object.assign({}, data, { confirm_schedule_deletion: true });
+          return save(d);
         }
-
-    } catch (error) {
-        showToast('Помилка генерації: ' + error.message, 'error');
+      });
     }
-}
 
-window.setAsCurrent = setAsCurrent;
-window.generateSchedule = generateSchedule;
+    function save(data) {
+      saveBtn.disabled = true; saveBtn.textContent = 'Збереження…';
+      var req = sem ? apiRequest('/semesters/' + sem.id + '/', 'PUT', data) : apiRequest('/semesters/', 'POST', data);
+      return req.then(function (res) {
+        UI.toast(sem ? 'Семестр оновлено' : 'Семестр створено', { type: 'ok' });
+        if (sem) Checks.invalidate(sem.id);
+        dr.close();
+        return loadSemesters().then(function () {
+          var id = sem ? sem.id : res && res.id;
+          if (sem) { st.checks = null; st.sem = null; }
+          go(id ? 'id=' + encodeURIComponent(id) + (sem && st.view === 'calendar' ? '&view=calendar' : '') : 'list=1', !!sem);
+        });
+      }, function (err) {
+        saveBtn.disabled = false; saveBtn.textContent = 'Зберегти';
+        if (sem && err.status === 409 && !data.confirm_schedule_deletion) {
+          setTimeout(function () { askScheduleDeletion(data); }, 0);
+          return;
+        }
+        if (sem && err.status >= 500) {
+          UI.toast('Сервер не зміг оновити семестр (помилка ' + err.status + '). Якщо в семестрі вже є розклад, бекенд поки не дозволяє змінювати його параметри.', { type: 'err', timeout: 10000 });
+          return;
+        }
+        UI.toast('Помилка: ' + errText(err), { type: 'err', timeout: 8000 });
+      });
+    }
 
-loadSemesters();
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (saveBtn.disabled) return;
+      var data = collect(form);
+      if (!validate(form, data)) return;
+      var hasSchedule = sem && (sem.is_generated || sem.schedule ||
+        (st.sem && st.sem.id === sem.id && st.lessons && st.lessons.total > 0));
+      if (hasSchedule) { askScheduleDeletion(data); return; }
+      save(data);
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();

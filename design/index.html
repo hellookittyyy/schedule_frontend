@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Concepts</title>
+<style>
+:root{--bg:#f7f7f5;--paper:#fff;--ink:#1a1a1a;--muted:#6b6b6b;--line:#e5e5e0;--accent:#4f46e5}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:48px 20px 80px}
+h1{font-size:34px;letter-spacing:-.02em}
+.lead{color:var(--muted);max-width:720px;margin:8px 0 32px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:inherit;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.08)}
+.thumb{height:150px;position:relative;overflow:hidden}
+.body{padding:16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.body h2{font-size:18px}
+.body p{color:var(--muted);font-size:14px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.tags span{font-size:12px;border:1px solid var(--line);border-radius:99px;padding:2px 9px;color:var(--muted)}
+h3{margin:44px 0 12px;font-size:20px}
+table{width:100%;border-collapse:collapse;background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#fafaf8;font-weight:600}
+tr:last-child td{border:0}
+.kit{display:flex;gap:16px;align-items:center;background:var(--ink);color:#fff;border-radius:16px;padding:20px;margin-top:16px;text-decoration:none}
+.kit b{font-size:18px}.kit span{color:#bbb}
+/* thumbnails drawn with CSS */
+.t1{background:#fafafa}.t1 i{position:absolute;background:#fff;border:1px solid #e4e4e7;border-radius:6px}
+.t2{background:#f6f8fb}.t3{background:linear-gradient(135deg,#dcd6ff,#f5d9ff)}.t4{background:#ecebe6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Концепції UI/UX — Розклад</h1>
+  <p class="lead">Чотири напрями дизайну, і в кожному ті самі три екрани: <b>розклад для студента</b>, <b>адмінка (список + форма)</b> та <b>конструктор розкладу з drag &amp; drop</b>. Дані однакові, тож напрями легко порівняти. Кожна сторінка — один самодостатній HTML-файл.</p>
+
+  <div class="grid">
+    <a class="card" href="concepts/01-calm-minimal.html">
+      <div class="thumb t1">
+        <i style="left:0;top:0;bottom:0;width:26%;border-radius:0"></i>
+        <i style="left:32%;top:14px;right:14px;height:34px"></i>
+        <i style="left:32%;top:58px;width:18%;height:40px"></i><i style="left:52%;top:58px;width:18%;height:40px"></i><i style="left:72%;top:58px;right:14px;height:40px"></i>
+        <i style="left:32%;top:106px;right:14px;height:30px;border-left:3px solid #4f46e5"></i>
+      </div>
+      <div class="body"><h2>01 · Calm Minimal</h2><p>Нейтральний SaaS-стиль (Linear/Vercel): тонкі рамки, Inter, темна тема, панель збоку для редагування, комбобокс із клавіатурою.</p>
+        <div class="tags"><span>світла/темна</span><span>drawer</span><span>щільні таблиці</span></div></div>
+    </a>
+    <a class="card" href="concepts/02-calendar-first.html">
+      <div class="thumb t2"><svg width="100%" height="100%" viewBox="0 0 300 150"><rect x="0" y="0" width="70" height="150" fill="#fff"/><rect x="84" y="20" width="32" height="34" rx="6" fill="#dbeafe" stroke="#3b82f6"/><rect x="120" y="40" width="32" height="34" rx="6" fill="#d1fae5" stroke="#10b981"/><rect x="156" y="20" width="32" height="60" rx="6" fill="#fef3c7" stroke="#f59e0b"/><rect x="192" y="58" width="32" height="34" rx="6" fill="#dbeafe" stroke="#3b82f6"/><rect x="228" y="30" width="32" height="34" rx="6" fill="#d1fae5" stroke="#10b981"/><line x1="80" x2="300" y1="70" y2="70" stroke="#ef4444" stroke-width="2"/><circle cx="35" cy="40" r="22" fill="#ccfbf1"/></svg></div>
+      <div class="body"><h2>02 · Calendar First</h2><p>Справжній тижневий календар із часовою сіткою, як у Google Calendar: міні-місяць, лінія «зараз», поповер заняття, аудиторії картками.</p>
+        <div class="tags"><span>time-grid</span><span>popover</span><span>експорт .ics</span></div></div>
+    </a>
+    <a class="card" href="concepts/03-soft-gradient.html">
+      <div class="thumb t3"><svg width="100%" height="100%" viewBox="0 0 300 150"><rect x="20" y="18" width="160" height="56" rx="16" fill="url(#g)"/><defs><linearGradient id="g"><stop stop-color="#667eea"/><stop offset="1" stop-color="#764ba2"/></linearGradient></defs><rect x="190" y="18" width="90" height="56" rx="16" fill="#ffffffcc"/><rect x="20" y="86" width="260" height="48" rx="16" fill="#ffffffcc"/><circle cx="44" cy="110" r="6" fill="#fff" stroke="#5b6cf0" stroke-width="3"/><rect x="60" y="102" width="120" height="16" rx="6" fill="#fff"/></svg></div>
+      <div class="body"><h2>03 · Soft Gradient</h2><p>Розвиток поточного фірмового градієнта #667eea → #764ba2: скло, великі радіуси, картка «Зараз / Далі», таймлайн дня.</p>
+        <div class="tags"><span>поточний бренд</span><span>glassmorphism</span><span>таймлайн</span></div></div>
+    </a>
+    <a class="card" href="concepts/04-bold-bento.html">
+      <div class="thumb t4"><svg width="100%" height="100%" viewBox="0 0 300 150"><rect x="16" y="14" width="130" height="122" rx="16" fill="#111"/><rect x="154" y="14" width="62" height="56" rx="14" fill="#d4ff3f"/><rect x="222" y="14" width="62" height="56" rx="14" fill="#fff"/><rect x="154" y="78" width="62" height="58" rx="14" fill="#c9b8ff"/><rect x="222" y="78" width="62" height="58" rx="14" fill="#ffb38a"/><text x="30" y="50" fill="#fff" font-size="16" font-weight="700" font-family="sans-serif">Доброго</text><text x="30" y="70" fill="#fff" font-size="16" font-weight="700" font-family="sans-serif">ранку!</text></svg></div>
+      <div class="body"><h2>04 · Bold Bento</h2><p>Mobile-first застосунок для студентів у рамці телефона + bento-дашборд адміна + матриця «викладач × слот» з недоступністю.</p>
+        <div class="tags"><span>mobile-first</span><span>bento</span><span>матриця навантаження</span></div></div>
+    </a>
+  </div>
+
+  <h3>Порівняння</h3>
+  <table>
+    <thead><tr><th></th><th>01 Calm Minimal</th><th>02 Calendar First</th><th>03 Soft Gradient</th><th>04 Bold Bento</th></tr></thead>
+    <tbody>
+      <tr><td><b>Найкраще для</b></td><td>Адмінів, які працюють щодня з таблицями</td><td>Студентів і викладачів, що звикли до календарів</td><td>Мʼякого переходу з поточного дизайну</td><td>Студентів з телефонів; «вау» на захисті курсової</td></tr>
+      <tr><td><b>Розклад студента</b></td><td>Список по днях, рядок «зараз»</td><td>Часова сітка тижня + фільтр типів</td><td>Картка «Зараз/Далі» + таймлайн дня</td><td>Стрічка днів, свайп, відлік часу</td></tr>
+      <tr><td><b>Форми</b></td><td>Бокова панель (drawer)</td><td>Модалка з радіо-картками</td><td>Скляна модалка, степери годин</td><td>Швидкі дії на дашборді</td></tr>
+      <tr><td><b>Конструктор</b></td><td>Сітка день × пара, підсвітка конфліктів</td><td>DnD прямо в календар</td><td>Сітка + оверлей генерації з логом</td><td>Матриця викладач × слот, блок недоступних</td></tr>
+      <tr><td><b>Складність переходу</b></td><td>Середня</td><td>Висока (позиціювання за часом)</td><td>Низька: ті самі кольори та структура</td><td>Висока (новий бренд + моб. макет)</td></tr>
+      <tr><td><b>Темна тема</b></td><td>✅ вбудована</td><td>легко додати</td><td>складно (скло)</td><td>частково</td></tr>
+    </tbody>
+  </table>
+
+  <div class="kit" style="background:#2b3138;color:#f1efe9"><span style="font-size:32px">★</span><div><b>Фінальні кандидати: <a href="final/triad.html" style="color:#a9c2b3">Тріада</a> · <a href="final/mosaic.html" style="color:#ffd166">Мозаїка</a></b><br><span style="color:#aeb5bd">Збережені самодостатні сторінки + токени кольорів · <a href="final/README.md" style="color:#aeb5bd">README</a></span></div></div>
+
+  <a class="kit" href="ui-variants/index.html" style="background:#fff;color:#1a1a1a;border:1.5px solid #1a1a1a"><span style="font-size:32px">🎨</span><div><b>Візуальний стиль — 5 варіантів на обраній структурі →</b><br><span style="color:#6b6b6b">Mist · Graphite · Ember · Paper · Campus. Однакові екрани, різний UI.</span></div></a>
+
+  <a class="kit" href="ux-wireframes/index.html" style="background:#fff;color:#1a1a1a;border:1.5px solid #1a1a1a"><span style="font-size:32px">🧭</span><div><b>Структура UX — 5 варіантів (вайрфрейми) →</b><br><span style="color:#6b6b6b">Спочатку структура й сценарії, потім дизайн. Клікабельні низькодеталізовані прототипи з аналізом поточних проблем.</span></div></a>
+
+  <a class="kit" href="ui-kit/index.html"><span style="font-size:32px">🧩</span><div><b>UI Kit — бібліотека компонентів →</b><br><span>Компоненти, знайдені в проєкті (сайдбар, таблиця, модалка, тост, комбобокс, сітка розкладу…), зібрані в один перевикористовуваний набір на дизайн-токенах.</span></div></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,75 @@
+/* =====================================================================
+   Final colour candidates — resolved tokens (no color-mix, ready to use)
+   Saved 2026-11-19 from design/ui-variants (15-slate-lab: triad, x-mosaic)
+
+   Usage:  <html data-palette="triad|mosaic" data-theme="light|dark">
+   Shape & type are shared by both (the «Чорнило» form language).
+   ===================================================================== */
+
+/* ---------- shared: shape & typography (Чорнило) ---------- */
+:root{
+  --font:'Commissioner',system-ui,sans-serif;   /* Google Fonts: Commissioner 400/500/600 */
+  --radius:12px; --radius-sm:8px; --btn-radius:8px; --pill:6px;
+  --pad:22px; --gap:16px; --nav-w:236px;
+  --title-size:28px; --title-weight:600; --h2-size:15px;
+  --card-border:1px solid var(--line);
+}
+
+/* =====================================================================
+   ТРІАДА — сланець · шавлія · пісок
+   ===================================================================== */
+html[data-palette="triad"][data-theme="light"]{
+  --bg:#f1efe9; --surface:#fbfaf7; --surface-2:#ebe7de; --line:#ddd8cc;
+  --text:#262a2f; --muted:#5d6268; --faint:#999b9b;
+  --accent:#4b6657; --accent-ink:#fbfaf7; --accent-soft:#e9ebe7;
+  --nav-bg:#2b3138; --nav-text:#aeb5bd; --nav-strong:#f1efe9; --nav-active-bg:rgba(241,239,233,.09); --nav-active-text:#f1efe9; --nav-line:rgba(241,239,233,.11); --nav-mark:#a9c2b3;
+  --hero-bg:#2b3138; --hero-text:#f1efe9; --hero-muted:rgba(241,239,233,.66); --hero-track:rgba(241,239,233,.18); --hero-bar:#a9c2b3;
+  --tint-1:#ece5d6; --tint-2:#e2ebe4; --tint-3:#f1e3d8;           /* пісок · шавлія · глина */
+  --tint-now:#e2ebe4; --tint-next:#ece5d6; --tint-row:#e2ebe4;
+  --lec:#536173; --lec-soft:#e7e8e7; --pr:#4b6657; --pr-soft:#e4e7e2; --lab:#85502f; --lab-soft:#ede6df;
+  --high:#b0473b; --mid:#966b1e; --ok:#4b6657; --low:#999b9b;
+  --heat0:#ebe7de; --heat1:#cbcdc3; --heat2:#a8b1a5; --heat3:#7e8f82; --heat4:#4b6657;
+}
+html[data-palette="triad"][data-theme="dark"]{
+  --bg:#1c1f23; --surface:#24282d; --surface-2:#2c3036; --line:#363b41;
+  --text:#e6e4de; --muted:#a3a29c; --faint:#727470;
+  --accent:#a3c0ae; --accent-ink:#1c1f23; --accent-soft:#333a3c;
+  --nav-bg:#15181b; --nav-text:#959ca3; --nav-strong:#f1efe9; --nav-active-bg:rgba(241,239,233,.07); --nav-active-text:#f1efe9; --nav-line:rgba(241,239,233,.09); --nav-mark:#a3c0ae;
+  --hero-bg:#2a3530; --hero-text:#e6e4de; --hero-muted:#a3a29c; --hero-track:#3a4640; --hero-bar:#a3c0ae;
+  --tint-1:#2e2b25; --tint-2:#26302a; --tint-3:#33291f;
+  --tint-now:#26302a; --tint-next:#2e2b25; --tint-row:#26302a;
+  --lec:#b0bccb; --lec-soft:#31353b; --pr:#a3c0ae; --pr-soft:#2f3639; --lab:#dca47d; --lab-soft:#353334;
+  --high:#e3887c; --mid:#dcb26b; --ok:#a3c0ae; --low:#727470;
+  --heat0:#2c3036; --heat1:#444d4e; --heat2:#5e6c68; --heat3:#7d9288; --heat4:#a3c0ae;
+}
+
+/* =====================================================================
+   МОЗАЇКА — 6 кольорів, нейтральні чорні кнопки
+   ===================================================================== */
+html[data-palette="mosaic"]{
+  --c1:#ff8f70; --c2:#ffd166; --c3:#7fd1ae; --c4:#a9a6f2; --c5:#f4a6c8; --c6:#c5e384;   /* корал · масло · мʼята · бузок · рожевий · лайм */
+}
+html[data-palette="mosaic"][data-theme="light"]{
+  --bg:#f6f4ef; --surface:#ffffff; --surface-2:#f0ede6; --line:#e4e0d7;
+  --text:#222024; --muted:#5d5a60; --faint:#9b989e;
+  --accent:#222024; --accent-ink:#ffffff; --accent-soft:#e9e9e9;
+  --nav-bg:#222024; --nav-text:#b2aeb5; --nav-strong:#ffffff; --nav-active-bg:rgba(246,244,239,.09); --nav-active-text:#f6f4ef; --nav-line:rgba(246,244,239,.11); --nav-mark:#ffd166;
+  --hero-bg:#ffd166; --hero-text:#222024; --hero-muted:rgba(34,32,36,.72); --hero-track:rgba(34,32,36,.16); --hero-bar:#222024;
+  --tint-1:#ffe1d8; --tint-2:#d9f2e7; --tint-3:#e4e3fb;
+  --tint-now:#d9f2e7; --tint-next:#fff0c7; --tint-row:#fde3ee;
+  --lec:#4a4cb0; --lec-soft:#e9eaf6; --pr:#1f7350; --pr-soft:#e2ede8; --lab:#b0422a; --lab-soft:#f6e8e5;
+  --high:#c43a2c; --mid:#946200; --ok:#1f7350; --low:#9b989e;
+  --heat0:#f0ede6; --heat1:#c7c4bf; --heat2:#999795; --heat3:#646262; --heat4:#222024;
+}
+html[data-palette="mosaic"][data-theme="dark"]{
+  --bg:#19181b; --surface:#222125; --surface-2:#2a292e; --line:#343338;
+  --text:#efedf0; --muted:#aaa7ad; --faint:#75727a;
+  --accent:#efedf0; --accent-ink:#19181b; --accent-soft:#3b393d;
+  --nav-bg:#111013; --nav-text:#9c99a0; --nav-strong:#ffffff; --nav-active-bg:rgba(246,244,239,.07); --nav-active-text:#f6f4ef; --nav-line:rgba(246,244,239,.09); --nav-mark:#ffd166;
+  --hero-bg:#3a3219; --hero-text:#ffe7a8; --hero-muted:rgba(255,231,168,.7); --hero-track:rgba(255,231,168,.16); --hero-bar:#ffd166;
+  --tint-1:#3a231d; --tint-2:#1c3329; --tint-3:#2a2a42;
+  --tint-now:#1c3329; --tint-next:#3a3219; --tint-row:#3a2230;
+  --lec:#b8b6ff; --lec-soft:#2f2e39; --pr:#86dcb6; --pr-soft:#2b3232; --lab:#ffa48a; --lab-soft:#362d2e;
+  --high:#ff8070; --mid:#ffd166; --ok:#86dcb6; --low:#75727a;
+  --heat0:#2a292e; --heat1:#515055; --heat2:#7d7b7f; --heat3:#b0aeb2; --heat4:#efedf0;
+}

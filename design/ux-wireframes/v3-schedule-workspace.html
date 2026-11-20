@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UX 3 — Робочий простір розкладу</title>
+<style>
+:root{--ink:#1d1d1f;--mid:#6e6e73;--soft:#a1a1a6;--line:#d2d2d7;--fill:#f2f2f4;--paper:#fff;--bg:#f7f7f8;--note:#fff3a3;--mark:#e11d48}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+.doc{max-width:1240px;margin:0 auto;padding:28px 20px 80px}.back{font-size:13px;color:var(--mid);text-decoration:none}
+h1{font-size:26px;margin:8px 0 4px}.idea{color:var(--mid);max-width:820px;margin:0 0 8px}h2{font-size:17px;margin:34px 0 10px}
+.maps{display:grid;grid-template-columns:1fr 1fr;gap:16px}.maps>div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px}
+.tree,.tree ul{list-style:none;margin:0;padding-left:16px}.tree{padding:0}.tree ul{border-left:1px solid var(--soft);margin-left:6px}
+.tree li{position:relative;padding:3px 0 3px 12px}.tree ul>li::before{content:'';position:absolute;left:0;top:13px;width:9px;border-top:1px solid var(--soft)}
+.new{font-size:10px;background:var(--ink);color:#fff;border-radius:3px;padding:0 5px;margin-left:4px;vertical-align:1px}
+.stabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.stabs button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:5px 12px;cursor:pointer;font:inherit;font-size:13px}
+.stabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.scr{display:none}.scr.on{display:grid;grid-template-columns:1fr 290px;gap:16px}
+.frame{border:1.5px solid var(--ink);border-radius:10px;background:var(--paper);overflow:hidden;min-height:470px;display:flex;flex-direction:column}
+.bar{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--line);font-size:12px}.bar i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.url{flex:1;background:var(--fill);border-radius:6px;padding:2px 10px;color:var(--mid)}
+.box{border:1px solid var(--line);border-radius:6px;padding:10px;background:#fff}.fill{background:var(--fill)}
+.btn{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--ink);border-radius:5px;padding:4px 10px;background:#fff;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn.pri{background:var(--ink);color:#fff}.btn.ghost{border-color:var(--line)}
+.in{border:1px solid var(--line);border-radius:5px;padding:5px 9px;color:var(--soft);font-size:13px;background:#fff}
+.m{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--mark);color:#fff;font-size:11px;font-style:normal;font-weight:700;vertical-align:middle;margin:0 3px;flex:none}
+.notes{background:var(--note);padding:14px 14px 14px 30px;border-radius:4px;font-size:13px;align-self:start;margin:0;box-shadow:2px 3px 0 rgba(0,0,0,.06)}
+.notes li{margin-bottom:8px}.notes li::marker{font-weight:700;color:var(--mark)}
+[data-go]{cursor:pointer}[data-go]:not(button):hover{outline:1.5px dashed var(--mark);outline-offset:2px}
+.muted{color:var(--mid)}.small{font-size:12px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.col{display:flex;flex-direction:column;gap:8px}.grow{flex:1}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl td,.tbl th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}.tbl th{color:var(--mid);font-weight:600}
+.pill{border:1px solid var(--line);border-radius:99px;padding:1px 8px;font-size:12px;white-space:nowrap}.pill.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.scen{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);font-size:13px}.scen td,.scen th{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}.scen th{background:var(--fill)}
+.pc{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.pc>div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px}.pc h4{margin:0 0 6px}.pc ul{margin:0;padding-left:18px}
+@media(max-width:900px){.scr.on,.maps,.pc{grid-template-columns:1fr}}
+/* variant */
+.ws{display:grid;grid-template-columns:170px 1fr 200px;flex:1;min-height:0}
+.ws>aside{border-right:1px solid var(--line);padding:10px;font-size:12px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.ws>aside.r{border-right:0;border-left:1px solid var(--line)}
+.lens{display:flex;border:1px solid var(--line);border-radius:5px;overflow:hidden}.lens span{flex:1;text-align:center;padding:3px 0}.lens .on{background:var(--ink);color:#fff}
+.li{padding:4px 6px;border-radius:4px}.li.on{background:var(--fill);font-weight:700}
+.board{display:grid;grid-template-columns:44px repeat(5,1fr);grid-auto-rows:54px;gap:2px;padding:8px;font-size:11px;background:var(--fill)}
+.board .h{display:grid;place-items:center;color:var(--mid);background:none;height:auto}
+.board>div{background:#fff;border-radius:3px;padding:3px;position:relative}
+.les{border:1px solid var(--ink);border-radius:3px;padding:2px 4px;height:100%;background:#fff;line-height:1.2;cursor:pointer}
+.les.sel{background:var(--ink);color:#fff}.les.bad{border:2px solid var(--mark)}
+.slot-ok{outline:2px dashed #34c759;outline-offset:-3px}.slot-no{background:repeating-linear-gradient(45deg,#eee 0 4px,#fff 4px 8px)!important}
+.card{border:1px dashed var(--soft);border-radius:4px;padding:4px 6px;background:#fff}
+</style>
+</head>
+<body>
+<div class="doc">
+<a class="back" href="index.html">← Усі варіанти UX</a>
+<h1>Варіант 3 · Робочий простір розкладу</h1>
+<p class="idea"><b>Ідея:</b> головний екран адмінки — це <b>сам розклад</b>, і решта підлаштовується під нього. Ліва панель вибирає, <i>чий</i> розклад дивимось (група / викладач / аудиторія) і показує нерозподілені пари. У центрі сітка тижня. Права панель — <b>інспектор</b> вибраного: заняття, викладач або слот. Під час перетягування система одразу підсвічує, куди можна поставити пару, а куди ні.</p>
+<p class="idea"><b>Для кого:</b> людина, яка вручну доводить розклад після автогенерації і тримає в голові багато залежностей.</p>
+
+<h2>Карта сторінок</h2>
+<div class="maps">
+<div><b>Адмінка</b>
+<ul class="tree">
+  <li><b>Робочий простір</b> /admin (головна) <span class="new">нове</span>
+    <ul><li>Ліва панель: лінза (Група · Викладач · Аудиторія) + список + «Нерозподілені»</li>
+        <li>Центр: тиждень · день · порівняння двох груп</li>
+        <li>Інспектор: заняття / викладач / слот / конфлікт</li>
+        <li>Верхня панель: семестр, ⚡ генерація, ↺ undo, історія змін</li></ul></li>
+  <li><b>Дані</b> (бічна шухляда, не окремі сторінки): Викладачі · Групи/потоки · Аудиторії · Предмети · Плани · Обмеження</li>
+  <li><b>Налаштування семестру</b>: календар, дзвінки</li>
+</ul></div>
+<div><b>Публічна частина</b>
+<ul class="tree"><li><b>Та сама сітка</b> у режимі читання з тими самими лінзами</li><li>Мобільний: список дня замість сітки</li><li>/view?lens=room&id=301 — «де вільна аудиторія» <span class="new">нове</span></li></ul>
+<p class="small muted">Дашборд зі статистикою прибрано: корисні цифри (конфлікти, нерозподілені) показані прямо в робочому просторі.</p></div>
+</div>
+
+<h2>Клікабельний прототип</h2>
+<div class="stabs" id="stabs"><button class="on" data-go="a">A. Вибрано заняття</button><button data-go="b">B. Перетягування</button><button data-go="c">C. Конфлікт</button><button data-go="d">D. Шухляда «Дані»</button><button data-go="e">E. Студент (моб.)</button></div>
+
+<section class="scr on" id="a"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin?lens=group&id=kn-31&lesson=88</span></div>
+  <div class="row small" style="padding:6px 10px;border-bottom:1px solid var(--line)"><b>Осінь 2026 ▾</b><span class="pill">Тиждень 12 ‹ ›</span><span class="grow"></span><span>⚠ 3 конфлікти</span><button class="btn ghost" data-go="d">☰ Дані</button><button class="btn ghost">↺</button><button class="btn pri">⚡ Генерація</button></div>
+  <div class="ws">
+    <aside><div class="lens"><span class="on">Група</span><span>Викл.</span><span>Ауд.</span></div><i class="m">1</i>
+      <div class="in">🔍 група…</div><div class="li on">КН-31</div><div class="li">КН-32 ⚠</div><div class="li">ПІ-21</div>
+      <b style="margin-top:8px">Нерозподілені (3) <i class="m">2</i></b><div class="card" data-go="b">Англійська · Пр</div><div class="card">Фізвиховання</div><div class="card">БД · Пр</div></aside>
+    <div class="board" id="b1"></div>
+    <aside class="r"><b>Бази даних · Лекція <i class="m">3</i></b><span>Пн, 1 пара · 08:30</span>
+      <span>👤 <u>Коваленко О.</u></span><span>📍 <u>301</u> (120 місць)</span><span>👥 КН-31 (26)</span>
+      <span class="muted">Інші вільні слоти:</span><span><u>Вт 3</u> · <u>Чт 1</u> · <u>Пт 3</u> <i class="m">4</i></span>
+      <div class="row"><button class="btn ghost">🔒 Закріпити</button><button class="btn ghost">Зняти</button></div></aside>
+  </div></div>
+  <ol class="notes"><li>Лінза визначає, чий розклад показано. Одна сітка замість окремих сторінок.</li><li>Нерозподілені пари завжди на виду. Їх можна тягнути прямо звідси.</li><li>Інспектор показує деталі без модалки. Імена клікабельні й перемикають лінзу.</li><li>Система сама пропонує вільні слоти, де ніхто не зайнятий.</li></ol>
+</section>
+
+<section class="scr" id="b"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin?lens=group&id=kn-31 (drag)</span></div>
+  <div class="row small" style="padding:6px 10px;border-bottom:1px solid var(--line)"><b>Осінь 2026 ▾</b><span class="grow"></span><span>Перетягування: <b>Англійська · Практика</b></span></div>
+  <div class="ws">
+    <aside><div class="lens"><span class="on">Група</span><span>Викл.</span><span>Ауд.</span></div><div class="li on">КН-31</div>
+      <b style="margin-top:8px">Нерозподілені (3)</b><div class="card" style="opacity:.4">Англійська · Пр</div><div class="card">Фізвиховання</div></aside>
+    <div class="board" id="b2"></div>
+    <aside class="r"><b>Легенда під час перетягування <i class="m">1</i></b>
+      <span><span style="display:inline-block;width:14px;height:10px;outline:2px dashed #34c759"></span> можна, все вільно</span>
+      <span><span style="display:inline-block;width:14px;height:10px;background:repeating-linear-gradient(45deg,#ccc 0 3px,#fff 3px 6px)"></span> викладач / ауд. зайняті</span>
+      <span class="muted">Наведення на заштрихований слот пояснює причину: «Ткаченко Л. недоступна у Пн» <i class="m">2</i></span></aside>
+  </div></div>
+  <ol class="notes"><li>Перед тим як відпустити картку, видно, куди її можна поставити. Зараз це видно лише після помилки 409.</li><li>Система пояснює, чому слот заблоковано, і дає посилання на правило.</li></ol>
+</section>
+
+<section class="scr" id="c"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin?conflict=12</span></div>
+  <div class="row small" style="padding:6px 10px;border-bottom:1px solid var(--line)"><b>Осінь 2026 ▾</b><span class="grow"></span><span class="pill dark">⚠ Конфлікт 1 з 3 ‹ ›</span><i class="m">1</i></div>
+  <div class="ws">
+    <aside><div class="lens"><span>Група</span><span class="on">Викл.</span><span>Ауд.</span></div><span class="muted">лінза перемкнулась автоматично</span><div class="li on">Мельник А.</div></aside>
+    <div class="board" id="b3"></div>
+    <aside class="r"><b>Конфлікт: викладач у двох місцях</b><span>Мельник А. · Ср, 2 пара</span><span>• Веб-техн. · КН-31 · Лаб-4</span><span>• БД · КН-32 · Лаб-2</span>
+      <b>Варіанти виправлення <i class="m">2</i></b>
+      <div class="box small">Перенести КН-32 на Ср 3 <button class="btn pri" style="margin-top:4px">Застосувати</button></div>
+      <div class="box small">Замінити викладача на Коваленко О.</div><div class="box small">Позначити як дозволене</div></aside>
+  </div></div>
+  <ol class="notes"><li>Конфлікти можна гортати по одному. Лінза і тиждень підлаштовуються самі.</li><li>Система пропонує готові виправлення. Кожне застосовується в один клік і скасовується через ↺.</li></ol>
+</section>
+
+<section class="scr" id="d"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin?drawer=teachers</span></div>
+  <div style="display:grid;grid-template-columns:1fr 360px;flex:1">
+    <div style="background:var(--fill);opacity:.5" class="board" id="b4"></div>
+    <div style="border-left:1.5px solid var(--ink);padding:12px" class="col">
+      <div class="row"><b>Дані</b><span class="grow"></span><span data-go="a">✕</span></div>
+      <div class="row small"><span class="pill dark">Викладачі</span><span class="pill">Групи</span><span class="pill">Аудиторії</span><span class="pill">Предмети</span><span class="pill">Плани</span><span class="pill">Обмеження</span> <i class="m">1</i></div>
+      <div class="in">🔍 пошук</div>
+      <table class="tbl"><tr><td>Коваленко О.</td><td>16/20</td><td><u>розклад →</u> <i class="m">2</i></td></tr><tr><td>Мельник А.</td><td>22/22</td><td><u>розклад →</u></td></tr><tr><td>Кравчук Д.</td><td>8/18</td><td><u>розклад →</u></td></tr></table>
+      <button class="btn">+ Викладач</button></div>
+  </div></div>
+  <ol class="notes"><li>Усі довідники зібрані в одній шухляді. Сітка лишається на фоні, контекст не втрачається.</li><li>Із будь-якого рядка можна перейти до розкладу цього викладача (лінза).</li></ol>
+</section>
+
+<section class="scr" id="e"><div class="frame" style="max-width:380px">
+  <div class="bar"><i></i><i></i><span class="url">rozklad.ua/view?group=kn-31</span></div>
+  <div style="padding:12px" class="col small">
+    <div class="lens"><span class="on">Група</span><span>Викладач</span><span>Аудиторія</span></div><i class="m">1</i>
+    <div class="in" style="color:var(--ink)">КН-31</div>
+    <div class="row"><span class="pill">Пн</span><span class="pill">Вт</span><span class="pill">Ср</span><span class="pill dark">Чт</span><span class="pill">Пт</span></div>
+    <div class="box">1 · 08:30 — <span class="muted">вікно</span></div><div class="box">2 · 10:00 Компʼютерні мережі · Ауд. 2</div><div class="box" style="border-color:var(--ink)"><b>3 · 11:40 Алгоритми · 207 · зараз</b></div><div class="box">4 · 13:30 Вища математика · Ауд. 1</div>
+    <span class="muted">На ПК: та сама сітка, що й в адмінці <i class="m">2</i></span></div></div>
+  <ol class="notes"><li>Ті самі лінзи для студентів і викладачів: «де моя пара», «чи вільна 301».</li><li>Один компонент сітки для обох частин означає менше коду.</li></ol>
+</section>
+
+<h2>Ключові сценарії: кількість кроків</h2>
+<table class="scen"><tr><th>Сценарій</th><th>Зараз</th><th>У цьому варіанті</th></tr>
+<tr><td>Студент бачить пари на сьогодні</td><td>5 дій</td><td>Лінза + назва (2)</td></tr>
+<tr><td>Перенести пару без конфлікту</td><td>Тягнути навмання, чекати помилку</td><td>Тягнути у підсвічений слот (1) або клік на запропонований слот</td></tr>
+<tr><td>Виправити конфлікт</td><td>Шукати очима</td><td>Лічильник ⚠ → варіант → «Застосувати» (3)</td></tr>
+<tr><td>Додати викладача</td><td>Окрема сторінка + модалка</td><td>☰ Дані → + Викладач, розклад лишається на фоні</td></tr></table>
+
+<h2>Оцінка</h2>
+<div class="pc">
+<div><h4>👍 Плюси</h4><ul><li>Мінімум переходів: усе на одному екрані</li><li>Найкраще для ручного доведення розкладу</li><li>Одна сітка для адмінки й публіки</li><li>Найсильніше «вау» для курсової</li></ul></div>
+<div><h4>👎 Мінуси</h4><ul><li>Складний фронтенд: стан, DnD, підсвітка слотів</li><li>Потрібен API «вільні слоти для заняття»</li><li>Погано на мобільному (адмінка лише для ПК)</li></ul></div>
+<div><h4>🎯 Коли обирати</h4><ul><li>Генерація дає 90%, а решту доводять руками</li><li>Головна мета — швидкість роботи диспетчера</li></ul></div>
+</div>
+</div>
+<script>
+const D=['Пн','Вт','Ср','Чт','Пт'];
+function board(el,les,mode){let h='<div class="h"></div>'+D.map(d=>`<div class="h">${d}</div>`).join('');
+ for(let p=0;p<5;p++){h+=`<div class="h">${p+1}</div>`;for(let d=0;d<5;d++){const l=les.find(x=>x[0]===d&&x[1]===p);let cls='';
+  if(mode==='drag'&&!l)cls=[[0,0],[0,1],[3,3],[4,4],[2,4]].some(x=>x[0]===d&&x[1]===p)?'slot-no':'slot-ok';
+  h+=`<div class="${cls}">${l?`<div class="les ${l[3]||''}">${l[2]}</div>`:''}</div>`}}el.innerHTML=h}
+const L=[[0,0,'БД · Лек · 301','sel'],[0,1,'БД · Лаб'],[0,2,'Матем · Пр'],[1,1,'Алгоритми'],[1,2,'Англ · Пр'],[2,0,'ОС · Лек'],[2,1,'Веб · Лаб'],[3,1,'Мережі'],[3,2,'Алгоритми · Пр'],[4,0,'ОС · Лаб']];
+board(b1,L);board(b2,L.map(x=>[x[0],x[1],x[2]]),'drag');
+board(b3,[[0,1,'БД · Лаб'],[2,2,'Веб · КН-31'],[4,1,'Веб · ПІ-21']]);
+/* cell index = 6 header cells + row*6 + 1 time cell + day  → Wed (d=2), pair 2 (p=1) */
+b3.children[6+1*6+1+2].innerHTML='<div class="les bad" style="height:48%;margin-bottom:2px">Веб · КН-31</div><div class="les bad" style="height:48%">БД · КН-32</div>';
+board(b4,L.map(x=>[x[0],x[1],x[2]]));
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));document.querySelectorAll('#stabs button').forEach(b=>b.classList.toggle('on',b.dataset.go===id))}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)});
+</script>
+</body>
+</html>

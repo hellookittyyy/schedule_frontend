@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UX Structure Options</title>
+<style>
+:root{--ink:#1d1d1f;--mid:#6e6e73;--soft:#a1a1a6;--line:#d2d2d7;--fill:#f2f2f4;--bg:#f7f7f8;--note:#fff3a3;--mark:#e11d48}
+*{box-sizing:border-box}body{margin:0;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+.doc{max-width:1180px;margin:0 auto;padding:36px 20px 80px}
+h1{font-size:30px;margin:0 0 6px}h2{font-size:19px;margin:38px 0 12px}
+.lead{color:var(--mid);max-width:800px;margin:0}
+.back{font-size:13px;color:var(--mid);text-decoration:none}
+.now{display:grid;grid-template-columns:300px 1fr;gap:16px}
+.box{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.tree{list-style:none;margin:0;padding:0;font-size:13px}.tree li{padding:3px 0;border-bottom:1px dashed var(--line)}
+.issues{margin:0;padding-left:20px}.issues li{margin-bottom:8px}.issues b{color:var(--mark)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.card{background:#fff;border:1.5px solid var(--ink);border-radius:10px;padding:14px;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px;transition:transform .12s,box-shadow .12s}
+.card:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--ink)}
+.card .n{font-size:12px;color:var(--mid)}.card h3{margin:0;font-size:16px}.card p{margin:0;font-size:13px;color:var(--mid)}
+.sk{height:84px;border:1px solid var(--line);border-radius:6px;background:var(--fill);display:grid;gap:3px;padding:5px}
+.sk i{background:#fff;border:1px solid var(--line);border-radius:3px;display:block}
+.sk i.d{background:var(--ink);border-color:var(--ink)}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);font-size:13px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--fill)}
+td.c{text-align:center;font-size:15px}
+.rec{background:var(--note);border-radius:6px;padding:16px 18px;box-shadow:2px 3px 0 rgba(0,0,0,.06)}
+.rec ol{margin:8px 0 0;padding-left:20px}.rec li{margin-bottom:6px}
+@media(max-width:800px){.now{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="doc">
+<a class="back" href="../index.html">← Візуальні концепції</a>
+<h1>Структура UX: 5 варіантів</h1>
+<p class="lead">Мінімальний UI (сірі вайрфрейми), фокус на <b>структурі сторінок, навігації та сценаріях</b>. Кожен варіант — клікабельний прототип: червоні номери відповідають жовтим приміткам, а пунктирні елементи клікабельні. Візуальний дизайн (концепції 01–04 і UI Kit) можна накласти на будь-яку обрану структуру.</p>
+
+<h2>Що зараз (аналіз)</h2>
+<div class="now">
+<div class="box"><b>Поточна карта сторінок</b>
+<ul class="tree"><li><b>Публічна:</b> форма пошуку (викладач, група, курс, з дати, по дату)</li>
+<li><b>Адмінка (10 пунктів меню, всі на одному рівні):</b></li>
+<li>Графік навчання (семестри) — стоїть першим</li><li>Дашборд — лічильники + календар</li><li>Предмети</li><li>Викладачі</li><li>Групи</li><li>Потоки</li><li>Аудиторії</li><li>Навчальні плани</li><li>Обмеження</li><li>Розклад (DnD)</li></ul></div>
+<div class="box"><b>Знайдені проблеми UX</b>
+<ol class="issues">
+<li><b>Немає порядку роботи.</b> Щоб підготувати семестр, треба обійти 5–6 сторінок і пам'ятати послідовність. Система не підказує, чого бракує.</li>
+<li><b>Інформацію розірвано.</b> Обмеження викладача лежать не в профілі викладача, а на окремій сторінці, де його треба знову шукати у випадаючому списку. Те саме з потоками й планами групи.</li>
+<li><b>Модалки скрізь, навіть для складних форм.</b> Семестр — це модалка з дзвінками, вихідними та святами, які вводяться як «YYYY-MM-DD» у textarea. Обмеження — модалка з динамічним конструктором конфігурації.</li>
+<li><b>Дашборд нічого не каже.</b> Лічильники «42 викладачі» не допомагають ухвалити жодне рішення.</li>
+<li><b>Конструктор не попереджає.</b> Чи можна поставити пару в слот, дізнаєшся лише після помилки сервера (409).</li>
+<li><b>Публічна сторінка вимагає забагато.</b> 5 полів щоразу, вибір не запам'ятовується, немає посилання на розклад групи, немає «що зараз / що далі».</li>
+<li><b>Немає масових дій та імпорту.</b> Паралельні групи заповнюються вручну, по одній модалці на запис.</li>
+<li><b>Немає скасування.</b> Видалення через «Ви впевнені?» без undo. Генерація перезаписує розклад без версій.</li>
+</ol></div>
+</div>
+
+<h2>Варіанти</h2>
+<div class="cards">
+<a class="card" href="v1-semester-wizard.html"><span class="n">Варіант 1</span><h3>Майстер семестру</h3>
+  <div class="sk" style="grid-template-rows:14px 1fr 14px;grid-template-columns:repeat(6,1fr)"><i class="d"></i><i class="d"></i><i class="d"></i><i></i><i></i><i></i><i style="grid-column:1/-1"></i><i style="grid-column:5/-1" class="d"></i></div>
+  <p>Покроковий процес: календар → ресурси → плани → обмеження → генерація → публікація. З прогресом і передперевіркою.</p></a>
+<a class="card" href="v2-entity-profiles.html"><span class="n">Варіант 2</span><h3>Профілі сутностей</h3>
+  <div class="sk" style="grid-template-rows:20px 10px 1fr;grid-template-columns:1fr"><i></i><i class="d" style="width:60%"></i><i></i></div>
+  <p>Сторінка викладача / групи / аудиторії з вкладками. Обмеження й плани живуть там. Глобальний пошук. Публічні профілі.</p></a>
+<a class="card" href="v3-schedule-workspace.html"><span class="n">Варіант 3</span><h3>Робочий простір розкладу</h3>
+  <div class="sk" style="grid-template-columns:1fr 3fr 1.2fr"><i></i><i style="background:repeating-linear-gradient(90deg,#fff 0 12px,#ddd 12px 13px)"></i><i class="d"></i></div>
+  <p>Розклад як головний екран: лінзи (група / викладач / ауд.), інспектор, підсвітка вільних слотів, виправлення конфліктів.</p></a>
+<a class="card" href="v4-master-detail.html"><span class="n">Варіант 4</span><h3>Список і деталі</h3>
+  <div class="sk" style="grid-template-columns:1fr 2fr 3fr"><i class="d"></i><i></i><i></i></div>
+  <p>Один шаблон з трьох панелей для всіх довідників. Без модалок, з мультивибором, масовими діями, імпортом та обмеженнями-реченнями.</p></a>
+<a class="card" href="v5-task-inbox.html"><span class="n">Варіант 5</span><h3>Задачі + Ctrl+K</h3>
+  <div class="sk" style="grid-template-rows:repeat(4,1fr);grid-template-columns:14px 1fr 40px"><i class="d"></i><i></i><i class="d"></i><i class="d"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <p>Головна — список проблем із виправленням в один клік. Командна палітра. Для студентів: «мій розклад» і сповіщення.</p></a>
+</div>
+
+<h2>Порівняння</h2>
+<table>
+<tr><th>Критерій</th><th>1 Майстер</th><th>2 Профілі</th><th>3 Простір</th><th>4 Список/деталі</th><th>5 Задачі</th></tr>
+<tr><td>Підготовка нового семестру</td><td class="c">●●●</td><td class="c">●</td><td class="c">●●</td><td class="c">●</td><td class="c">●●●</td></tr>
+<tr><td>Точкові правки посеред семестру</td><td class="c">●</td><td class="c">●●●</td><td class="c">●●●</td><td class="c">●●</td><td class="c">●●</td></tr>
+<tr><td>Ручне доведення розкладу</td><td class="c">●</td><td class="c">●</td><td class="c">●●●</td><td class="c">●</td><td class="c">●●</td></tr>
+<tr><td>Масове введення довідників</td><td class="c">●●</td><td class="c">●</td><td class="c">●</td><td class="c">●●●</td><td class="c">●</td></tr>
+<tr><td>Зручність для студента</td><td class="c">●●</td><td class="c">●●●</td><td class="c">●●</td><td class="c">●●</td><td class="c">●●●</td></tr>
+<tr><td>Складність реалізації</td><td class="c">середня</td><td class="c">середня</td><td class="c">висока</td><td class="c">низька</td><td class="c">середня (+бекенд)</td></tr>
+<tr><td>Потрібні нові API</td><td>статус кроків, версії</td><td>/search</td><td>вільні слоти, перевірка DnD</td><td>bulk, import</td><td>/issues, журнал змін</td></tr>
+</table>
+
+<h2>Рекомендація</h2>
+<div class="rec"><b>Варіанти можна комбінувати, бо вони відповідають на різні питання.</b> Реалістичний план для курсової:
+<ol>
+<li><b>Каркас — варіант 4 (список і деталі)</b> для всіх довідників. Найменше переписування, прибирає модалки, дає один шаблон.</li>
+<li><b>Головна адмінки — варіант 5 (задачі)</b> замість дашборда з лічильниками. Ctrl+K додати пізніше.</li>
+<li><b>Семестр — спрощений варіант 1</b>: сторінка семестру з чеклістом кроків і передперевіркою перед генерацією.</li>
+<li><b>Публічна частина — з варіантів 2 + 5</b>: одне поле пошуку, посилання /g/КН-31, запам'ятований «мій розклад», картка «зараз / далі».</li>
+<li><b>Варіант 3</b> — як наступний етап для екрана «Розклад» (підсвітка слотів та інспектор).</li>
+</ol></div>
+</div>
+</body>
+</html>

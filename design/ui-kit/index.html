@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schedule UI Kit</title>
+<link rel="stylesheet" href="ui-kit.css">
+<style>
+  /* showcase-only styles */
+  body { margin: 0; }
+  .kit-top { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 12px; padding: 12px 24px; background: var(--ui-surface); border-bottom: 1px solid var(--ui-border); }
+  .kit-top a { color: var(--ui-text-muted); text-decoration: none; font-size: 14px; }
+  .kit-wrap { display: grid; grid-template-columns: 220px 1fr; max-width: 1280px; margin: 0 auto; }
+  .kit-toc { position: sticky; top: 60px; align-self: start; padding: 24px 16px; display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+  .kit-toc a { color: var(--ui-text-muted); text-decoration: none; padding: 5px 10px; border-radius: 6px; }
+  .kit-toc a:hover { background: var(--ui-surface-2); color: var(--ui-text); }
+  .kit-content { padding: 24px; min-width: 0; }
+  .kit-sec { margin-bottom: 40px; scroll-margin-top: 70px; }
+  .kit-sec > h2 { font-size: 20px; margin: 0 0 4px; }
+  .kit-src { font-size: 12px; color: var(--ui-text-faint); margin: 0 0 14px; }
+  .kit-src code { background: var(--ui-surface-2); padding: 1px 5px; border-radius: 4px; }
+  .kit-demo { background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-radius); padding: 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+  .kit-demo.col { flex-direction: column; align-items: stretch; }
+  .kit-code { margin: 8px 0 0; background: #0f172a; color: #cbd5e1; border-radius: 8px; padding: 12px 14px; font: 12px/1.6 Consolas, monospace; overflow-x: auto; white-space: pre; }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; width: 100%; }
+  .swatch { border: 1px solid var(--ui-border); border-radius: 8px; overflow: hidden; font-size: 12px; }
+  .swatch i { display: block; height: 44px; }
+  .swatch span { display: block; padding: 6px 8px; color: var(--ui-text-muted); }
+  #sidebarDemo .ui-sidebar { position: static; height: 100%; }
+  @media (max-width: 860px) { .kit-wrap { grid-template-columns: 1fr; } .kit-toc { display: none; } }
+</style>
+</head>
+<body class="ui-root">
+<header class="kit-top">
+  <b>🧩 Schedule UI Kit</b>
+  <a href="../index.html">← Концепції</a>
+  <span style="flex:1"></span>
+  <label class="ui-switch"><input type="checkbox" id="darkToggle"><span></span>Темна тема</label>
+</header>
+
+<div class="kit-wrap">
+  <nav class="kit-toc" id="toc"></nav>
+  <main class="kit-content">
+
+    <section class="kit-sec" id="tokens"><h2>Токени</h2>
+      <p class="kit-src">Взято з <code>admin/shared.css :root</code> і почищено. Тема змінюється лише через змінні <code>--ui-*</code>.</p>
+      <div class="kit-demo"><div class="swatches" id="swatches"></div></div>
+    </section>
+
+    <section class="kit-sec" id="buttons"><h2>Кнопки</h2>
+      <p class="kit-src">Замінює <code>.btn-add / .btn-save / .btn-edit / .btn-delete / .btn-cancel / .btn-view</code> з admin/shared.css.</p>
+      <div class="kit-demo">
+        <button class="ui-btn ui-btn--primary">💾 Зберегти</button>
+        <button class="ui-btn ui-btn--success">➕ Додати</button>
+        <button class="ui-btn ui-btn--secondary">Скасувати</button>
+        <button class="ui-btn ui-btn--danger">🗑 Видалити</button>
+        <button class="ui-btn ui-btn--ghost">Ghost</button>
+        <button class="ui-btn ui-btn--secondary ui-btn--icon" aria-label="Оновити">🔄</button>
+        <button class="ui-btn ui-btn--primary ui-btn--sm">Small</button>
+        <button class="ui-btn ui-btn--primary ui-btn--lg">Large</button>
+        <button class="ui-btn ui-btn--primary" disabled>Disabled</button>
+      </div>
+      <pre class="kit-code">&lt;button class="ui-btn ui-btn--primary"&gt;Зберегти&lt;/button&gt;   modifiers: --success --secondary --danger --ghost --sm --lg --icon --block</pre>
+    </section>
+
+    <section class="kit-sec" id="forms"><h2>Поля форми</h2>
+      <p class="kit-src">Форми в усіх модалках (teachers, rooms, constraints, study-plans) і на публічній сторінці.</p>
+      <div class="kit-demo col">
+        <div class="ui-form-grid">
+          <div class="ui-field"><label class="ui-label">Номер аудиторії <span class="ui-req">*</span></label><input class="ui-input" placeholder="101-A"></div>
+          <div class="ui-field"><label class="ui-label">Тип</label><select class="ui-select"><option>Лекційна</option><option>Компʼютерна</option></select></div>
+          <div class="ui-field ui-field--error"><label class="ui-label">Місткість</label><input class="ui-input" value="0"><span class="ui-error">Має бути більше 0</span></div>
+        </div>
+        <div class="ui-field"><label class="ui-label">Примітка</label><textarea class="ui-textarea" placeholder="Додаткова інформація…"></textarea><span class="ui-hint">Необовʼязково</span></div>
+        <div class="ui-search"><input class="ui-input" placeholder="Пошук викладачів…"></div>
+      </div>
+    </section>
+
+    <section class="kit-sec" id="combobox"><h2>Комбобокс / автодоповнення</h2>
+      <p class="kit-src">З <code>index.html</code> + <code>js/main.js</code> (пошук групи/викладача). Додано клавіатуру (↑ ↓ Enter Esc), debounce та ARIA.</p>
+      <div class="kit-demo col">
+        <div class="ui-field ui-combo" style="max-width:360px"><label class="ui-label">Група</label><input class="ui-input" id="comboDemo" placeholder="Почніть вводити: КН…"></div>
+        <div id="comboOut" class="ui-hint">Оберіть групу</div>
+      </div>
+      <pre class="kit-code">UI.combobox(input, {
+  source: async q =&gt; (await apiRequest(`/groups/?search=${q}`)).map(g =&gt; ({ value: g.name, meta: g.course + ' курс', id: g.id })),
+  onSelect: item =&gt; groupId.value = item.id
+});</pre>
+    </section>
+
+    <section class="kit-sec" id="selection"><h2>Перемикачі та вибір</h2>
+      <p class="kit-src">Сегменти (вид тижня), радіо-картки (<code>study-plans .target-selector</code>), дні (<code>constraints .day-checkbox-item</code>), список чекбоксів (<code>streams .checkbox-item</code>), switch.</p>
+      <div class="kit-demo col">
+        <div class="ui-segmented" id="segDemo"><button class="is-active" data-value="day">День</button><button data-value="week">Тиждень</button><button data-value="month">Місяць</button></div>
+        <div class="ui-radio-cards" style="max-width:420px">
+          <label class="ui-radio-card"><input type="radio" name="tgt" checked><span class="ui-radio-card__icon">👥</span>Група</label>
+          <label class="ui-radio-card"><input type="radio" name="tgt"><span class="ui-radio-card__icon">🌊</span>Потік</label>
+          <label class="ui-radio-card"><input type="radio" name="tgt"><span class="ui-radio-card__icon">📚</span>Курс</label>
+        </div>
+        <div class="ui-day-toggles"></div>
+        <div class="ui-check-list" style="max-width:420px" id="checkDemo"></div>
+        <label class="ui-switch"><input type="checkbox" checked><span></span>Заблокувати пару від авто-генерації</label>
+      </div>
+    </section>
+
+    <section class="kit-sec" id="badges"><h2>Чіпи, бейджі, статуси, аватар</h2>
+      <p class="kit-src"><code>.subject-item</code> (предмети викладача), <code>.badge-lection/practice/lab</code>, <code>.status-badge</code> семестрів.</p>
+      <div class="kit-demo col">
+        <div class="ui-chips" id="chipDemo"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="ui-badge ui-badge--lec">Лекція</span><span class="ui-badge ui-badge--pr">Практика</span><span class="ui-badge ui-badge--lab">Лабораторна</span><span class="ui-badge ui-badge--danger ui-badge--count">3</span><span class="ui-badge">Нейтральний</span></div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap"><span class="ui-status ui-status--active">Активний</span><span class="ui-status ui-status--pending">Очікує</span><span class="ui-status ui-status--completed">Завершений</span></div>
+        <div class="ui-person"><span class="ui-avatar">КО</span><div><b>Коваленко Олена Петрівна</b><div class="ui-hint">Кафедра КН</div></div></div>
+      </div>
+    </section>
+
+    <section class="kit-sec" id="layout"><h2>Каркас: сайдбар, заголовок, статистика</h2>
+      <p class="kit-src"><code>admin/sidebar.js</code> (тепер з групами й лічильниками), <code>.header</code>, <code>.stat-card</code> з dashboard.css, фільтри зі study-plans.</p>
+      <div class="kit-demo" style="padding:0;overflow:hidden">
+        <div class="ui-layout" style="min-height:0;width:100%">
+          <div id="sidebarDemo" style="height:520px"></div>
+          <div class="ui-main" style="background:var(--ui-bg)">
+            <div class="ui-page-header"><div><div class="ui-breadcrumb"><a href="#">Довідники</a> / Викладачі</div><h1>Викладачі</h1></div>
+              <div class="ui-page-header__actions"><button class="ui-btn ui-btn--secondary">Імпорт</button><button class="ui-btn ui-btn--success">➕ Додати</button></div></div>
+            <div class="ui-stats">
+              <div class="ui-stat"><div class="ui-stat__label">Викладачі</div><div class="ui-stat__value">42</div><div class="ui-stat__delta">+3 за семестр</div></div>
+              <div class="ui-stat" style="--ui-stat-color:var(--ui-success)"><div class="ui-stat__label">Предмети</div><div class="ui-stat__value">87</div></div>
+              <div class="ui-stat" style="--ui-stat-color:var(--ui-warning)"><div class="ui-stat__label">Розподілено</div><div class="ui-stat__value">94%</div><div class="ui-progress"><i style="width:94%"></i></div></div>
+            </div>
+            <div class="ui-filter-bar">
+              <div class="ui-field"><label class="ui-label">📅 Семестр</label><select class="ui-select"><option>Осінній 2026</option></select></div>
+              <div class="ui-field"><label class="ui-label">👥 Група</label><select class="ui-select"><option>Усі групи</option></select></div>
+              <button class="ui-btn ui-btn--secondary">🔄 Скинути</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="kit-sec" id="table"><h2>Таблиця даних</h2>
+      <p class="kit-src">Таблиці всіх довідників. Варіант <code>--hover-actions</code> показує дії лише при наведенні.</p>
+      <div class="ui-card" style="padding:0;overflow:hidden">
+        <div class="ui-table-wrap"><table class="ui-table ui-table--hover-actions">
+          <thead><tr><th>Викладач</th><th>Предмети</th><th>Статус</th><th></th></tr></thead>
+          <tbody id="tableDemo"></tbody></table></div>
+      </div>
+    </section>
+
+    <section class="kit-sec" id="states"><h2>Стани: порожньо, завантаження, помилка</h2>
+      <p class="kit-src"><code>showLoading()</code> / <code>showError()</code> з common.js → <code>UI.state.*</code>; плюс skeleton.</p>
+      <div class="kit-demo" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+        <div id="st1" class="ui-card" style="margin:0"></div><div id="st2" class="ui-card" style="margin:0"></div><div id="st3" class="ui-card" style="margin:0"></div>
+        <div class="ui-card" style="margin:0;display:flex;flex-direction:column;gap:10px"><div class="ui-skeleton" style="width:60%"></div><div class="ui-skeleton"></div><div class="ui-skeleton" style="width:80%"></div><div class="ui-skeleton" style="width:40%"></div></div>
+      </div>
+    </section>
+
+    <section class="kit-sec" id="overlays"><h2>Модалка, підтвердження, drawer, тости, лоадер</h2>
+      <p class="kit-src">Модалки CRUD, <code>#deleteModal</code>, бокова панель слотів (<code>semesters/detail .slot-sidebar</code>), <code>showToast</code>, оверлей генерації з логом (<code>schedule</code>).</p>
+      <div class="kit-demo">
+        <button class="ui-btn ui-btn--primary" data-ui-open="demoModal">Відкрити модалку</button>
+        <button class="ui-btn ui-btn--danger" id="confirmBtn">Підтвердження (Promise)</button>
+        <button class="ui-btn ui-btn--secondary" data-ui-open="demoDrawer">Відкрити drawer</button>
+        <button class="ui-btn ui-btn--success" onclick="UI.toast('Збережено успішно','success')">Toast success</button>
+        <button class="ui-btn ui-btn--secondary" onclick="UI.toast('Не вдалося зберегти','error')">Toast error</button>
+        <button class="ui-btn ui-btn--secondary" onclick="UI.toast('Пару видалено','info',{action:'Скасувати',onAction:()=>UI.toast('Відновлено','success')})">Toast з Undo</button>
+        <button class="ui-btn ui-btn--secondary" id="loaderBtn">⚡ Лоадер з логом</button>
+      </div>
+      <pre class="kit-code">if (await UI.confirm({ title: 'Видалити викладача?', message: 'Дія незворотна.' })) { await apiRequest(`/teachers/${id}/`, 'DELETE'); UI.toast('Видалено', 'success'); }</pre>
+    </section>
+
+    <section class="kit-sec" id="lessons"><h2>Картка заняття</h2>
+      <p class="kit-src"><code>.lesson-card</code> з публічної сторінки та конструктора — тепер один компонент з повним і компактним варіантом: <code>UI.lessonCard(lesson, {compact})</code>.</p>
+      <div class="kit-demo col" id="lessonDemo"></div>
+    </section>
+
+    <section class="kit-sec" id="builder"><h2>Тижнева сітка + DnD + нерозподілені</h2>
+      <p class="kit-src"><code>admin/schedule</code>: <code>.week-grid</code>, <code>.unscheduled-bin</code>, drag-and-drop. <code>UI.dnd()</code> підтримує <code>canDrop</code> і відкат, якщо API повернув помилку.</p>
+      <div style="display:grid;grid-template-columns:1fr 240px;gap:12px" id="builderWrap">
+        <div class="ui-week-grid" id="gridDemo" style="--ui-days:5"></div>
+        <div class="ui-bin"><div class="ui-bin__header"><h3>Нерозподілені</h3><span class="ui-badge ui-badge--danger ui-badge--count" id="binCount">2</span></div><div class="ui-bin__list ui-dropzone" id="binDemo"></div></div>
+      </div>
+      <pre class="kit-code">UI.dnd(root, { canDrop: (card, zone) =&gt; !zone.classList.contains('is-blocked'),
+  onDrop: (card, zone) =&gt; apiRequest(`/lessons/${card.dataset.id}/`, 'PATCH', { day: zone.dataset.day, slot: zone.dataset.slot }) });</pre>
+    </section>
+
+    <section class="kit-sec" id="calendar"><h2>Календар місяця + легенда</h2>
+      <p class="kit-src">Дашборд (<code>admin/script.js</code>) та календар слотів семестру (<code>semester-detail.js</code>).</p>
+      <div class="kit-demo col" style="max-width:420px">
+        <div id="calDemo"></div>
+        <div class="ui-legend"><span><i class="ui-legend__swatch" style="background:var(--ui-accent)"></i>Сьогодні</span><span><i class="ui-legend__swatch" style="background:var(--ui-success-soft)"></i>Робочий</span><span><i class="ui-legend__swatch" style="background:var(--ui-danger-soft)"></i>Вихідний</span></div>
+        <div class="ui-hint" id="calOut"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- overlays used by the demos -->
+<div class="ui-modal" id="demoModal"><div class="ui-modal__dialog">
+  <div class="ui-modal__header"><h2>Додати аудиторію</h2><button class="ui-modal__close" data-ui-close="demoModal" aria-label="Закрити">&times;</button></div>
+  <div class="ui-form-grid"><div class="ui-field"><label class="ui-label">Номер *</label><input class="ui-input" placeholder="101-A"></div><div class="ui-field"><label class="ui-label">Корпус *</label><input class="ui-input" placeholder="Головний"></div></div>
+  <div class="ui-field"><label class="ui-label">Примітка</label><textarea class="ui-textarea"></textarea></div>
+  <div class="ui-modal__footer"><button class="ui-btn ui-btn--secondary" data-ui-close="demoModal">Скасувати</button><button class="ui-btn ui-btn--primary" data-ui-close="demoModal" onclick="UI.toast('Аудиторію додано','success')">💾 Зберегти</button></div>
+</div></div>
+<aside class="ui-drawer" id="demoDrawer">
+  <div class="ui-drawer__header"><h2>Четвер, 19 листопада</h2><button class="ui-modal__close" data-ui-close>&times;</button></div>
+  <div class="ui-drawer__body"><h3 style="margin-top:0;font-size:15px">📋 Пари на цей день</h3><div id="drawerSlots" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div class="ui-field" style="margin-top:20px"><label class="ui-label">➕ Додати пару</label><select class="ui-select"><option>5 пара · 15:00–16:20</option></select></div></div>
+  <div class="ui-drawer__footer"><button class="ui-btn ui-btn--secondary" data-ui-close>Закрити</button><button class="ui-btn ui-btn--success">Додати</button></div>
+</aside>
+
+<script src="ui-kit.js"></script>
+<script>
+  /* --- showcase wiring --- */
+  darkToggle.onchange = () => document.documentElement.dataset.theme = darkToggle.checked ? 'dark' : '';
+  toc.innerHTML = [...document.querySelectorAll('.kit-sec')].map(s => `<a href="#${s.id}">${s.querySelector('h2').textContent}</a>`).join('');
+
+  swatches.innerHTML = ['accent','success','warning','danger','purple','lec','pr','lab','surface','surface-2','border','text','text-muted']
+    .map(t => `<div class="swatch"><i style="background:var(--ui-${t})"></i><span>--ui-${t}</span></div>`).join('');
+
+  const GROUPS = [['КН-31','3 курс',1],['КН-32','3 курс',2],['КН-21','2 курс',3],['ПІ-21','2 курс',4],['ПІ-41','4 курс',5]];
+  UI.combobox(comboDemo, {
+    source: async q => GROUPS.filter(g => g[0].toLowerCase().includes(q.toLowerCase())).map(g => ({ value: g[0], meta: g[1], id: g[2] })),
+    onSelect: it => comboOut.textContent = `Обрано: ${it.value} (id ${it.id})`, debounce: 120
+  });
+  UI.segmented(segDemo, v => UI.toast('Вид: ' + v));
+
+  document.querySelector('.ui-day-toggles').innerHTML = ['Пн','Вт','Ср','Чт','Пт','Сб'].map((d,i) => `<label class="ui-day-toggle"><input type="checkbox" ${i<5?'checked':''}><span>${d}</span></label>`).join('');
+  checkDemo.innerHTML = GROUPS.map((g,i) => `<label class="ui-check-item"><input type="checkbox" ${i<2?'checked':''}>${g[0]}<span class="ui-check-item__meta">${20+i*2} студ.</span></label>`).join('');
+  chipDemo.innerHTML = ['Бази даних','Веб-технології','Алгоритми'].map(s => `<span class="ui-chip">${s}<button class="ui-chip__remove" aria-label="Прибрати">✕</button></span>`).join('');
+  chipDemo.onclick = e => { if (e.target.classList.contains('ui-chip__remove')) e.target.parentElement.remove(); };
+
+  UI.sidebar(sidebarDemo, { brand: '📚 Розклад', groups: [
+    { items: [{ href: '#dash', icon: '📊', text: 'Дашборд' }, { href: '#sched', icon: '🗓️', text: 'Розклад' }] },
+    { title: 'Довідники', items: [{ href: '/design/ui-kit', icon: '👨‍🏫', text: 'Викладачі', count: 42 }, { href: '#g', icon: '👥', text: 'Групи', count: 24 }, { href: '#r', icon: '🏛️', text: 'Аудиторії', count: 56 }] },
+    { title: 'Планування', items: [{ href: '#s', icon: '📅', text: 'Семестри' }, { href: '#c', icon: '🚫', text: 'Обмеження' }] } ] });
+
+  const T = [['Коваленко Олена Петрівна',['Бази даних','ІС'],'active','Активний'],['Мельник Андрій Вікторович',['Веб-технології'],'active','Активний'],['Кравчук Дмитро Юрійович',['Операційні системи'],'pending','Відпустка']];
+  tableDemo.innerHTML = T.map(t => `<tr><td><div class="ui-person"><span class="ui-avatar">${t[0].split(' ').slice(0,2).map(w=>w[0]).join('')}</span>${t[0]}</div></td>
+    <td><div class="ui-chips">${t[1].map(s=>`<span class="ui-chip">${s}</span>`).join('')}</div></td><td><span class="ui-status ui-status--${t[2]}">${t[3]}</span></td>
+    <td><div class="ui-table__actions"><button class="ui-btn ui-btn--secondary ui-btn--sm" data-ui-open="demoModal">✏️ Редагувати</button><button class="ui-btn ui-btn--ghost ui-btn--sm del">🗑</button></div></td></tr>`).join('');
+  tableDemo.onclick = async e => { if (e.target.closest('.del') && await UI.confirm({ title: 'Видалити викладача?', message: 'Ця дія незворотна і може вплинути на розклад.' })) { e.target.closest('tr').remove(); UI.toast('Викладача видалено', 'success'); } };
+
+  UI.state.empty(st1, { icon: '📭', title: 'Немає аудиторій', text: 'Додайте першу аудиторію' });
+  UI.state.loading(st2, 'Завантаження викладачів…');
+  UI.state.error(st3, 'Сервер недоступний');
+
+  confirmBtn.onclick = async () => UI.toast((await UI.confirm({ title: 'Видалити потік?', message: 'Потік <b>КН-3</b> буде видалено.' })) ? 'Підтверджено' : 'Скасовано');
+  loaderBtn.onclick = () => { const l = UI.loader({ title: 'Генерація розкладу…', text: 'Алгоритм шукає оптимальні варіанти.' });
+    ['> Ініціалізація…','> 438 занять, 56 аудиторій','> Ітерація 1: 27 конфліктів','> Ітерація 2: 0 конфліктів ✓'].forEach((s,i)=>setTimeout(()=>{ l.log(s); if(i===3) setTimeout(()=>{ l.close(); UI.toast('Розклад згенеровано','success'); },700); }, i*500)); };
+
+  const L = [{ id:1, type:'lecture', subject:'Бази даних', start:'08:30', end:'09:50', teacher:'Коваленко О. П.', group:'КН-31', room:'301' },
+             { id:2, type:'practice', subject:'Вища математика', start:'10:00', end:'11:20', teacher:'Шевченко Т. І.', group:'КН-31', room:'214' },
+             { id:3, type:'lab', subject:'Веб-технології', start:'11:40', end:'13:00', teacher:'Мельник А. В.', group:'КН-31', room:'Лаб-4' }];
+  lessonDemo.innerHTML = '<div class="ui-day-header">Четвер, 19 листопада <span class="ui-badge ui-badge--lec">Сьогодні</span></div>' + L.map(l => UI.lessonCard(l)).join('');
+  drawerSlots.innerHTML = L.map(l => UI.lessonCard(l, { compact: true })).join('');
+
+  const P = [['08:30','09:50'],['10:00','11:20'],['11:40','13:00']], D = ['Пн','Вт','Ср','Чт','Пт'];
+  gridDemo.innerHTML = '<div class="ui-week-grid__head"></div>' + D.map(d=>`<div class="ui-week-grid__head">${d}</div>`).join('') +
+    P.map((p,pi)=>`<div class="ui-week-grid__time"><b>${pi+1}</b>${p[0]}</div>` + D.map((_,di)=>`<div class="ui-week-grid__cell ui-dropzone" data-day="${di}" data-slot="${pi}"></div>`).join('')).join('');
+  gridDemo.querySelector('[data-day="0"][data-slot="0"]').innerHTML = UI.lessonCard(L[0], { compact: true });
+  gridDemo.querySelector('[data-day="2"][data-slot="1"]').innerHTML = UI.lessonCard(L[2], { compact: true });
+  binDemo.innerHTML = UI.lessonCard(L[1], { compact: true }) + UI.lessonCard({ ...L[1], id: 9, subject: 'Англійська мова', room: '118' }, { compact: true });
+  UI.dnd(builderWrap, { onDrop: (card, zone) => {
+    binCount.textContent = binDemo.children.length;
+    gridDemo.querySelectorAll('.ui-week-grid__cell').forEach(c => c.classList.toggle('is-conflict', c.children.length > 1));
+    UI.toast(zone === binDemo ? 'Повернуто до нерозподілених' : `Перенесено: ${D[zone.dataset.day]}, ${+zone.dataset.slot+1} пара`, 'success');
+  }});
+
+  UI.calendar(calDemo, { year: 2026, month: 10, today: new Date(2026,10,19),
+    dayLabel: d => (d.getDay() > 0 && d.getDay() < 6) ? '•••' : '',
+    onSelect: d => { calOut.textContent = 'Обрано: ' + d.toLocaleDateString('uk-UA'); UI.drawer.open('demoDrawer'); } });
+</script>
+</body>
+</html>

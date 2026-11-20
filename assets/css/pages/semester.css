@@ -1,0 +1,94 @@
+/* Семестр page (plan 0001 phase 4). Section colour: --c3 (mint). Tokens only. */
+
+.sem-page{display:flex;flex-direction:column;gap:var(--gap)}
+.sem-page .steps{grid-template-columns:repeat(5,minmax(0,1fr));margin-bottom:0}
+.sem-page .step.is-view{box-shadow:inset 0 -2px 0 var(--c3)}
+.sem-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:var(--gap);align-items:start}
+
+/* inline confirm hosts that are not a danger zone */
+.sem-confirm{margin:0}
+.sem-confirm.is-confirm .confirm{border-top:0;padding-top:0}
+.sem-confirm .confirm-warning{color:var(--text)!important}
+#genConfirm:not(.is-confirm){display:none}
+#genConfirm{background:color-mix(in srgb,var(--mid) 10%,var(--surface));border-color:color-mix(in srgb,var(--mid) 40%,var(--line))}
+
+/* title badge next to the shell title */
+.sh-title .badge{margin-left:10px;vertical-align:middle}
+
+/* current-semester hint */
+.sem-hint{align-items:center}
+.sem-hint .grow{min-width:0}
+.sem-hint .danger{margin:0;padding:0;border:0;background:none;flex-wrap:wrap}
+.sem-hint .danger.is-confirm{width:100%}
+
+/* preflight */
+.check{padding:11px 0}
+.check-sub{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.check.is-tip .check-ico{background:var(--surface-2);color:var(--muted)}
+.check-ico .icon{width:14px;height:14px}
+
+/* study plans by group */
+.grp-sum{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.grp-sum .progress{flex:1}
+.grp-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.grp-row .g{font-weight:500}
+
+/* semester list */
+.sem-list .sem-row{grid-template-columns:minmax(0,1.6fr) 200px 120px minmax(0,auto)}
+.sem-list .sem-row.is-current{box-shadow:inset 3px 0 0 var(--c3)}
+.sem-list .sem-name a{text-decoration:none}
+.sem-list .sem-name a:hover{text-decoration:underline}
+.sem-list .sem-item{display:block;margin:0;padding:0;border:0;border-radius:0}
+.sem-list .sem-item .confirm{padding:0 var(--pad) 14px;border-top:0}
+.sem-list .sem-item.is-confirm{background:color-mix(in srgb,var(--mid) 8%,var(--surface))}
+.sem-list .sem-item.is-confirm .confirm-warning{color:var(--text)!important}
+.sem-row-actions{display:flex;gap:6px;justify-content:flex-end}
+
+/* calendar step */
+.sem-cal-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--gap);align-items:start}
+.sem-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.sem-stat{padding:12px 14px;border-radius:var(--radius-sm);background:var(--surface-2)}
+.sem-stat b{display:block;font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.sem-stat span{font-size:12px;color:var(--muted)}
+.cfg-row{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:13px}
+.cfg-row:first-child{border-top:0}
+.cfg-row dt{color:var(--muted)}
+.cfg-row dd{margin:0;display:flex;flex-wrap:wrap;gap:6px}
+
+.cal-nav{display:flex;align-items:center;gap:8px}
+.cal-nav .cal-month{min-width:130px;text-align:center;font-weight:600}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal-dh{font-size:12px;color:var(--muted);padding:0 4px 2px}
+.cal-day{min-height:70px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);padding:7px 9px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;font:inherit;color:inherit}
+.cal-day:hover{border-color:var(--faint)}
+.cal-day.is-weekend{background:var(--surface-2)}
+.cal-day.has-slots{background:var(--tint-2);border-color:color-mix(in srgb,var(--c3) 55%,var(--line))}
+.cal-day.is-out:not(.has-slots){opacity:.55}
+.cal-day.is-today{box-shadow:inset 0 0 0 2px var(--c3)}
+.cal-n{font-weight:600;font-variant-numeric:tabular-nums}
+.cal-c{font-size:12px;color:var(--muted)}
+.cal-day.has-slots .cal-c{color:var(--text)}
+.cal-gap{visibility:hidden}
+.cal-legend{display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--muted)}
+.cal-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--line);vertical-align:-2px;margin-right:6px}
+.cal-legend i.has{background:var(--tint-2);border-color:color-mix(in srgb,var(--c3) 55%,var(--line))}
+.cal-legend i.we{background:var(--surface-2)}
+
+/* day drawer */
+.slot-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.slot-row:first-child{border-top:0}
+.slot-row .t{font-weight:600;font-variant-numeric:tabular-nums}
+.slot-row.danger{margin:0;border-radius:0;border-width:1px 0 0;padding:10px 0}
+.slot-row.danger:first-child{border-top:0}
+.slot-row.danger.is-confirm{padding:10px 8px}
+.slot-add{display:flex;gap:8px;margin-top:10px}
+
+/* create / edit form (drawer) */
+.sem-form{display:flex;flex-direction:column;gap:14px}
+.cfg-block{border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;display:flex;flex-direction:column;gap:14px}
+.cfg-block[hidden]{display:none}
+.time-rows{display:flex;flex-direction:column;gap:8px}
+.time-row{display:grid;grid-template-columns:22px minmax(0,1fr) 10px minmax(0,1fr) auto;gap:8px;align-items:center}
+.time-row .n{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.drawer-foot .sem-confirm{border:0;padding:0;background:none;width:100%;justify-content:flex-end}
+.drawer-foot .sem-confirm.is-confirm{justify-content:flex-start}

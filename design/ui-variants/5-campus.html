@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 5 — Campus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="look.css">
+<style>
+/* 5 · CAMPUS — чорнильно-синій + соняшниково-жовтий для «зараз» і головного, дружній але стриманий */
+:root{
+  --font:'Manrope',system-ui,sans-serif;
+  --bg:#f5f5f0; --surface:#fff; --surface-2:#f1f1ec; --line:#e6e5de; --text:#14213d; --muted:#5d667a; --faint:#9aa0ad;
+  --accent:#14213d; --accent-ink:#fff; --accent-soft:#eaedf4; --sun:#f5c84b;
+  --nav-bg:#14213d; --nav-text:#a9b2c7; --nav-strong:#fff; --nav-active-bg:rgba(255,255,255,.07); --nav-active-text:#fff; --nav-line:rgba(255,255,255,.1);
+  --radius:16px; --radius-sm:10px; --btn-radius:10px; --card-border:1px solid var(--line); --card-shadow:0 1px 2px rgba(20,33,61,.04);
+  --lec:#2f5bd3; --lec-soft:#e8eefc; --pr:#13805f; --pr-soft:#e1f3ec; --lab:#a86400; --lab-soft:#fcf0da;
+  --high:#d64545; --mid:#d98b1c; --ok:#13805f;
+  --hero-bg:#f5c84b; --hero-text:#14213d; --hero-muted:rgba(20,33,61,.68); --hero-track:rgba(20,33,61,.14); --hero-bar:#14213d;
+  --heat0:#f1f1ec; --heat1:#dde3ef; --heat2:#b2bfd8; --heat3:#6a7ea8; --heat4:#14213d;
+  --title-size:26px; --title-weight:800; --h2-size:15px; --h-spacing:-.02em;
+}
+.nav{border-right:0}
+.brand-mark{background:var(--sun);color:var(--accent);border-radius:10px;font-weight:800}
+.nav-label{color:#5d6a88}
+.nav-item{font-weight:600}
+.nav-item.is-active{box-shadow:inset 3px 0 0 var(--sun)}
+.nav-count{color:#6b7795}
+.nav-user .avatar{background:var(--sun);color:var(--accent)}
+.avatar{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.btn{font-weight:600}
+.btn-hero{border-color:var(--accent);color:var(--accent);background:rgba(255,255,255,.35)}
+.hero-value{font-weight:800}
+.kpi-value{font-weight:800}
+.card-title{font-weight:700}
+.seg button.is-on{font-weight:600}
+.tag{background:#fdf1cc;color:#7a5600}
+.task-fix{background:#fafaf6;border:1px solid var(--line)}
+.chip{font-weight:600}
+.md-row.is-active{background:#fbf7e8;box-shadow:inset 3px 0 0 var(--sun)}
+.step.is-cur::after{background:var(--sun);height:3px}
+.step.is-cur{background:#fbf7e8}
+.badge-status{background:#fdf1cc;color:#7a5600}
+/* public: жовта картка «зараз», навігація по днях — пігулки */
+.pub-title h1{font-weight:800}
+.now-title{font-weight:800}
+.live{color:var(--accent)}
+@keyframes live{0%{box-shadow:0 0 0 0 rgba(20,33,61,.45)}70%{box-shadow:0 0 0 7px rgba(20,33,61,0)}100%{box-shadow:0 0 0 0 rgba(20,33,61,0)}}
+.day{border-radius:14px}
+.day.is-today:not(.is-active) .dn{color:var(--text);text-decoration:underline;text-decoration-color:var(--sun);text-decoration-thickness:3px;text-underline-offset:3px}
+.lesson.is-now .l-title::after{background:var(--sun);color:var(--accent);padding:1px 7px;border-radius:99px}
+.l-time b{font-weight:800}
+</style>
+</head>
+<body>
+<script src="shell.js"></script>
+<script>renderApp({ name: '5 · Campus' })</script>
+</body>
+</html>

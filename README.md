@@ -1,28 +1,58 @@
-# Schedule Frontend 
+# Schedule Frontend
 
-**Переглянути розклад:**
-[https://hellookittyyy.github.io/schedule_frontend/](https://hellookittyyy.github.io/schedule_frontend/)
+Фронтенд системи складання розкладу. Статичні HTML/CSS/JS-сторінки, розміщені в корені сервера (без підшляху).
+Дизайн: Mosaic. Опис компонентів і токенів: [`docs/design-system.md`](docs/design-system.md), живий довідник: [`design/system.html`](design/system.html).
+
+---
+## Публічна сторінка
+
+| Назва сторінки | Опис | URL |
+| :--- | :--- | :--- |
+| **Розклад** | Публічний перегляд розкладу. Параметри `?g=<група>` та `?t=<викладач>` одразу відкривають розклад групи або викладача. | `/` |
 
 ---
 ## АДМІН ПАНЕЛЬ
 
-| Назва сторінки | Опис | URL для переходу |
+| Назва сторінки | Опис | URL |
 | :--- | :--- | :--- |
-| **Dashboard** | Основна сторінка адміністрування. | [Перейти](https://hellookittyyy.github.io/schedule_frontend/admin) |
-| **Constraints** | Налаштування обмежень та правил розкладу. | [Перейти](https://hellookittyyy.github.io/schedule_frontend/admin/constraints/) |
-| **Groups** | Керування навчальними групами. | [Перейти](https://hellookittyyy.github.io/schedule_frontend/admin/groups/) |
-| **Rooms** | Керування аудиторіями та приміщеннями. | [Перейти](https://hellookittyyy.github.io/schedule_frontend/admin/rooms/) |
-| **Schedule** | Перегляд та редагування згенерованого розкладу. | [Перейти](https://hellookittyyy.github.io/schedule_frontend/admin/schedule/) |
-| **Semesters** | Керування навчальними семестрами. | [Перейти](https://hellookittyyy.github.io/schedule_frontend/admin/semesters/) |
-| **Streams** | Керування потоками студентів. | [Перейти](https://hellookittyyy.github.io/schedule_frontend/admin/streams/) |
-| **Study Plans** | Керування навчальними планами. | [Перейти](https://hellookittyyy.github.io/schedule_frontend/admin/study-plans/) |
-| **Subjects** | Керування навчальними предметами. | [Перейти](https://hellookittyyy.github.io/schedule_frontend/admin/subjects/) |
-| **Teachers** | Керування викладачами та їх доступністю. | [Перейти](https://hellookittyyy.github.io/schedule_frontend/admin/teachers/) |
+| **Головна** | Стан семестру, наступний крок і ресурси. | `/admin/` |
+| **Задачі** | Перелік задач, які потребують уваги. | `/admin/tasks/` |
+| **Семестр** | Кроки підготовки семестру з передперевіркою (`?list=1` відкриває список семестрів). | `/admin/semesters/` |
+| **Викладачі** | Керування викладачами та їх доступністю. | `/admin/teachers/` |
+| **Групи** | Керування навчальними групами. | `/admin/groups/` |
+| **Потоки** | Керування потоками студентів. | `/admin/streams/` |
+| **Аудиторії** | Керування аудиторіями та приміщеннями. | `/admin/rooms/` |
+| **Предмети** | Керування навчальними предметами. | `/admin/subjects/` |
+| **Навчальні плани** | Керування навчальними планами. | `/admin/study-plans/` |
+| **Обмеження** | Налаштування обмежень та правил розкладу. | `/admin/constraints/` |
+| **Розклад** | Перегляд та редагування згенерованого розкладу. | `/admin/schedule/` |
 
 ---
+
+## Локальний запуск
+
+```bash
+py scripts/dev-server.py
+```
+
+Далі відкрити `http://localhost:5500/`. Цей сервер забороняє браузеру кешувати файли, тож після змін завжди видно актуальну версію (на відміну від `py -m http.server`). Якщо порт 5500 зайнятий, сервер не стартує: зупини інший сервер або вкажи порт, наприклад `py scripts/dev-server.py 5502`.
+
+## Версії CSS/JS (`?v=`)
+
+Кожне підключення локального CSS/JS у сторінках має хеш вмісту файлу (`/assets/js/ui.js?v=ec4d50f9`). Коли файл змінюється, змінюється й адреса, тож після деплою браузер не візьме старий файл з кешу.
+
+Після зміни будь-якого `.css` / `.js` і перед комітом:
+
+```bash
+py scripts/version-assets.py
+```
+
+Перевірка без змін: `py scripts/version-assets.py --check`. Щоб git сам не пропускав коміт із застарілими хешами, один раз на клон увімкни хук:
+
+```bash
+git config core.hooksPath .githooks
+```
 
 ## Важливо!
 
 Для повноцінної роботи потребується запущена бекенд-частина для отримання та оновлення даних.
-
-# Deploy test 

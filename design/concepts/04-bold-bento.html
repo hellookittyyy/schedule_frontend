@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concept 04 — Bold Bento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Concept 04: Bold Bento — mobile-first student app + bento admin dashboard ===== */
+:root{
+  --bg:#ecebe6; --ink:#111111; --paper:#ffffff; --muted:#6f6e69; --line:#dcdad3;
+  --lime:#d4ff3f; --lilac:#c9b8ff; --peach:#ffb38a; --sky:#9fd8ff; --mint:#a5f0c5; --red:#ff5b4a;
+  --lec:var(--sky); --pr:var(--mint); --lab:var(--peach);
+  --r:22px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"DM Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+h1,h2,h3,.num,.disp{font-family:"Space Grotesk",sans-serif;letter-spacing:-.02em}
+button,input,select{font:inherit;color:inherit}
+.top{display:flex;align-items:center;gap:12px;padding:16px 24px}
+.mark{font-family:"Space Grotesk";font-weight:700;font-size:20px;display:flex;align-items:center;gap:10px}
+.mark i{width:36px;height:36px;border-radius:50%;background:var(--ink);color:var(--lime);display:grid;place-items:center;font-style:normal}
+.tabs{display:flex;background:var(--paper);border-radius:99px;padding:4px;margin-left:auto;border:1.5px solid var(--ink)}
+.tabs button{border:0;background:none;border-radius:99px;padding:8px 16px;cursor:pointer;font-weight:700}
+.tabs button.on{background:var(--ink);color:var(--lime)}
+.screen{display:none}.screen.on{display:block}
+.btn{border:1.5px solid var(--ink);background:var(--paper);height:42px;padding:0 18px;border-radius:99px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:3px 3px 0 var(--ink)}
+.btn.lime{background:var(--lime)}.btn.ink{background:var(--ink);color:var(--lime)}
+
+/* ===== Student: phone ===== */
+.stage{display:grid;grid-template-columns:1fr 390px 1fr;gap:40px;align-items:center;padding:10px 24px 40px;max-width:1300px;margin:0 auto}
+.pitch h1{font-size:54px;line-height:1}
+.pitch p{color:var(--muted);font-size:16px;margin:16px 0 24px;max-width:360px}
+.feat{display:flex;flex-direction:column;gap:10px}
+.feat div{display:flex;gap:12px;align-items:center;font-weight:500}
+.feat b{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;flex:none}
+.phone{width:390px;height:780px;background:var(--ink);border-radius:52px;padding:12px;box-shadow:0 40px 80px rgba(0,0,0,.25)}
+.scr{width:100%;height:100%;background:#f7f6f1;border-radius:42px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.status{display:flex;justify-content:space-between;padding:14px 26px 4px;font-weight:700;font-size:13px}
+.app-head{padding:10px 20px 6px;display:flex;justify-content:space-between;align-items:center}
+.app-head h2{font-size:26px}
+.grp{background:var(--ink);color:var(--lime);border-radius:99px;padding:6px 12px;font-weight:700;font-size:13px;border:0}
+.strip{display:flex;gap:6px;padding:10px 16px;overflow-x:auto}
+.strip button{flex:none;width:50px;border-radius:18px;border:1.5px solid var(--line);background:var(--paper);padding:8px 0;cursor:pointer;text-align:center}
+.strip small{display:block;font-size:11px;color:var(--muted);font-weight:700}
+.strip b{font-family:"Space Grotesk";font-size:18px}
+.strip button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.strip button.on small{color:var(--lime)}
+.list{flex:1;overflow:auto;padding:6px 16px 90px;display:flex;flex-direction:column;gap:10px}
+.next-card{background:var(--lime);border-radius:26px;padding:18px;border:1.5px solid var(--ink)}
+.next-card .row{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.next-card h3{font-size:24px;margin:12px 0 10px;line-height:1.1}
+.next-card .chips{display:flex;gap:6px;flex-wrap:wrap}
+.next-card .chips span{background:var(--ink);color:var(--paper);border-radius:99px;padding:4px 10px;font-size:12px;font-weight:700}
+.countdown{font-family:"Space Grotesk";font-size:13px;background:var(--paper);border-radius:99px;padding:3px 10px;border:1.5px solid var(--ink)}
+.lesson{display:grid;grid-template-columns:54px 1fr;gap:12px;background:var(--paper);border-radius:22px;padding:14px;align-items:center}
+.lesson .n{height:54px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Space Grotesk";font-weight:700;font-size:18px}
+.lesson .n small{font-size:10px;font-family:"DM Sans"}
+.lesson h4{font-size:15px;margin-bottom:3px}
+.lesson p{color:var(--muted);font-size:12px}
+.lesson.done{opacity:.45}
+.tabbar{position:absolute;left:14px;right:14px;bottom:14px;background:var(--ink);border-radius:28px;display:flex;justify-content:space-around;padding:12px 6px}
+.tabbar span{color:#888;font-size:11px;text-align:center;font-weight:700}
+.tabbar span b{display:block;font-size:20px}
+.tabbar span.on{color:var(--lime)}
+.side-note{display:flex;flex-direction:column;gap:14px}
+.mini-card{background:var(--paper);border-radius:var(--r);padding:18px;border:1.5px solid var(--ink)}
+.mini-card h3{font-size:18px;margin-bottom:6px}
+.mini-card p{color:var(--muted)}
+.qr{width:100px;height:100px;margin-top:10px;background:
+ conic-gradient(var(--ink) 25%,transparent 0 50%,var(--ink) 0 75%,transparent 0) 0 0/20px 20px;border-radius:8px;border:6px solid var(--paper);outline:1.5px solid var(--ink)}
+
+/* ===== Admin bento ===== */
+.bento{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:minmax(120px,auto);gap:14px;padding:6px 24px 40px;max-width:1360px;margin:0 auto}
+.tile{background:var(--paper);border-radius:var(--r);padding:20px;position:relative;overflow:hidden}
+.tile h3{font-size:15px;font-weight:600;color:var(--muted);font-family:"DM Sans";letter-spacing:0;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.num{font-size:52px;font-weight:700;line-height:1}
+.tile.ink{background:var(--ink);color:var(--paper)}.tile.ink h3{color:#aaa}
+.tile.lime{background:var(--lime)}.tile.lilac{background:var(--lilac)}.tile.peach{background:var(--peach)}.tile.sky{background:var(--sky)}
+.s3{grid-column:span 3}.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}.s8{grid-column:span 8}.r2{grid-row:span 2}
+.welcome h1{font-size:40px;line-height:1.05;margin-bottom:10px}
+.welcome p{color:#bbb}
+.welcome .acts{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
+.welcome .btn{border-color:var(--paper);background:transparent;color:var(--paper)}
+.welcome .btn.lime{background:var(--lime);color:var(--ink);border-color:var(--lime)}
+.ring-wrap{display:flex;align-items:center;gap:18px}
+.heat{display:grid;grid-template-columns:30px repeat(6,1fr);gap:4px;font-size:11px;color:var(--muted)}
+.heat i{height:26px;border-radius:6px;display:block}
+.heat span{display:flex;align-items:center;justify-content:center;font-weight:700}
+.conf{display:flex;flex-direction:column;gap:8px}
+.conf div{display:flex;gap:10px;align-items:center;background:var(--paper);border-radius:14px;padding:10px 12px;font-size:13px}
+.conf b{width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;flex:none;font-size:13px}
+.conf .fix{margin-left:auto;border:1.5px solid var(--ink);border-radius:99px;padding:3px 10px;font-weight:700;cursor:pointer;font-size:12px}
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qa button{border:1.5px solid var(--ink);background:var(--paper);border-radius:16px;padding:14px;text-align:left;font-weight:700;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.qa button:hover{transform:translate(-2px,-2px);box-shadow:3px 3px 0 var(--ink)}
+.qa button span{display:block;font-size:22px;margin-bottom:6px}
+.ticker{display:flex;flex-direction:column;gap:6px}
+.tick{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.tick:last-child{border:0}
+.tick .t{font-family:"Space Grotesk";font-weight:700}
+.tag{border-radius:99px;padding:2px 9px;font-size:11px;font-weight:700;border:1.5px solid var(--ink)}
+.spark{display:flex;align-items:end;gap:5px;height:70px;margin-top:10px}
+.spark i{flex:1;background:var(--ink);border-radius:6px 6px 2px 2px}
+
+/* ===== Builder: teacher matrix ===== */
+.mx-wrap{padding:6px 24px 40px;max-width:1360px;margin:0 auto}
+.mx-head{display:flex;align-items:end;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.mx-head h1{font-size:36px}
+.mx-head p{color:var(--muted)}
+.mx{background:var(--paper);border-radius:var(--r);padding:14px;overflow-x:auto}
+.mx table{border-collapse:separate;border-spacing:4px;width:100%;min-width:900px}
+.mx th{font-size:12px;color:var(--muted);font-weight:700;padding:6px;text-align:center}
+.mx th.who{text-align:left;width:190px}
+.mx td{height:54px;border-radius:12px;background:#f4f3ee;vertical-align:top;padding:3px;transition:background .12s}
+.mx td.name{background:none;font-weight:700;padding:6px}
+.mx td.name small{display:block;color:var(--muted);font-weight:500}
+.mx td.over{background:var(--lime)}
+.mx td.busy{background:repeating-linear-gradient(45deg,#f4f3ee 0 6px,#e6e4dc 6px 12px)}
+.blk{border-radius:10px;padding:5px 7px;font-size:11px;font-weight:700;cursor:grab;border:1.5px solid var(--ink);line-height:1.2}
+.blk small{display:block;font-weight:500}
+.blk.dragging{opacity:.35}
+.dayhead th{font-family:"Space Grotesk";font-size:15px;color:var(--ink)}
+.pool{margin-top:14px;background:var(--ink);border-radius:var(--r);padding:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;min-height:76px}
+.pool h3{color:var(--lime);font-size:16px;margin-right:8px}
+.legend{display:flex;gap:10px;margin-left:auto;font-size:12px;font-weight:700}
+.legend span{display:flex;gap:6px;align-items:center}
+.legend i{width:14px;height:14px;border-radius:4px;border:1.5px solid var(--ink)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,120px);background:var(--ink);color:var(--lime);padding:12px 20px;border-radius:99px;font-weight:700;transition:transform .3s cubic-bezier(.2,1.3,.4,1);z-index:50}
+.toast.show{transform:translate(-50%,0)}
+@media (max-width:1100px){.stage{grid-template-columns:1fr;justify-items:center}.pitch,.side-note{display:none}.bento{grid-template-columns:repeat(6,1fr)}.s3,.s4,.s5{grid-column:span 3}.s6,.s7,.s8{grid-column:span 6}}
+@media (max-width:640px){.phone{width:100%;max-width:390px}.s3,.s4,.s5,.s6,.s7,.s8{grid-column:span 6}.tabs button{padding:8px 10px}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="mark"><i>Р</i>Розклад <span style="font-family:'DM Sans';font-weight:500;font-size:13px;color:var(--muted)">Concept 04 · Bold Bento</span></div>
+  <div class="tabs" id="tabs"><button class="on" data-s="student">Студент (моб.)</button><button data-s="admin">Дашборд</button><button data-s="builder">Матриця</button></div>
+</div>
+
+<!-- ============ STUDENT ============ -->
+<section class="screen on" id="s-student">
+  <div class="stage">
+    <div class="pitch">
+      <h1 class="disp">Пари.<br>Без зайвого.</h1>
+      <p>Mobile-first вид для студентів: наступна пара зверху, свайп по днях, одна кнопка до групи.</p>
+      <div class="feat">
+        <div><b style="background:var(--lime)">⏱</b>Відлік до наступної пари</div>
+        <div><b style="background:var(--lilac)">📌</b>Запамʼятовує групу (без логіну)</div>
+        <div><b style="background:var(--peach)">📲</b>PWA: додати на головний екран</div>
+      </div>
+    </div>
+    <div class="phone"><div class="scr">
+      <div class="status"><span>9:41</span><span>●●● 100%</span></div>
+      <div class="app-head"><h2>Четвер</h2><button class="grp">КН-31 ▾</button></div>
+      <div class="strip" id="strip"></div>
+      <div class="list" id="plist"></div>
+      <div class="tabbar"><span class="on"><b>◉</b>Сьогодні</span><span><b>▦</b>Тиждень</span><span><b>⌕</b>Пошук</span><span><b>☰</b>Ще</span></div>
+    </div></div>
+    <div class="side-note">
+      <div class="mini-card"><h3>Відкрий на телефоні</h3><p>Скануй, щоб відкрити розклад КН-31</p><div class="qr"></div></div>
+      <div class="mini-card" style="background:var(--lilac)"><h3>Зміни в розкладі</h3><p style="color:var(--ink)">Пт, 2 пара: Компʼютерні мережі перенесено в ауд. 210</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ADMIN BENTO ============ -->
+<section class="screen" id="s-admin">
+  <div class="bento">
+    <div class="tile ink s6 r2 welcome">
+      <h3>Четвер, 19 листопада</h3>
+      <h1>Доброго ранку!<br>3 конфлікти чекають.</h1>
+      <p>Осінній семестр 2026 · тиждень 12 з 16 · 412 з 438 пар розподілено</p>
+      <div class="acts"><button class="btn lime">⚡ Згенерувати розклад</button><button class="btn">Переглянути конфлікти</button></div>
+    </div>
+    <div class="tile lime s3"><h3>Викладачі <span>↗</span></h3><div class="num">42</div><small>+3 за семестр</small></div>
+    <div class="tile s3"><h3>Групи <span>↗</span></h3><div class="num">24</div><small style="color:var(--muted)">6 потоків</small></div>
+    <div class="tile lilac s3"><h3>Аудиторії</h3><div class="num">56</div><small>71% зайнятість</small></div>
+    <div class="tile s3"><h3>Предмети</h3><div class="num">87</div><small style="color:var(--muted)">64 навч. плани</small></div>
+
+    <div class="tile s4 r2"><h3>Прогрес семестру</h3>
+      <div class="ring-wrap"><svg width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="#eee" stroke-width="16"/><circle cx="60" cy="60" r="50" fill="none" stroke="#111" stroke-width="16" stroke-dasharray="235.6 314" transform="rotate(-90 60 60)" stroke-linecap="round"/><text x="60" y="68" text-anchor="middle" font-family="Space Grotesk" font-size="26" font-weight="700">75%</text></svg>
+        <div><div class="num" style="font-size:34px">12/16</div><small style="color:var(--muted)">тижнів пройдено</small><br><br><small>📅 1 вер – 20 груд</small></div></div>
+      <h3 style="margin-top:18px">Пар на тиждень</h3>
+      <div class="spark" id="spark"></div>
+    </div>
+    <div class="tile s4 r2"><h3>Завантаженість аудиторій <span style="font-size:12px">пара × день</span></h3><div class="heat" id="heat"></div></div>
+    <div class="tile peach s4 r2"><h3 style="color:var(--ink)">Конфлікти</h3>
+      <div class="conf">
+        <div><b>!</b>Мельник А. В. — 2 пари одночасно (Ср, 2 пара)<span class="fix">Виправити</span></div>
+        <div><b>!</b>Ауд. 301 перевантажена в Пн<span class="fix">Виправити</span></div>
+        <div><b>!</b>КН-32: вікно 3 пари у Вт<span class="fix">Виправити</span></div>
+      </div></div>
+    <div class="tile s5"><h3>Швидкі дії</h3>
+      <div class="qa"><button><span>👨‍🏫</span>Новий викладач</button><button><span>🏛</span>Нова аудиторія</button><button><span>📑</span>Навчальний план</button><button><span>🚫</span>Обмеження</button></div></div>
+    <div class="tile s7"><h3>Зараз у корпусі · 3 пара</h3><div class="ticker" id="ticker"></div></div>
+  </div>
+</section>
+
+<!-- ============ BUILDER: teacher matrix ============ -->
+<section class="screen" id="s-builder">
+  <div class="mx-wrap">
+    <div class="mx-head"><div><h1>Матриця викладачів</h1><p>Інший погляд на розклад: рядок = викладач. Видно навантаження й «вікна». Перетягуйте блоки.</p></div>
+      <div class="legend"><span><i style="background:var(--lec)"></i>Лекція</span><span><i style="background:var(--pr)"></i>Практика</span><span><i style="background:var(--lab)"></i>Лаба</span><span><i style="background:repeating-linear-gradient(45deg,#f4f3ee 0 3px,#ccc 3px 6px)"></i>Недоступний</span></div></div>
+    <div class="mx"><table id="mx"></table></div>
+    <div class="pool dz" data-pool="1" id="pool"><h3>Нерозподілені →</h3></div>
+  </div>
+</section>
+<div class="toast" id="toastEl"></div>
+
+<script>
+const PAIRS=[['08:30','09:50'],['10:00','11:20'],['11:40','13:00'],['13:30','14:50'],['15:00','16:20']];
+const SHORT=['Пн','Вт','Ср','Чт','Пт','Сб'];
+const TYPE={lec:'Лекція',pr:'Практика',lab:'Лабораторна'};
+const LESSONS=[
+ {d:0,p:0,s:'Бази даних',t:'lec',tc:'Коваленко О. П.',r:'301'},{d:0,p:1,s:'Бази даних',t:'lab',tc:'Мельник А. В.',r:'Лаб-2'},{d:0,p:2,s:'Вища математика',t:'pr',tc:'Шевченко Т. І.',r:'214'},
+ {d:1,p:1,s:'Алгоритми та структури даних',t:'lec',tc:'Бондар С. М.',r:'Ауд. 1'},{d:1,p:2,s:'Англійська мова',t:'pr',tc:'Ткаченко Л. О.',r:'118'},
+ {d:2,p:0,s:'Операційні системи',t:'lec',tc:'Кравчук Д. Ю.',r:'301'},{d:2,p:1,s:'Веб-технології',t:'lab',tc:'Мельник А. В.',r:'Лаб-4'},{d:2,p:2,s:'Веб-технології',t:'lab',tc:'Мельник А. В.',r:'Лаб-4'},
+ {d:3,p:1,s:'Компʼютерні мережі',t:'lec',tc:'Олійник В. Р.',r:'Ауд. 2'},{d:3,p:2,s:'Алгоритми та структури даних',t:'pr',tc:'Бондар С. М.',r:'207'},{d:3,p:3,s:'Вища математика',t:'lec',tc:'Шевченко Т. І.',r:'Ауд. 1'},
+ {d:4,p:0,s:'Операційні системи',t:'lab',tc:'Кравчук Д. Ю.',r:'Лаб-1'},{d:4,p:1,s:'Компʼютерні мережі',t:'pr',tc:'Олійник В. Р.',r:'210'},
+];
+const TODAY=3, NOWP=2;
+tabs.onclick=e=>{const b=e.target.closest('button');if(!b)return;tabs.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-'+b.dataset.s))};
+const toast=t=>{toastEl.textContent=t;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),2400)};
+
+/* phone */
+let cd=TODAY;const DN=['Понеділок','Вівторок','Середа','Четвер','Пʼятниця','Субота'];
+function phone(){
+  strip.innerHTML=SHORT.map((d,i)=>`<button class="${i===cd?'on':''}" data-i="${i}"><small>${d}</small><b>${16+i}</b></button>`).join('');
+  document.querySelector('.app-head h2').textContent=DN[cd];
+  const ls=LESSONS.filter(l=>l.d===cd).sort((a,b)=>a.p-b.p);
+  if(!ls.length){plist.innerHTML='<div style="text-align:center;padding:60px 10px"><div style="font-size:54px">🛋</div><h3 class="disp">Вихідний</h3><p style="color:var(--muted)">Пар немає</p></div>';return}
+  let out='';const nxt=cd===TODAY?ls.find(l=>l.p>=NOWP):null;
+  if(nxt)out+=`<div class="next-card"><div class="row"><span>${nxt.p===NOWP?'● Зараз':'Наступна'}</span><span class="countdown">ще 47 хв</span></div><h3>${nxt.s}</h3><div class="chips"><span>${PAIRS[nxt.p][0]}–${PAIRS[nxt.p][1]}</span><span>ауд. ${nxt.r}</span><span>${TYPE[nxt.t]}</span></div></div>`;
+  out+=ls.filter(l=>l!==nxt).map(l=>`<div class="lesson ${cd===TODAY&&l.p<NOWP?'done':''}"><div class="n" style="background:var(--${l.t})">${l.p+1}<small>${PAIRS[l.p][0]}</small></div><div><h4>${l.s}</h4><p>${TYPE[l.t]} · ${l.tc} · ${l.r}</p></div></div>`).join('');
+  plist.innerHTML=out}
+strip.onclick=e=>{const b=e.target.closest('button');if(b){cd=+b.dataset.i;phone()}};phone();
+/* swipe between days on touch */
+let sx=null;plist.addEventListener('touchstart',e=>sx=e.touches[0].clientX);plist.addEventListener('touchend',e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>50){cd=Math.min(5,Math.max(0,cd+(dx<0?1:-1)));phone()}sx=null});
+
+/* bento */
+spark.innerHTML=[62,70,74,80,78,84,86,88,90,92,91,95].map((v,i)=>`<i style="height:${v}%;${i===11?'background:var(--lime);outline:1.5px solid #111':''}"></i>`).join('');
+const H=[[.9,.6,.7,.5,.8,.1],[1,.9,.95,.9,.85,.2],[.8,.85,.9,.95,.7,.1],[.5,.6,.55,.7,.4,0],[.2,.3,.25,.3,.1,0]];
+heat.innerHTML='<span></span>'+SHORT.map(d=>`<span>${d}</span>`).join('')+H.map((r,p)=>`<span>${p+1}</span>`+r.map(v=>`<i title="${Math.round(v*100)}%" style="background:${v>.92?'var(--red)':`rgba(17,17,17,${.08+v*.8})`}"></i>`).join('')).join('');
+ticker.innerHTML=[['207','Алгоритми та СД','КН-31','pr'],['Ауд. 1','Філософія','Потік ПІ-2','lec'],['Лаб-4','Веб-технології','КН-32','lab'],['214','Вища математика','ПІ-21','pr']].map(r=>`<div class="tick"><span class="t">${r[0]}</span><span><b>${r[1]}</b> · ${r[2]}</span><span class="tag" style="background:var(--${r[3]})">${TYPE[r[3]]}</span></div>`).join('');
+
+/* matrix */
+const TEA=[...new Set(LESSONS.map(l=>l.tc))];
+const BUSY={'Кравчук Д. Ю.':[[3,0],[3,1],[3,2],[3,3],[3,4]],'Ткаченко Л. О.':[[0,0],[0,1]]};
+let t='<tr class="dayhead"><th class="who"></th>'+SHORT.map(d=>`<th colspan="5">${d}</th>`).join('')+'</tr><tr><th class="who">Викладач</th>'+SHORT.map(()=>PAIRS.map((_,i)=>`<th>${i+1}</th>`).join('')).join('')+'</tr>';
+TEA.forEach(tc=>{const n=LESSONS.filter(l=>l.tc===tc).length;t+=`<tr><td class="name">${tc}<small>${n} пар / тиж.</small></td>`;
+  SHORT.forEach((_,d)=>PAIRS.forEach((_,p)=>{const busy=(BUSY[tc]||[]).some(b=>b[0]===d&&b[1]===p);const l=LESSONS.find(x=>x.tc===tc&&x.d===d&&x.p===p);
+    t+=`<td class="dz ${busy?'busy':''}" data-tc="${tc}" data-d="${d}" data-p="${p}">${l?`<div class="blk" draggable="true" style="background:var(--${l.t})">${l.s.split(' ')[0]}<small>КН-31 · ${l.r}</small></div>`:''}</td>`}));t+='</tr>'});
+mx.innerHTML=t;
+pool.insertAdjacentHTML('beforeend',[['Англійська','pr','Ткаченко Л. О.'],['Фізвиховання','pr','—'],['Бази даних','pr','Коваленко О. П.']].map(b=>`<div class="blk" draggable="true" style="background:var(--${b[1]})">${b[0]}<small>${b[2]}</small></div>`).join(''));
+let dg=null;
+document.addEventListener('dragstart',e=>{if(e.target.classList?.contains('blk')){dg=e.target;dg.classList.add('dragging')}});
+document.addEventListener('dragend',()=>{dg?.classList.remove('dragging');dg=null});
+document.querySelectorAll('.dz').forEach(z=>{z.ondragover=e=>{e.preventDefault();if(!z.classList.contains('busy'))z.classList.add('over')};z.ondragleave=()=>z.classList.remove('over');
+ z.ondrop=e=>{e.preventDefault();z.classList.remove('over');if(!dg)return;if(z.classList.contains('busy')){toast('⛔ Викладач недоступний у цей час');return}z.appendChild(dg);toast(z.dataset.pool?'Повернуто в пул':`✓ ${SHORT[z.dataset.d]}, ${+z.dataset.p+1} пара`)}});
+</script>
+</body>
+</html>

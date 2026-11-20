@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 10 — Лінія</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="look.css">
+<link rel="stylesheet" href="graphite.css">
+<style>
+/* 10 · ЛІНІЯ — точна сітка, тонкі рамки, невеликі радіуси, легкі великі цифри.
+   Активний пункт меню — інверсія (графітова плашка). Шрифт Geologica. */
+html[data-theme]{
+  --font:'Geologica',system-ui,sans-serif;
+  --radius:8px; --radius-sm:6px; --btn-radius:6px; --pill:4px; --card-border:1px solid var(--line); --pad:20px; --gap:16px;
+  --title-size:26px; --title-weight:500; --h2-size:14px;
+}
+html[data-theme="light"]{ --surface:#fdfcf9; }
+.nav{border-right:1px solid var(--line);padding:22px 14px}
+.brand-mark{border-radius:6px}
+.brand-name{font-weight:500}
+.nav-label{text-transform:none;letter-spacing:0;font-size:12px;font-weight:400}
+.nav-item{border-radius:6px;padding:7px 10px;font-weight:400}
+.nav-item.is-active{background:var(--accent);color:var(--accent-ink)}
+.nav-item.is-active .nav-count{color:inherit;opacity:.6}
+.nav-user .avatar{border-radius:6px}
+.avatar{border-radius:6px;background:var(--surface-2);font-weight:500}
+.main{padding:26px 30px 90px}
+.search,.icon-btn{border-radius:6px;background:var(--surface)}
+.btn{font-weight:500}
+.hero-value,.kpi-value{font-weight:300;letter-spacing:-.035em}
+.hero-value{font-size:52px}.kpi-value{font-size:38px}
+.kpi-value small{font-weight:400}
+.hero .progress,.kpi .progress{height:3px}
+.seg{border:1px solid var(--line);background:none;padding:2px}
+.seg button{border-radius:4px}
+.seg button.is-on{background:var(--accent);color:var(--accent-ink);box-shadow:none}
+.task-group-label{text-transform:none;letter-spacing:0;font-size:12px;font-weight:500}
+.sev{border-radius:2px}
+.sev-ico{border-radius:6px;width:28px;height:28px}
+.task-fix{border:1px solid var(--line);background:none;border-radius:6px}
+.fix-opt.is-sel{background:var(--surface-2);border-color:transparent}
+.badge{border-radius:4px;font-weight:400}
+.tag{border-radius:4px}
+.chip{border-radius:6px;font-weight:400}
+.chip.is-on{background:var(--accent);border-color:var(--accent)}
+.md-row.is-active{background:var(--surface-2);box-shadow:inset 2px 0 0 var(--accent)}
+.md-search{background:var(--surface-2);border-color:transparent;border-radius:6px}
+.section-title{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500;color:var(--text)}
+.avail .c{border-radius:4px}
+.step-n{border-radius:4px}
+.step.is-cur{background:var(--surface-2)}
+.check-ico{border-radius:4px}
+.pub-search{border-radius:8px}
+.pub-title h1{font-weight:500}
+.now-card{border-radius:10px}
+.now-title{font-weight:500}
+.day{border-radius:6px}
+.day.is-active{background:var(--accent);border-color:var(--accent)}
+.dn{font-weight:400}
+.lessons-head{text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);font-weight:500}
+.l-title{font-weight:500}
+</style>
+</head>
+<body>
+<script src="theme.js"></script>
+<script src="shell.js"></script>
+<script>initTheme('v10-theme'); renderApp({ name: '10 · Лінія', calm: true }); mountThemeToggle('v10-theme');</script>
+</body>
+</html>

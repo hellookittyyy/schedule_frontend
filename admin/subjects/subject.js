@@ -1,143 +1,169 @@
-let subjects = [];
-let currentEditId = null;
-let currentDeleteId = null;
+/* «Предмети»: master–detail (assets/js/master-detail.js). */
+(function () {
+  'use strict';
 
-async function loadSubjects() {
-    showLoading('tableContainer', 'Завантаження предметів...');
-    try {
-        subjects = await apiRequest('/subjects/');
-        renderTable(subjects);
-    } catch (error) {
-        showError('tableContainer', 'Не вдалося завантажити список предметів');
-        showToast('Помилка з\'єднання з сервером', 'error');
-    }
-}
+  var esc = UI.escapeHtml;
+  function ic(name, size) { return Icons.svg(name, { size: size || 16 }); }
 
-function renderTable(data) {
-    const container = document.getElementById('tableContainer');
-    
-    if (data.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">📖</div>
-                <h3>Предметів поки немає</h3>
-                <p>Додайте перший предмет</p>
-            </div>`;
-        return;
-    }
+  var teachers = [];
+  var semesters = [];
+  var md;
 
-    const rows = data.map(subject => {
-        const safeName = (subject.name || '').replace(/'/g, "\\'");
-        const description = subject.description || '<em style="color: #bdc3c7;">Опис відсутній</em>';
-        
-        return `
-            <tr>
-                <td><strong>${subject.name}</strong></td>
-                <td><div class="subject-description" title="${subject.description || ''}">${description}</div></td>
-                <td>
-                    <div class="table-actions">
-                        <button class="btn btn-edit" onclick="openEditModal(${subject.id})">✏️</button>
-                        <button class="btn btn-delete" onclick="openDeleteModal(${subject.id}, '${safeName}')">🗑️</button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
+  var plural = UI.pluralForm;
+  function list(r) { return (r && r.results) || r || []; }
+  function byName(a, b) { return String(a.name || '').localeCompare(String(b.name || ''), 'uk'); }
+  function teachersOf(s) {
+    return teachers.filter(function (t) {
+      return (t.subjects_details || []).some(function (x) { return x.id === s.id; });
+    }).sort(byName);
+  }
+  function semName(id) {
+    var s = semesters.find(function (x) { return String(x.id) === String(id); });
+    return s ? s.name : '';
+  }
+  function teachersText(n) { return n ? n + ' ' + plural(n, 'викладач', 'викладачі', 'викладачів') : 'Без викладача'; }
 
-    container.innerHTML = `
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 30%;">Назва</th>
-                    <th style="width: 55%;">Опис</th>
-                    <th style="width: 15%;">Дії</th>
-                </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-        </table>
-    `;
-}
+  function renderRow(s) {
+    var tt = teachersOf(s);
+    return '<div class="grow"><div class="name">' + esc(s.name) + '</div>' +
+      '<div class="meta">' + (tt.length ? esc(tt.map(function (t) { return t.name; }).join(', ')) : 'Без викладача') + '</div></div>' +
+      '<span class="num">' + tt.length + '</span>';
+  }
 
-function openAddModal() {
-    currentEditId = null;
-    document.getElementById('modalTitle').textContent = 'Додати предмет';
-    document.getElementById('subjectForm').reset();
-    updateCharCount();
-    showModal('subjectModal');
-}
+  // Shown only for a saved subject (also inserted in place after a draft's first save).
+  function savedHtml(tt) {
+    return '<div class="section"><div class="section-title">Викладачі</div>' +
+        (tt.length
+          ? '<div class="chips">' + tt.map(function (t) {
+              return '<a class="chip link" href="/admin/teachers/?id=' + esc(t.id) + '">' + esc(t.name) + ic('chevR', 12) + '</a>';
+            }).join('') + '</div>'
+          : '<span class="muted sm">Жоден викладач не веде цей предмет</span>') +
+        '<p class="muted sm mt">Призначення змінюється на сторінці викладача.</p></div>' +
+      '<div class="section" id="s-plans-sec" hidden><div class="section-title">Де використовується</div>' +
+        '<div id="s-plans"></div></div>';
+  }
 
-function openEditModal(id) {
-    const subject = subjects.find(s => s.id === id);
-    if (!subject) return;
+  function renderDetail(s, ctx) {
+    var draft = ctx.isDraft;
+    var tt = draft ? [] : teachersOf(s);
+    return '' +
+      '<div class="detail-head">' +
+        '<div class="grow"><h2 class="detail-name" id="s-title">' + esc(s.name || 'Новий предмет') + '</h2>' +
+        (draft ? '' : '<div class="muted">' + esc(teachersText(tt.length)) + '</div>') + '</div>' +
+        '<span class="saved" data-md-saved hidden></span>' +
+      '</div>' +
+      '<div class="section"><div class="section-title">Основне</div>' +
+        '<div class="fields">' +
+          '<label class="f-label" for="s-name">Назва</label>' +
+          '<div class="f-value"><input class="input" id="s-name" data-md-field="name" required autocomplete="off" ' +
+            'placeholder="Наприклад: Програмування" value="' + esc(s.name || '') + '"></div>' +
+          '<label class="f-label" for="s-desc">Опис</label>' +
+          '<div class="f-value"><textarea class="textarea" id="s-desc" rows="4" data-md-field="description" ' +
+            'placeholder="Необов’язково">' + esc(s.description || '') + '</textarea></div>' +
+        '</div></div>' +
+      (draft ? '' : savedHtml(tt)) +
+      ctx.danger({ title: 'Видалити предмет', text: 'Разом із предметом буде видалено навчальні плани, що його використовують.' });
+  }
 
-    currentEditId = id;
-    document.getElementById('modalTitle').textContent = 'Редагувати предмет';
-    document.getElementById('subjectName').value = subject.name || '';
-    document.getElementById('subjectDescription').value = subject.description || '';
-    updateCharCount();
-    showModal('subjectModal');
-}
-
-function openDeleteModal(id, name) {
-    currentDeleteId = id;
-    document.getElementById('deleteSubjectName').textContent = name;
-    showModal('deleteModal');
-}
-
-function updateCharCount() {
-    const len = document.getElementById('subjectDescription').value.length;
-    document.getElementById('charCount').textContent = len;
-}
-
-document.getElementById('subjectDescription').addEventListener('input', updateCharCount);
-
-document.getElementById('subjectForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const data = {
-        name: document.getElementById('subjectName').value.trim(),
-        description: document.getElementById('subjectDescription').value.trim()
-    };
-
-    if (!data.name) return showToast('Назва предмету обов\'язкова!', 'error');
-
-    try {
-        if (currentEditId) {
-            await apiRequest(`/subjects/${currentEditId}/`, 'PUT', data);
-            showToast('Предмет оновлено', 'success');
-        } else {
-            await apiRequest('/subjects/', 'POST', data);
-            showToast('Предмет створено', 'success');
-        }
-        
-        hideModal('subjectModal');
-        loadSubjects();
-    } catch (error) {
-        showToast(error.message, 'error');
-    }
-});
-
-async function confirmDelete() {
-    if (!currentDeleteId) return;
-
-    try {
-        await apiRequest(`/subjects/${currentDeleteId}/`, 'DELETE');
-        hideModal('deleteModal');
-        loadSubjects();
-        showToast('Предмет видалено', 'success');
-    } catch (error) {
-        showToast(error.message, 'error');
-    }
-}
-
-document.getElementById('searchInput').addEventListener('input', (e) => {
-    const term = e.target.value.toLowerCase();
-    const filtered = subjects.filter(sub => {
-        const name = (sub.name || '').toLowerCase();
-        const desc = (sub.description || '').toLowerCase();
-        return name.includes(term) || desc.includes(term);
+  function mount(el, s, ctx) {
+    var name = el.querySelector('#s-name');
+    name.addEventListener('input', function () {
+      el.querySelector('#s-title').textContent = name.value.trim() || 'Новий предмет';
     });
-    renderTable(filtered);
-});
+    if (ctx.isDraft) {
+      // Hold draft autosave until the name is filled; save() POSTs the values captured on the item.
+      var fields = el.querySelector('.fields'), desc = el.querySelector('#s-desc');
+      var sync = function () { s._form = { name: name.value.trim(), description: desc.value.trim() }; };
+      sync();
+      ['input', 'change'].forEach(function (t) { fields.addEventListener(t, sync, true); });
+      var hold = function (e) { if (!ctx.item.id && name.value.trim() === '') e.stopPropagation(); };
+      ['change', 'focusout'].forEach(function (t) { fields.addEventListener(t, hold, true); });
+      fields.addEventListener('keydown', function (e) { if (e.key === 'Enter') hold(e); }, true);
+      return;
+    }
+    loadPlans(el, s, ctx);
+  }
 
-loadSubjects();
+  function loadPlans(el, s, ctx) {
+    apiRequest('/study_plans/?subject=' + encodeURIComponent(s.id)).then(function (plans) {
+      if (!ctx.alive()) return;
+      plans = list(plans);
+      if (!plans.length) return;
+      var seen = {}, rows = [];
+      plans.forEach(function (p) {
+        var key = (p.group ? 'g' + p.group : 's' + p.stream) + '|' + p.semester;
+        if (seen[key]) return;
+        seen[key] = true;
+        rows.push({
+          href: p.group ? '/admin/groups/?id=' + p.group : '/admin/streams/?id=' + p.stream,
+          name: p.group ? p.group_name : p.stream_name, stream: !p.group, sem: semName(p.semester)
+        });
+      });
+      rows.sort(function (a, b) { return String(a.name).localeCompare(String(b.name), 'uk'); });
+      el.querySelector('#s-plans').innerHTML = '<div class="chips">' + rows.map(function (g) {
+        return '<a class="chip link" href="' + esc(g.href) + '">' + esc(g.name) +
+          (g.stream ? ' <span class="muted">потік</span>' : '') +
+          (g.sem ? ' <span class="muted">' + esc(g.sem) + '</span>' : '') + ic('chevR', 12) + '</a>';
+      }).join('') + '</div>';
+      el.querySelector('#s-plans-sec').hidden = false;
+    }, function () { /* section stays hidden */ });
+  }
+
+  md = MasterDetail.create({
+    root: '#subjects',
+    title: 'Предмети',
+    color: '--c3',
+    searchPlaceholder: 'Пошук предмета',
+    addLabel: 'Додати предмет',
+    draftLabel: 'Новий предмет',
+    emptyText: 'Предметів поки немає',
+    removedText: 'Предмет видалено',
+    removeQuestion: 'Точно видалити предмет?',
+    countLabel: function (n) { return n + ' ' + plural(n, 'предмет', 'предмети', 'предметів'); },
+    load: function () {
+      return Promise.all([
+        apiRequest('/subjects/'),
+        apiRequest('/teachers/').catch(function () { UI.toast('Не вдалося завантажити викладачів', { type: 'warn' }); return []; }),
+        apiRequest('/semesters/').catch(function () { return []; })
+      ]).then(function (r) {
+        teachers = list(r[1]);
+        semesters = list(r[2]);
+        return list(r[0]);
+      });
+    },
+    sort: byName,
+    search: function (s, q) {
+      return String(s.name || '').toLowerCase().indexOf(q) >= 0 ||
+        String(s.description || '').toLowerCase().indexOf(q) >= 0;
+    },
+    filters: [{ id: 'no-teacher', label: 'Без викладача', test: function (s) { return !teachersOf(s).length; } }],
+    renderRow: renderRow,
+    renderDetail: renderDetail,
+    mount: mount,
+    onCreate: function () { return { name: '', description: '' }; },
+    onCreated: function (s, ctx) {
+      var el = ctx.el, tt = teachersOf(s);
+      var title = el.querySelector('#s-title');
+      if (title) title.insertAdjacentHTML('afterend', '<div class="muted">' + esc(teachersText(tt.length)) + '</div>');
+      var anchor = el.querySelector('[data-md-danger]');
+      if (anchor) anchor.insertAdjacentHTML('beforebegin', savedHtml(tt)); else el.insertAdjacentHTML('beforeend', savedHtml(tt));
+      loadPlans(el, s, ctx);
+    },
+    save: function (s, ch) {
+      if (s.id == null) {
+        // Never read the DOM here: by the chain's turn it may show another record.
+        var f = Object.assign({ name: '', description: '' }, ch, s._form);
+        if (!f.name) return Promise.reject(new Error('Вкажіть назву предмета'));
+        return apiRequest('/subjects/', 'POST', { name: f.name, description: f.description || '' }).then(function (saved) {
+          delete s._form;
+          return saved;
+        });
+      }
+      return apiRequest('/subjects/' + s.id + '/', 'PUT', {
+        name: ch.name != null ? ch.name : s.name,
+        description: ch.description != null ? ch.description : (s.description || '')
+      });
+    },
+    remove: function (s) { return apiRequest('/subjects/' + s.id + '/', 'DELETE'); }
+  });
+})();

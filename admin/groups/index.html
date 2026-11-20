@@ -3,81 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Адмін панель - Дашборд</title>
-    <link rel="stylesheet" href="../shared.css">
+    <title>Адмін панель - Групи</title>
+    <script src="/assets/js/theme-boot.js?v=5f07e596"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/tokens.css?v=9b325578">
+    <link rel="stylesheet" href="/assets/css/base.css?v=27556bf0">
+    <link rel="stylesheet" href="/assets/css/components.css?v=5bbfd7ff">
+    <link rel="stylesheet" href="/assets/css/shell.css?v=9cb403b4">
 </head>
 <body>
     <div id="sidebar-container"></div>
 
-    <div class="main-content">
-        <div class="header header-fixed">
-            <h1>Групи</h1>
-            <button class="btn-add" onclick="openAddModal()">
-                ➕ Додати групу
-            </button>
-        </div>
+    <main class="sh-main">
+        <div id="groups"></div>
+    </main>
 
-        <div class="card">
-            <div class="search-bar">
-                <input type="text" class="search-input" id="searchInput" placeholder="🔍 Пошук груп...">
-            </div>
-
-            <div id="tableContainer">
-                <div class="loading">
-                    <div style="font-size: 48px; margin-bottom: 20px;">⏳</div>
-                    <div>Завантаження груп...</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal" id="groupModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Додати групу</h2>
-                <button class="btn-close" onclick="hideModal('groupModal')">&times;</button>
-            </div>
-            <form id="groupForm">
-                <div class="form-group">
-                    <label for="groupName">Назва групи</label>
-                    <input type="text" id="groupName" required placeholder="Наприклад: КН-21">
-                </div>
-                <div class="form-group">
-                    <label for="studentCount">Кількість студентів</label>
-                    <input type="number" id="studentCount" required min="1" placeholder="Наприклад: 25">
-                </div>
-                <div class="form-group">
-                    <label for="startYear">Рік початку навчання</label>
-                    <input type="number" id="startYear" required min="2000" max="2100" placeholder="Наприклад: 2021">
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-cancel" onclick="hideModal('groupModal')">Скасувати</button>
-                    <button type="submit" class="btn btn-save">💾 Зберегти</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="modal" id="deleteModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Видалення групи</h2>
-                <button class="btn-close" onclick="hideModal('deleteModal')">&times;</button>
-            </div>
-            <div class="delete-message">
-                Ви впевнені, що хочете видалити групу <span class="delete-group-name" id="deleteGroupName"></span>?
-                <br><br>
-                Ця дія незворотна!
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-cancel" onclick="hideModal('deleteModal')">Скасувати</button>
-                <button class="btn btn-confirm" onclick="confirmDelete()">🗑️ Видалити</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="../common.js"></script>
-    <script src="../sidebar.js"></script>
-    <script src="group.js"></script>
+    <script src="/assets/js/api.js?v=55e24ce9"></script>
+    <script src="/assets/js/ui.js?v=ec4d50f9"></script>
+    <script src="/assets/js/icons.js?v=eb6ccbed"></script>
+    <script src="/assets/js/shell.js?v=2ee56235"></script>
+    <script src="/assets/js/master-detail.js?v=62b29b23"></script>
+    <script src="group.js?v=23fac98f"></script>
 </body>
 </html>

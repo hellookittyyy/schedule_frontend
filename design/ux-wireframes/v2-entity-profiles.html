@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UX 2 — Профілі сутностей</title>
+<style>
+:root{--ink:#1d1d1f;--mid:#6e6e73;--soft:#a1a1a6;--line:#d2d2d7;--fill:#f2f2f4;--paper:#fff;--bg:#f7f7f8;--note:#fff3a3;--mark:#e11d48}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+.doc{max-width:1240px;margin:0 auto;padding:28px 20px 80px}.back{font-size:13px;color:var(--mid);text-decoration:none}
+h1{font-size:26px;margin:8px 0 4px}.idea{color:var(--mid);max-width:820px;margin:0 0 8px}h2{font-size:17px;margin:34px 0 10px}
+.maps{display:grid;grid-template-columns:1fr 1fr;gap:16px}.maps>div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px}
+.tree,.tree ul{list-style:none;margin:0;padding-left:16px}.tree{padding:0}.tree ul{border-left:1px solid var(--soft);margin-left:6px}
+.tree li{position:relative;padding:3px 0 3px 12px}.tree ul>li::before{content:'';position:absolute;left:0;top:13px;width:9px;border-top:1px solid var(--soft)}
+.new{font-size:10px;background:var(--ink);color:#fff;border-radius:3px;padding:0 5px;margin-left:4px;vertical-align:1px}
+.stabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.stabs button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:5px 12px;cursor:pointer;font:inherit;font-size:13px}
+.stabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.scr{display:none}.scr.on{display:grid;grid-template-columns:1fr 290px;gap:16px}
+.frame{border:1.5px solid var(--ink);border-radius:10px;background:var(--paper);overflow:hidden;min-height:470px;display:flex;flex-direction:column}
+.bar{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--line);font-size:12px}.bar i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.url{flex:1;background:var(--fill);border-radius:6px;padding:2px 10px;color:var(--mid)}
+.box{border:1px solid var(--line);border-radius:6px;padding:10px;background:#fff}.fill{background:var(--fill)}
+.btn{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--ink);border-radius:5px;padding:4px 10px;background:#fff;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn.pri{background:var(--ink);color:#fff}.btn.ghost{border-color:var(--line)}
+.in{border:1px solid var(--line);border-radius:5px;padding:5px 9px;color:var(--soft);font-size:13px;background:#fff}
+.m{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--mark);color:#fff;font-size:11px;font-style:normal;font-weight:700;vertical-align:middle;margin:0 3px;flex:none}
+.notes{background:var(--note);padding:14px 14px 14px 30px;border-radius:4px;font-size:13px;align-self:start;margin:0;box-shadow:2px 3px 0 rgba(0,0,0,.06)}
+.notes li{margin-bottom:8px}.notes li::marker{font-weight:700;color:var(--mark)}
+[data-go]{cursor:pointer}[data-go]:not(button):hover{outline:1.5px dashed var(--mark);outline-offset:2px}
+.muted{color:var(--mid)}.small{font-size:12px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.col{display:flex;flex-direction:column;gap:8px}.grow{flex:1}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl td,.tbl th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}.tbl th{color:var(--mid);font-weight:600}
+.pill{border:1px solid var(--line);border-radius:99px;padding:1px 8px;font-size:12px;white-space:nowrap}.pill.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.scen{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);font-size:13px}.scen td,.scen th{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}.scen th{background:var(--fill)}
+.pc{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.pc>div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px}.pc h4{margin:0 0 6px}.pc ul{margin:0;padding-left:18px}
+@media(max-width:900px){.scr.on,.maps,.pc{grid-template-columns:1fr}}
+/* variant */
+.topnav{display:flex;gap:14px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:13px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:0 16px;font-size:13px}
+.tabs span{padding:8px 12px;color:var(--mid);cursor:pointer}.tabs span.on{color:var(--ink);font-weight:700;border-bottom:2px solid var(--ink)}
+.avail{display:grid;grid-template-columns:60px repeat(6,1fr);gap:3px;font-size:11px}
+.avail div{height:26px;border-radius:3px;display:grid;place-items:center}
+.avail .h{color:var(--mid)}.avail .c{background:#fff;border:1px solid var(--line);cursor:pointer}.avail .c.x{background:repeating-linear-gradient(45deg,#ddd 0 4px,#fff 4px 8px)}.avail .c.l{background:var(--ink);color:#fff}
+.res{padding:6px 8px;border-radius:4px;display:flex;gap:8px;align-items:center}.res:hover{background:var(--fill)}
+</style>
+</head>
+<body>
+<div class="doc">
+<a class="back" href="index.html">← Усі варіанти UX</a>
+<h1>Варіант 2 · Профілі сутностей</h1>
+<p class="idea"><b>Ідея:</b> замість окремих сторінок «Обмеження», «Навчальні плани», «Потоки» вся інформація живе <b>у профілі того, кого вона стосується</b>. Сторінка викладача показує його предмети, години, доступність і розклад. Сторінка групи показує склад, план, потоки і розклад. Навігація йде через <b>глобальний пошук</b> і перехресні посилання. Ті самі профілі (без редагування) бачать студенти.</p>
+<p class="idea"><b>Для кого:</b> диспетчер, який часто відповідає на питання «а що в Коваленко в четвер?» і вносить точкові зміни.</p>
+
+<h2>Карта сторінок</h2>
+<div class="maps">
+<div><b>Адмінка</b>
+<ul class="tree">
+  <li><b>Пошук</b> (Ctrl+K) по всіх сутностях <span class="new">нове</span></li>
+  <li><b>Викладачі</b> → профіль викладача
+    <ul><li>Огляд: предмети, навантаження, контакти</li><li>Розклад (тиждень)</li><li>Доступність: сітка, замість обмежень day_off / time_block <span class="new">нове</span></li><li>Плани: у яких групах веде</li></ul></li>
+  <li><b>Групи</b> → профіль групи
+    <ul><li>Огляд: курс, студенти, <b>потоки</b> (замість окремої сторінки)</li><li>Навчальний план (замість окремої сторінки)</li><li>Обмеження: макс. пар на день, ланцюжки</li><li>Розклад</li></ul></li>
+  <li><b>Аудиторії</b> → профіль: тип, місткість, зайнятість</li>
+  <li><b>Предмети</b> → профіль: хто веде, у яких групах</li>
+  <li><b>Семестри</b> → календар + генерація + конструктор</li>
+</ul></div>
+<div><b>Публічна частина</b>
+<ul class="tree">
+  <li><b>Пошук</b> → профілі тільки для читання:
+    <ul><li>/g/КН-31 — група</li><li>/t/kovalenko — викладач</li><li>/r/301 — аудиторія (вільна / зайнята зараз) <span class="new">нове</span></li></ul></li>
+  <li>Кнопки «Підписатися (.ics)» і «Поділитися»</li>
+</ul>
+<p class="small muted">Меню скорочується з 10 пунктів до 5. Обмеження, плани й потоки переїжджають у профілі.</p></div>
+</div>
+
+<h2>Клікабельний прототип</h2>
+<div class="stabs" id="stabs"><button class="on" data-go="a">A. Глобальний пошук</button><button data-go="b">B. Профіль викладача</button><button data-go="c">C. Вкладка «Доступність»</button><button data-go="d">D. Профіль групи</button><button data-go="e">E. Публічний профіль</button></div>
+
+<section class="scr on" id="a"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin  (Ctrl+K)</span></div>
+  <div class="topnav"><b>Розклад</b><span>Викладачі</span><span>Групи</span><span>Аудиторії</span><span>Предмети</span><span>Семестри</span><span class="grow"></span><span class="in">🔍 Пошук… Ctrl K</span></div>
+  <div style="padding:30px 16px;display:flex;justify-content:center;background:var(--fill);flex:1">
+    <div class="box col" style="width:480px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,.12)">
+      <div class="in" style="color:var(--ink)">ковал <i class="m">1</i></div>
+      <span class="small muted">Викладачі</span>
+      <div class="res" data-go="b"><b>Коваленко Олена Петрівна</b><span class="small muted">Бази даних, ІС · 16/20 год</span></div>
+      <span class="small muted">Групи</span><div class="res">—</div>
+      <span class="small muted">Дії <i class="m">2</i></span>
+      <div class="res">➕ Створити викладача «Коваленко…»</div>
+      <div class="res">🗓 Розклад викладача «Коваленко» на цей тиждень</div>
+    </div></div></div>
+  <ol class="notes"><li>Один пошук на всі сутності. Результати згруповані за типом.</li><li>Пошук пропонує ще й <b>дії</b>, а не лише сторінки.</li></ol>
+</section>
+
+<section class="scr" id="b"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin/teachers/kovalenko</span></div>
+  <div style="padding:14px 16px" class="row"><span class="small muted" data-go="a">Викладачі /</span></div>
+  <div style="padding:0 16px 12px" class="row"><div style="width:48px;height:48px;border-radius:50%;background:var(--fill)"></div><div class="grow"><b style="font-size:18px">Коваленко Олена Петрівна</b><div class="small muted">Кафедра КН · активна</div></div><button class="btn ghost">⋯</button></div>
+  <div class="tabs"><span class="on">Огляд</span><span data-go="c">Доступність <i class="m">1</i></span><span>Розклад</span><span>Плани (4)</span><span>Історія</span></div>
+  <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="col"><b>Предмети</b><div class="row"><span class="pill">Бази даних ✕</span><span class="pill">ІС ✕</span><span class="pill">+ додати</span></div><i class="small muted">Редагування прямо тут, без модалки <i class="m">2</i></i>
+      <b>Навантаження</b><div class="box fill small">16 / 20 год на тиждень ▓▓▓▓▓▓▓▓░░</div></div>
+    <div class="col"><b>Веде в групах <i class="m">3</i></b>
+      <table class="tbl"><tr><td data-go="d"><u>КН-31</u></td><td>Бази даних</td><td>Лек 32</td></tr><tr><td><u>КН-32</u></td><td>Бази даних</td><td>Лек 32</td></tr><tr><td><u>Потік КН-3</u></td><td>ІС</td><td>Лек 16</td></tr></table>
+      <b>Сьогодні</b><div class="small">08:30 БД · КН-31 · ауд. 301</div></div>
+  </div></div>
+  <ol class="notes"><li>Обмеження й доступність стали вкладкою профілю. Не треба йти на іншу сторінку і шукати викладача у випадаючому списку.</li><li>Поля редагуються на місці, з автозбереженням.</li><li>Перехресні посилання: група → викладач → предмет. Звідси один клік до будь-якої пов'язаної сторінки.</li></ol>
+</section>
+
+<section class="scr" id="c"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin/teachers/kovalenko/availability</span></div>
+  <div style="padding:12px 16px" class="row"><b data-go="b">Коваленко О. П.</b></div>
+  <div class="tabs"><span data-go="b">Огляд</span><span class="on">Доступність</span><span>Розклад</span><span>Плани (4)</span></div>
+  <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 220px;gap:16px">
+    <div class="col"><span class="small muted">Клікніть або протягніть мишею: <b>недоступна</b> / доступна <i class="m">1</i></span>
+      <div class="avail" id="av"></div>
+      <span class="small muted">Чорні клітинки — уже стоять пари в розкладі (не можна зробити недоступними без переносу) <i class="m">2</i></span></div>
+    <div class="col"><b>Інші правила <i class="m">3</i></b>
+      <div class="box small">Не більше <u>4</u> пар на день</div>
+      <div class="box small">Пари <u>підряд</u>, без вікон</div>
+      <span class="small muted">+ правило</span></div>
+  </div></div>
+  <ol class="notes"><li>Типи обмежень «Вихідний день» і «Матриця часу» замінює одна візуальна сітка. JSON-конфігурацію збирати вручну не треба.</li><li>Конфлікти з наявним розкладом видно одразу.</li><li>Решта обмежень записані простими реченнями з підставними значеннями.</li></ol>
+</section>
+
+<section class="scr" id="d"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin/groups/kn-31</span></div>
+  <div style="padding:12px 16px" class="row"><b style="font-size:18px">КН-31</b><span class="pill">3 курс</span><span class="pill">26 студ.</span><span class="grow"></span><span class="small">Потоки: <u>КН-3</u> <u>Англ-Б2</u> <i class="m">1</i></span></div>
+  <div class="tabs"><span>Огляд</span><span class="on">Навчальний план</span><span>Обмеження</span><span>Розклад</span></div>
+  <div style="padding:14px 16px" class="col">
+    <div class="row"><span class="small muted">Семестр:</span><span class="pill dark">Осінь 2026</span><span class="grow"></span><button class="btn ghost">Копіювати з КН-32</button></div>
+    <table class="tbl"><tr><th>Предмет</th><th>Для кого</th><th>Л/П/Лаб</th><th>Викладач</th><th>У розкладі</th></tr>
+      <tr><td>Бази даних</td><td>група</td><td>32/16/16</td><td data-go="b"><u>Коваленко</u></td><td>100%</td></tr>
+      <tr><td>ІС</td><td><u>потік КН-3</u> <i class="m">2</i></td><td>16/0/0</td><td><u>Коваленко</u></td><td>100%</td></tr>
+      <tr><td>Алгоритми</td><td>група</td><td>32/32/0</td><td><u>Бондар</u></td><td>⚠ 80%</td></tr></table>
+  </div></div>
+  <ol class="notes"><li>Потоки показуються як властивість групи. Окрема сторінка «Потоки» стає списком для швидкого доступу.</li><li>Видно, звідки прийшов предмет: план групи, потоку чи курсу. Зараз це заплутано.</li></ol>
+</section>
+
+<section class="scr" id="e"><div class="frame" style="max-width:440px">
+  <div class="bar"><i></i><i></i><span class="url">rozklad.ua/t/kovalenko</span></div>
+  <div style="padding:14px" class="col">
+    <b style="font-size:17px">Коваленко Олена Петрівна</b><span class="small muted">Бази даних · ІС</span>
+    <div class="row"><button class="btn">📅 Підписатися (.ics) <i class="m">1</i></button><button class="btn ghost">Поділитися</button></div>
+    <div class="row small"><span class="pill dark">Тиждень</span><span class="pill">День</span></div>
+    <div class="box small col"><b>Чт 19</b><span>08:30 БД · <u>КН-31</u> · <u>ауд. 301</u> <i class="m">2</i></span><span>11:40 ІС · <u>Потік КН-3</u> · <u>Ауд. 1</u></span></div>
+    <div class="box small col"><b>Пт 20</b><span class="muted">пар немає</span></div>
+  </div></div>
+  <ol class="notes"><li>Підписка на календар: розклад сам оновлюється в Google/Apple Calendar.</li><li>Посилання ведуть на профілі групи й аудиторії. Можна перевірити, чи вільна аудиторія.</li></ol>
+</section>
+
+<h2>Ключові сценарії: кількість кроків</h2>
+<table class="scen"><tr><th>Сценарій</th><th>Зараз</th><th>У цьому варіанті</th></tr>
+<tr><td>Студент бачить пари на сьогодні</td><td>5 дій щоразу</td><td>Пошук → профіль групи (2), далі закладка</td></tr>
+<tr><td>Додати викладача з недоступністю</td><td>2 сторінки, ~12 дій, вибір зі списків</td><td>Створити → профіль → вкладка «Доступність» → клацнути клітинки (~5)</td></tr>
+<tr><td>«Що в Коваленко в четвер?»</td><td>Розклад → вибрати семестр → шукати очима</td><td>Ctrl+K «ковал» → вкладка «Розклад» (2)</td></tr>
+<tr><td>Підготувати новий семестр</td><td>5 розрізнених сторінок</td><td>Не покращується: порядок дій ніде не підказано (добре поєднати з варіантом 1 або 5)</td></tr></table>
+
+<h2>Оцінка</h2>
+<div class="pc">
+<div><h4>👍 Плюси</h4><ul><li>Усе про сутність в одному місці</li><li>Обмеження стають зрозумілими (візуальна сітка)</li><li>Профілі однакові для адміна й студентів (менше коду)</li><li>Посиланнями можна ділитися</li></ul></div>
+<div><h4>👎 Мінуси</h4><ul><li>Немає загального огляду процесу</li><li>Глобальні обмеження («ланцюжок пар») не мають очевидного дому</li><li>Пошук потребує API /search</li></ul></div>
+<div><h4>🎯 Коли обирати</h4><ul><li>Розклад уже є, і більшість роботи — точкові зміни</li><li>Студентам і викладачам важливо бачити «свій» розклад</li></ul></div>
+</div>
+</div>
+<script>
+let h='<div></div>'+['Пн','Вт','Ср','Чт','Пт','Сб'].map(d=>`<div class="h">${d}</div>`).join('');
+['08:30','10:00','11:40','13:30','15:00'].forEach((t,p)=>{h+=`<div class="h">${t}</div>`;for(let d=0;d<6;d++){const l=(d===0&&p===0)||(d===3&&p===2);const x=d===5||(d===4&&p>2);h+=`<div class="c ${l?'l':x?'x':''}">${l?'пара':''}</div>`}});
+av.innerHTML=h;let down=false;
+av.addEventListener('mousedown',e=>{const c=e.target.closest('.c:not(.l)');if(c){down=true;c.classList.toggle('x')}});
+av.addEventListener('mouseover',e=>{const c=e.target.closest('.c:not(.l)');if(down&&c)c.classList.add('x')});
+document.addEventListener('mouseup',()=>down=false);
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));document.querySelectorAll('#stabs button').forEach(b=>b.classList.toggle('on',b.dataset.go===id))}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)});
+</script>
+</body>
+</html>

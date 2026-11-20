@@ -1,0 +1,204 @@
+/* =====================================================================
+   «Сланець» + 4 colour experiments (loaded after ink-palettes.css).
+   slate  — base (derived from 3 seeds in ink-palettes.css)
+   mono   — 1 hue, 7-step scale; red only for errors
+   copper — 2 colours: cool slate + one warm copper accent
+   triad  — 3 hues: slate + sage + sand, pastel tints per block
+   depth  — 1 hue, tonal layers, no lines; page is not white
+   ===================================================================== */
+
+/* ---------- MONO ---------- */
+html[data-palette="mono"]{ --ink:#23282e; --paper:#eceef0; --seed:#39414a; }
+html[data-theme][data-palette="mono"]{
+  --bg:#eceef0; --surface:#f8f9fa; --surface-2:#e3e6e9; --line:#d3d8dd; --text:#23282e; --muted:#5b6570; --faint:#8a939d;
+  --accent:#39414a; --accent-ink:#f8f9fa; --nav-bg:#23282e; --nav-text:#a9b1ba; --nav-mark:#b9c0c8;
+  --lec:#23282e; --pr:#6b7682; --lab:#b0b8c0; --high:#b0443a; --mid:#5b6570; --ok:#39414a; --low:#8a939d;
+  --heat1:#d3d8dd; --heat2:#aeb6bf; --heat3:#6b7682; --heat4:#23282e;
+}
+html[data-theme="dark"][data-palette="mono"]{
+  --bg:#1b1f23; --surface:#22272c; --surface-2:#2a3036; --line:#343b42; --text:#e3e7eb; --muted:#9aa3ad; --faint:#6b747e;
+  --accent:#c9d0d7; --accent-ink:#1b1f23; --nav-bg:#14171a; --nav-text:#8f99a3; --nav-mark:#c9d0d7;
+  --lec:#e3e7eb; --pr:#9aa3ad; --lab:#5b6570; --high:#e0857b; --mid:#9aa3ad; --ok:#c9d0d7; --low:#6b747e;
+  --heat1:#2f363d; --heat2:#46505a; --heat3:#76818c; --heat4:#c9d0d7;
+}
+/* у моно тип заняття — це відтінок кружечка, текст завжди основного кольору */
+html[data-palette="mono"] .badge{background:var(--surface-2)!important;color:var(--text)!important}
+html[data-palette="mono"] .badge-lec::before,html[data-palette="mono"] .badge-pr::before,html[data-palette="mono"] .badge-lab::before{content:'';width:7px;height:7px;border-radius:50%;margin-right:6px;box-shadow:0 0 0 1px var(--line)}
+html[data-palette="mono"] .badge-lec::before{background:var(--lec)}
+html[data-palette="mono"] .badge-pr::before{background:var(--pr)}
+html[data-palette="mono"] .badge-lab::before{background:var(--lab)}
+
+/* ---------- COPPER (2 кольори) ---------- */
+html[data-palette="copper"]{ --ink:#262a2f; --paper:#eff0f0; --seed:#a3562f; }
+html[data-theme][data-palette="copper"]{
+  --bg:#eff0f0; --surface:#fafafa; --surface-2:#e6e8ea; --line:#d6dadd; --text:#262a2f; --muted:#5b636c; --faint:#949ba3;
+  --accent:#a3562f; --accent-ink:#fff; --nav-bg:#262a2f; --nav-text:#a8b0b8; --nav-mark:#d99a72;
+  --lec:#2f363e; --pr:#924c29; --lab:#5f6973; --high:#b0443a; --mid:#93641a; --ok:#2f363e; --low:#949ba3;
+}
+html[data-theme="dark"][data-palette="copper"]{
+  --bg:#1c1f23; --surface:#23272c; --surface-2:#2b3036; --line:#353b42; --text:#e4e7ea; --muted:#9aa2ab; --faint:#6c747d;
+  --accent:#e0966b; --accent-ink:#1c1f23; --nav-bg:#15181b; --nav-text:#8f98a2; --nav-mark:#e0966b;
+  --lec:#c5ccd3; --pr:#e0966b; --lab:#8f98a2; --high:#e3857a; --mid:#e0b06b; --ok:#c5ccd3; --low:#6c747d;
+}
+html[data-palette="copper"] .hero-value{color:var(--accent)}
+html[data-palette="copper"] .now-card{border-left:3px solid var(--accent)}
+html[data-palette="copper"] .live{color:var(--accent)}
+
+/* ---------- TRIAD (3 кольори) ---------- */
+html[data-palette="triad"]{ --ink:#2b3138; --paper:#f1efe9; --seed:#4b6657; }
+html[data-theme][data-palette="triad"]{
+  --bg:#f1efe9; --surface:#fbfaf7; --surface-2:#ebe7de; --line:#ddd8cc; --text:#262a2f; --muted:#5d6268; --faint:#999b9b;
+  --accent:#4b6657; --accent-ink:#fbfaf7; --nav-bg:#2b3138; --nav-text:#aeb5bd; --nav-strong:#f1efe9; --nav-mark:#a9c2b3;
+  --lec:#536173; --pr:#4b6657; --lab:#85502f; --high:#b0473b; --mid:#966b1e; --ok:#4b6657; --low:#999b9b;
+  --tint-1:#ece5d6; --tint-2:#e2ebe4; --tint-3:#f1e3d8;
+  --hero-bg:#2b3138; --hero-text:#f1efe9; --hero-muted:rgba(241,239,233,.66); --hero-track:rgba(241,239,233,.18); --hero-bar:#a9c2b3;
+}
+html[data-theme="dark"][data-palette="triad"]{
+  --bg:#1c1f23; --surface:#24282d; --surface-2:#2c3036; --line:#363b41; --text:#e6e4de; --muted:#a3a29c; --faint:#727470;
+  --accent:#a3c0ae; --accent-ink:#1c1f23; --nav-bg:#15181b; --nav-text:#959ca3; --nav-mark:#a3c0ae;
+  --lec:#b0bccb; --pr:#a3c0ae; --lab:#dca47d; --high:#e3887c; --mid:#dcb26b; --ok:#a3c0ae; --low:#727470;
+  --tint-1:#2e2b25; --tint-2:#26302a; --tint-3:#33291f;
+  --hero-bg:#2a3530; --hero-text:#e6e4de; --hero-muted:#a3a29c; --hero-track:#3a4640; --hero-bar:#a3c0ae;
+}
+html[data-palette^="tri"] .hero{border-color:transparent}
+html[data-palette^="tri"] .btn-hero{color:var(--hero-text);border-color:var(--hero-track)}
+html[data-palette^="tri"] .home-top .kpi{border-color:transparent}
+html[data-palette^="tri"] .home-top .kpi:nth-child(2){background:var(--tint-1)}
+html[data-palette^="tri"] .home-top .kpi:nth-child(3){background:var(--tint-2)}
+html[data-palette^="tri"] .home-top .kpi:nth-child(4){background:var(--tint-3)}
+html[data-palette^="tri"] .md-row.is-active{background:var(--tint-2)}
+html[data-palette^="tri"] .now-card{background:var(--tint-2);border-color:transparent;color:var(--text);
+  --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:color-mix(in srgb,var(--text) 12%,transparent); --hero-bar:var(--accent)}
+html[data-palette^="tri"] .next-card{background:var(--tint-1);border-color:transparent}
+html[data-palette^="tri"] .step.is-cur{background:var(--tint-2)}
+
+/* ---------- DEPTH (тонові шари, без ліній) ---------- */
+html[data-palette="depth"]{ --ink:#39414a; --paper:#dde1e5; --seed:#2d343b; }
+html[data-theme][data-palette="depth"]{
+  --bg:#dde1e5; --surface:#f3f5f7; --surface-2:#e8ebee; --line:#e3e6e9; --text:#23282e; --muted:#556069; --faint:#88919a;
+  --accent:#2d343b; --accent-ink:#f3f5f7; --nav-bg:#39414a; --nav-text:#b7bfc7; --nav-strong:#f3f5f7; --nav-mark:#f3f5f7;
+  --lec:#4c5a6a; --pr:#4f6b58; --lab:#82502f; --high:#ad4538; --mid:#93681c; --ok:#4f6b58; --low:#88919a;
+  --hero-bg:#2d343b; --hero-text:#f3f5f7; --hero-muted:rgba(243,245,247,.66); --hero-track:rgba(243,245,247,.18); --hero-bar:#f3f5f7;
+  --card-border:0;
+}
+html[data-theme="dark"][data-palette="depth"]{
+  --bg:#15181b; --surface:#21252a; --surface-2:#292e34; --line:#2a2f35; --text:#e3e7eb; --muted:#9ba4ad; --faint:#6b737c;
+  --accent:#cdd4db; --accent-ink:#15181b; --nav-bg:#2a3037; --nav-text:#a5aeb7; --nav-strong:#e9edf0; --nav-mark:#cdd4db;
+  --lec:#b3bfcc; --pr:#a9c2b0; --lab:#d9a17f; --high:#e3857a; --mid:#dcb06b; --ok:#a9c2b0; --low:#6b737c;
+  --hero-bg:#2b3238; --hero-text:#e3e7eb; --hero-muted:#9ba4ad; --hero-track:#3a4148; --hero-bar:#cdd4db;
+}
+html[data-palette="depth"] .hero,html[data-palette="depth"] .now-card{border:0}
+html[data-palette="depth"] .search,html[data-palette="depth"] .icon-btn{border:0}
+html[data-palette="depth"] .btn{border-color:transparent;background:var(--surface-2)}
+html[data-palette="depth"] .btn-primary{background:var(--accent)}
+html[data-palette="depth"] .btn-hero{background:rgba(255,255,255,.1);color:var(--hero-text)}
+html[data-palette="depth"] .chip{border:0;background:var(--surface-2)}
+html[data-palette="depth"] .chip.is-on{background:var(--accent)}
+html[data-palette="depth"] .md-list{border-right:0;background:color-mix(in srgb,var(--surface-2) 60%,var(--surface))}
+html[data-palette="depth"] .md-search{border:0}
+html[data-palette="depth"] .day{border:0}
+html[data-palette="depth"] .steps .step{border-right-color:var(--bg)}
+
+/* =====================================================================
+   TRIAD FAMILY — 5 more three-colour combinations (same rules as triad:
+   dark nav · warm paper · one accent · three pastel tints for blocks)
+   ===================================================================== */
+
+/* ---------- Сутінки: слива + пильна троянда + крем ---------- */
+html[data-palette="tri-dusk"]{ --ink:#2e2833; --paper:#f4efe9; --seed:#844b5b; }
+html[data-theme][data-palette="tri-dusk"]{
+  --bg:#f4efe9; --surface:#fcfaf8; --surface-2:#ede6df; --line:#e0d6ce; --text:#2a2430; --muted:#625a66; --faint:#9d949f;
+  --accent:#844b5b; --accent-ink:#fcfaf8; --nav-bg:#2e2833; --nav-text:#b3aab6; --nav-strong:#f4efe9; --nav-mark:#d7a9b5;
+  --lec:#5d4f78; --pr:#844b5b; --lab:#835c2e; --high:#b0473b; --mid:#93681c; --ok:#4f6b58; --low:#9d949f;
+  --tint-1:#f1e7da; --tint-2:#e8e3ef; --tint-3:#f4e2e5;
+  --hero-bg:#2e2833; --hero-text:#f4efe9; --hero-muted:rgba(244,239,233,.66); --hero-track:rgba(244,239,233,.18); --hero-bar:#d7a9b5;
+}
+html[data-theme="dark"][data-palette="tri-dusk"]{
+  --bg:#1d1a20; --surface:#252128; --surface-2:#2d2830; --line:#38323b; --text:#ebe5e8; --muted:#aca2ab; --faint:#766d76;
+  --accent:#dcaab7; --accent-ink:#1d1a20; --nav-bg:#161419; --nav-text:#9b929e; --nav-mark:#dcaab7;
+  --lec:#bfb2dc; --pr:#dcaab7; --lab:#d9b07a; --high:#e3887c; --mid:#dcb26b; --ok:#a9c2b0; --low:#766d76;
+  --tint-1:#302a24; --tint-2:#2a2733; --tint-3:#33262b;
+  --hero-bg:#342b37; --hero-text:#ebe5e8; --hero-muted:#aca2ab; --hero-track:#463b49; --hero-bar:#dcaab7;
+}
+
+/* ---------- Ліс: хвоя + мох + охра ---------- */
+html[data-palette="tri-forest"]{ --ink:#1f2b26; --paper:#f2f0e8; --seed:#35523f; }
+html[data-theme][data-palette="tri-forest"]{
+  --bg:#f2f0e8; --surface:#fbfaf6; --surface-2:#e9e7dc; --line:#dad7ca; --text:#1f2a25; --muted:#57605a; --faint:#959a94;
+  --accent:#35523f; --accent-ink:#fbfaf6; --nav-bg:#1f2b26; --nav-text:#a5b0aa; --nav-strong:#f2f0e8; --nav-mark:#d9c27e;
+  --lec:#35523f; --pr:#745712; --lab:#8b4a32; --high:#b0473b; --mid:#8a6316; --ok:#35523f; --low:#959a94;
+  --tint-1:#f0e7cd; --tint-2:#e2e9dd; --tint-3:#ece2d8;
+  --hero-bg:#1f2b26; --hero-text:#f2f0e8; --hero-muted:rgba(242,240,232,.66); --hero-track:rgba(242,240,232,.18); --hero-bar:#d9c27e;
+}
+html[data-theme="dark"][data-palette="tri-forest"]{
+  --bg:#171d1a; --surface:#1f2622; --surface-2:#262e29; --line:#313a34; --text:#e4e7e0; --muted:#a1a99f; --faint:#6f776f;
+  --accent:#a9c4a8; --accent-ink:#171d1a; --nav-bg:#121614; --nav-text:#939c95; --nav-mark:#d9c27e;
+  --lec:#a9c4a8; --pr:#dcc47e; --lab:#e0a283; --high:#e3887c; --mid:#dcb26b; --ok:#a9c4a8; --low:#6f776f;
+  --tint-1:#2e2a1c; --tint-2:#222c24; --tint-3:#2f2622;
+  --hero-bg:#24302a; --hero-text:#e4e7e0; --hero-muted:#a1a99f; --hero-track:#34413a; --hero-bar:#d9c27e;
+}
+
+/* ---------- Море: петроль + корал + пісок ---------- */
+html[data-palette="tri-sea"]{ --ink:#1d2f33; --paper:#f1efe8; --seed:#2c5458; }
+html[data-theme][data-palette="tri-sea"]{
+  --bg:#f1efe8; --surface:#fbfaf7; --surface-2:#e8e6de; --line:#d9d6cc; --text:#1d2b2f; --muted:#56636a; --faint:#949b9e;
+  --accent:#2c5458; --accent-ink:#fbfaf7; --nav-bg:#1d2f33; --nav-text:#a3b3b5; --nav-strong:#f1efe8; --nav-mark:#e8a690;
+  --lec:#2c5458; --pr:#9c4934; --lab:#715a1c; --high:#b0473b; --mid:#8a6316; --ok:#2c5458; --low:#949b9e;
+  --tint-1:#dcebe9; --tint-2:#f1e8d6; --tint-3:#f6e1d9;
+  --hero-bg:#1d2f33; --hero-text:#f1efe8; --hero-muted:rgba(241,239,232,.66); --hero-track:rgba(241,239,232,.18); --hero-bar:#e8a690;
+}
+html[data-theme="dark"][data-palette="tri-sea"]{
+  --bg:#151d1f; --surface:#1c2628; --surface-2:#232e31; --line:#2e3a3d; --text:#e2e8e7; --muted:#9eabad; --faint:#6c7a7c;
+  --accent:#93c1c0; --accent-ink:#151d1f; --nav-bg:#101618; --nav-text:#8f9fa1; --nav-mark:#e8a690;
+  --lec:#93c1c0; --pr:#e9a28c; --lab:#d9be7a; --high:#e3887c; --mid:#dcb26b; --ok:#93c1c0; --low:#6c7a7c;
+  --tint-1:#1f3031; --tint-2:#2d2a21; --tint-3:#33241f;
+  --hero-bg:#1f3337; --hero-text:#e2e8e7; --hero-muted:#9eabad; --hero-track:#2f4448; --hero-bar:#e8a690;
+}
+
+/* ---------- Глина: еспресо + олива + глина ---------- */
+html[data-palette="tri-clay"]{ --ink:#2d231e; --paper:#f3eee6; --seed:#56622f; }
+html[data-theme][data-palette="tri-clay"]{
+  --bg:#f3eee6; --surface:#fcfaf6; --surface-2:#ebe4d9; --line:#ddd3c5; --text:#2b231e; --muted:#645a51; --faint:#a0968b;
+  --accent:#56622f; --accent-ink:#fcfaf6; --nav-bg:#2d231e; --nav-text:#b5aa9f; --nav-strong:#f3eee6; --nav-mark:#dba88a;
+  --lec:#56622f; --pr:#934f31; --lab:#6d5277; --high:#b0473b; --mid:#8a6316; --ok:#56622f; --low:#a0968b;
+  --tint-1:#f2e0d4; --tint-2:#e5e8d3; --tint-3:#ede4d6;
+  --hero-bg:#2d231e; --hero-text:#f3eee6; --hero-muted:rgba(243,238,230,.66); --hero-track:rgba(243,238,230,.18); --hero-bar:#dba88a;
+}
+html[data-theme="dark"][data-palette="tri-clay"]{
+  --bg:#1e1915; --surface:#26201b; --surface-2:#2e2722; --line:#3a312a; --text:#ece5dc; --muted:#ab9f93; --faint:#776c61;
+  --accent:#c3cc98; --accent-ink:#1e1915; --nav-bg:#16120f; --nav-text:#9f9488; --nav-mark:#dba88a;
+  --lec:#c3cc98; --pr:#e3a283; --lab:#c8b0d4; --high:#e3887c; --mid:#dcb26b; --ok:#c3cc98; --low:#776c61;
+  --tint-1:#33251d; --tint-2:#2a2b1d; --tint-3:#2e2720;
+  --hero-bg:#352a23; --hero-text:#ece5dc; --hero-muted:#ab9f93; --hero-track:#47392f; --hero-bar:#dba88a;
+}
+
+/* ---------- Ретро: графіт + м'ята + гірчиця + рум'янець ---------- */
+html[data-palette="tri-retro"]{ --ink:#26262a; --paper:#f3f1ec; --seed:#2b625b; }
+html[data-theme][data-palette="tri-retro"]{
+  --bg:#f3f1ec; --surface:#fcfbf9; --surface-2:#eae7e0; --line:#dcd8cf; --text:#26262a; --muted:#5d5d63; --faint:#9a9a9e;
+  --accent:#2b625b; --accent-ink:#fcfbf9; --nav-bg:#26262a; --nav-text:#adadb2; --nav-strong:#f3f1ec; --nav-mark:#e8c766;
+  --lec:#2b625b; --pr:#7d5a10; --lab:#9a4545; --high:#b0473b; --mid:#8a6316; --ok:#2b625b; --low:#9a9a9e;
+  --tint-1:#f3e9c9; --tint-2:#dcebe5; --tint-3:#f3dfdc;
+  --hero-bg:#26262a; --hero-text:#f3f1ec; --hero-muted:rgba(243,241,236,.66); --hero-track:rgba(243,241,236,.18); --hero-bar:#e8c766;
+}
+html[data-theme="dark"][data-palette="tri-retro"]{
+  --bg:#18181b; --surface:#202024; --surface-2:#28282c; --line:#333338; --text:#e8e7e3; --muted:#a4a3a6; --faint:#707074;
+  --accent:#8fcbbf; --accent-ink:#18181b; --nav-bg:#121214; --nav-text:#96969b; --nav-mark:#e8c766;
+  --lec:#8fcbbf; --pr:#e3c46e; --lab:#e8968f; --high:#e3887c; --mid:#dcb26b; --ok:#8fcbbf; --low:#707074;
+  --tint-1:#302b1c; --tint-2:#1d2c28; --tint-3:#33221f;
+  --hero-bg:#2a2a2f; --hero-text:#e8e7e3; --hero-muted:#a4a3a6; --hero-track:#3c3c42; --hero-bar:#e8c766;
+}
+
+/* Головна — тріади */
+html[data-palette^="tri"] .next{background:var(--tint-2)}
+html[data-palette^="tri"] .how li:nth-child(1){background:var(--tint-1)}
+html[data-palette^="tri"] .how li:nth-child(2){background:var(--tint-2)}
+html[data-palette^="tri"] .how li:nth-child(3){background:var(--tint-3)}
+html[data-palette^="tri"] .qa:nth-child(1) .qa-ico{background:var(--tint-2)}
+html[data-palette^="tri"] .qa:nth-child(2) .qa-ico{background:var(--tint-1)}
+html[data-palette^="tri"] .qa:nth-child(3) .qa-ico{background:var(--tint-3)}
+html[data-palette^="tri"] .qa:nth-child(4) .qa-ico{background:var(--tint-2)}
+html[data-palette^="tri"] .res:nth-child(1) .res-ico{background:var(--tint-2)}
+html[data-palette^="tri"] .res:nth-child(2) .res-ico{background:var(--tint-1)}
+html[data-palette^="tri"] .res:nth-child(3) .res-ico{background:var(--tint-3)}
+html[data-palette^="tri"] .res:nth-child(4) .res-ico{background:var(--tint-2)}

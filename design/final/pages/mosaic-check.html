@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<!-- Scratch check page for assets/css (plan 0001, phase 1). Not a showcase: see design/system.html (later). -->
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mosaic CSS check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/base.css">
+<link rel="stylesheet" href="/assets/css/components.css">
+<link rel="stylesheet" href="/assets/css/shell.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+</svg>
+<div class="sh-app" id="app">
+  <nav class="sh-nav" aria-label="Меню">
+    <a class="sh-brand" href="#"><span class="sh-brand-mark">Р</span><span class="sh-brand-name">Розклад</span></a>
+    <div class="sh-nav-group">
+      <a class="sh-nav-item" style="--c:var(--c2)" href="#"><svg class="sh-icon"><use href="#i"/></svg><span class="sh-nav-text">Головна</span></a>
+      <a class="sh-nav-item" style="--c:var(--c1)" href="#"><svg class="sh-icon"><use href="#i"/></svg><span class="sh-nav-text">Задачі</span><span class="sh-nav-count">9</span></a>
+      <a class="sh-nav-item" style="--c:var(--c3)" href="#"><svg class="sh-icon"><use href="#i"/></svg><span class="sh-nav-text">Семестр</span></a>
+    </div>
+    <div class="sh-nav-group">
+      <div class="sh-nav-label">Довідники</div>
+      <a class="sh-nav-item is-active" aria-current="page" style="--c:var(--c4)" href="#"><svg class="sh-icon"><use href="#i"/></svg><span class="sh-nav-text">Викладачі</span><span class="sh-nav-count">42</span></a>
+      <a class="sh-nav-item" style="--c:var(--c5)" href="#"><svg class="sh-icon"><use href="#i"/></svg><span class="sh-nav-text">Групи</span></a>
+      <a class="sh-nav-item" style="--c:var(--c6)" href="#"><svg class="sh-icon"><use href="#i"/></svg><span class="sh-nav-text">Потоки</span></a>
+    </div>
+    <div class="sh-nav-foot"><div class="sh-user"><span class="sh-avatar">ОК</span><div><div class="sh-user-name">Оксана К.</div><div class="sh-user-role">Диспетчер</div></div></div></div>
+  </nav>
+  <div class="sh-scrim" onclick="app.classList.remove('sh-nav-open')"></div>
+</div>
+<main class="sh-main">
+  <header class="sh-top">
+    <button class="sh-menu-btn" aria-label="Меню" onclick="app.classList.add('sh-nav-open')"><svg class="sh-icon"><use href="#i"/></svg></button>
+    <div class="sh-heading"><div class="sh-crumbs"><a href="#">Довідники</a><span class="sh-crumbs-sep">/</span>Викладачі</div><h1 class="sh-title">Викладачі <span class="badge badge-status">42</span></h1></div>
+    <div class="sh-actions"><button class="btn btn-primary">Додати</button><button class="sh-theme" aria-label="Тема" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'"><svg class="sh-icon"><use href="#i"/></svg></button></div>
+  </header>
+  <div class="stack">
+    <div class="card"><div class="row wrap">
+      <button class="btn">Звичайна</button><button class="btn btn-ghost">Ghost</button><button class="btn btn-danger">Видалити</button><button class="btn btn-danger-ghost btn-sm">Ще</button>
+      <span class="badge badge-lec">Лекція</span><span class="badge badge-pr">Практика</span><span class="badge badge-lab">Лаб.</span><span class="badge badge-exam">Екзамен</span>
+      <span class="badge badge-ok">ok</span><span class="badge badge-warn">warn</span><span class="badge badge-err">err</span>
+      <span class="chip is-on">Обрано</span><span class="chip">Чип</span><select class="select" style="width:160px"><option>Список</option></select>
+    </div>
+    <div class="danger is-confirm"><b>Видалити викладача</b><span class="sp"></span><button class="btn btn-sm" data-confirm>Видалити</button><div class="confirm">Точно? <button class="btn btn-sm btn-danger">Так</button><button class="btn btn-sm btn-ghost">Ні</button></div></div>
+    </div>
+    <div class="wk" style="--days:3">
+      <div class="wh"></div><div class="wh">Пн <span>1</span></div><div class="wh is-today">Вт <span>2</span></div><div class="wh">Ср <span>3</span></div>
+      <div class="tm"><b>08:30</b>09:50</div><div class="cell"><div class="ls lec"><span class="tp">Лекція</span><b>Алгоритми</b><span class="m">ауд. 101</span></div></div><div class="cell is-over"></div><div class="cell"><div class="ls exam"><span class="tp">Екзамен</span><b>Фізика</b><span class="m">ауд. 7</span></div></div>
+      <div class="tm last"><b>10:05</b>11:25</div><div class="cell last"><div class="ls pr"><span class="tp">Практика</span><b>БД</b></div></div><div class="cell last blocked"></div><div class="cell last"><div class="ls lab"><span class="tp">Лаб.</span><b>ОС</b></div></div>
+    </div>
+    <div class="card"><div class="steps compact"><div class="step is-done"><span class="step-n">1</span><span class="step-name">Календар</span></div><div class="step is-cur"><span class="step-n">2</span><span class="step-name">Плани</span><span class="step-meta">12 з 24</span></div><div class="step is-todo"><span class="step-n">3</span><span class="step-name">Обмеження</span></div></div>
+    <div class="empty"><div class="empty-ico"><svg class="icon"><use href="#i"/></svg></div><b>Нічого немає</b><span class="muted">Додайте першого викладача</span></div>
+    <div class="loading"><span class="spinner"></span>Завантаження…</div></div>
+  </div>
+</main>
+<div class="toasts"><div class="toast is-ok"><span class="toast-msg">Викладача видалено</span><button class="toast-action">Скасувати</button></div></div>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 9 — Тиша</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="look.css">
+<link rel="stylesheet" href="graphite.css">
+<style>
+/* 9 · ТИША — ні карток, ні рамок. Структуру тримають простір і типографіка.
+   Меню — лише текст. Колір з'являється тільки там, де щось важливе. */
+html[data-theme]{
+  --font:'Onest',system-ui,sans-serif;
+  --radius:0; --radius-sm:8px; --btn-radius:8px; --pill:6px; --card-border:0; --pad:0; --gap:44px; --nav-w:224px;
+  --title-size:30px; --title-weight:600; --h2-size:15px;
+  --nav-bg:var(--bg); --nav-active-bg:transparent;
+  --hero-bg:transparent; --hero-text:var(--text); --hero-muted:var(--muted); --hero-track:var(--line); --hero-bar:var(--text);
+}
+.nav{border-right:0;padding:44px 28px}
+.brand-mark{display:none}.brand-name{font-size:17px;font-weight:600}
+.nav-brand{padding:0 0 34px}
+.nav-label{text-transform:none;letter-spacing:0;font-size:12px;font-weight:400;color:var(--faint);padding:0 0 6px}
+.nav-group{margin-bottom:24px}
+.nav-item{position:relative;padding:5px 0;border-radius:0;color:var(--muted);font-weight:400}
+.nav-item .icon{display:none}
+.nav-item:hover{background:none;color:var(--text)}
+.nav-item.is-active{color:var(--text);font-weight:600}
+.nav-item.is-active::before{content:'';position:absolute;left:-14px;top:50%;width:5px;height:5px;margin-top:-2.5px;border-radius:50%;background:var(--text)}
+.nav-count{color:var(--faint)}
+.nav-user{border:0;padding:0}.nav-user .avatar{background:var(--surface-2)}
+.main{padding:46px 56px 90px}
+.topbar{margin-bottom:46px}
+.crumbs{font-size:13px}
+.search{background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;width:220px;padding:0}
+.icon-btn{background:none;border:0}
+.btn{border:0;background:var(--surface-2);height:36px}
+.btn-primary{background:var(--accent)}
+.btn-ghost{background:transparent}
+.btn-sm{height:30px}
+.btn-hero{padding:0;height:auto;border:0;text-decoration:underline;text-underline-offset:4px;color:var(--text)}
+.avatar{background:var(--surface-2)}
+.card{background:none}
+.card-head{margin-bottom:6px}
+.card-title{font-weight:600}
+/* показники — просто числа в ряд */
+.home-top{gap:0;margin-bottom:60px}
+.home-top>.card{padding:0 32px 0 0}
+.hero{gap:8px}
+.hero-label,.kpi-label{font-size:13px;color:var(--muted)}
+.hero-value{font-size:60px;font-weight:500}
+.hero-note{color:var(--muted)}
+.hero .progress,.kpi .progress{height:3px}
+.kpi-value{font-size:40px;font-weight:400;margin-top:10px}
+.seg{background:none;padding:0;gap:4px}
+.seg button{border-radius:6px}
+.seg button.is-on{background:var(--surface-2);box-shadow:none}
+.task-group-label{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500;padding:18px 0 4px}
+.sev{display:none}
+.task{border-top:1px solid var(--line);padding:14px 0}
+.sev-ico{background:none;width:20px}
+.task-fix{background:var(--surface-2);border-radius:12px;padding:14px 16px}
+.fix-opt.is-sel{border-color:transparent}
+.badge{background:none!important;padding:0}
+.today-row{padding:12px 0}
+/* довідник */
+.md-list{border-right:1px solid var(--line);padding-top:0}
+.md-search{margin:0 16px 0 0;background:var(--surface-2);border:0;border-radius:8px}
+.md-filters{padding:14px 16px 10px 0}
+.chip{border:0;background:transparent;color:var(--muted)}
+.chip.is-on{background:var(--surface-2);color:var(--text)}
+.md-row{border-top:0;border-radius:8px;padding:10px 12px;margin:0 16px 2px 0}
+.md-row:hover{background:var(--surface-2)}
+.md-row.is-active{background:var(--surface-2);box-shadow:none}
+.md-detail{padding:0 0 0 52px}
+.section{margin-top:36px}
+.section-title{text-transform:none;letter-spacing:0;font-size:14px;color:var(--text)}
+.fields,.f-label,.f-value{border-color:var(--line)}
+.avail{gap:4px}.avail .c{border:0;border-radius:6px;background:var(--surface-2)}
+/* семестр */
+.steps{border-top:1px solid var(--line);margin-bottom:52px;overflow:visible}
+.step{border-right:0;padding:18px 16px 0 0}
+.step.is-cur{background:none}
+.step.is-cur::after{top:-1px;bottom:auto;height:2px}
+.step-n{border:0;background:var(--surface-2)}
+.check{border-top:1px solid var(--line)}
+.empty-ico{background:var(--surface-2)}
+/* студент */
+.pub-wrap{padding-top:48px}
+.pub{gap:22px}
+.pub-head .brand-mark{display:none}
+.pub-search{background:var(--surface-2);border:0;border-radius:12px}
+.pub-title h1{font-size:44px;font-weight:600}
+.now-card{background:var(--surface-2);border-radius:18px;padding:24px}
+.next-card{background:none;border:0;padding:0 4px}
+.day{background:none;border:0;border-radius:12px}
+.day.is-active{background:var(--accent);color:var(--accent-ink)}
+.lessons{background:none;border:0;padding:0}
+.lessons-head{text-transform:none;letter-spacing:0;font-size:14px;color:var(--text)}
+</style>
+</head>
+<body>
+<script src="theme.js"></script>
+<script src="shell.js"></script>
+<script>initTheme('v9-theme'); renderApp({ name: '9 · Тиша', calm: true }); mountThemeToggle('v9-theme');</script>
+</body>
+</html>

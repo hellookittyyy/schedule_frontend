@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UX 1 — Майстер семестру</title>
+<style>
+/* ---- shared low-fi wireframe styles (same in all 5 variants) ---- */
+:root{--ink:#1d1d1f;--mid:#6e6e73;--soft:#a1a1a6;--line:#d2d2d7;--fill:#f2f2f4;--paper:#fff;--bg:#f7f7f8;--note:#fff3a3;--mark:#e11d48}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+.doc{max-width:1240px;margin:0 auto;padding:28px 20px 80px}.back{font-size:13px;color:var(--mid);text-decoration:none}
+h1{font-size:26px;margin:8px 0 4px}.idea{color:var(--mid);max-width:820px;margin:0 0 8px}h2{font-size:17px;margin:34px 0 10px}
+.maps{display:grid;grid-template-columns:1fr 1fr;gap:16px}.maps>div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px}
+.tree,.tree ul{list-style:none;margin:0;padding-left:16px}.tree{padding:0}.tree ul{border-left:1px solid var(--soft);margin-left:6px}
+.tree li{position:relative;padding:3px 0 3px 12px}.tree ul>li::before{content:'';position:absolute;left:0;top:13px;width:9px;border-top:1px solid var(--soft)}
+.new{font-size:10px;background:var(--ink);color:#fff;border-radius:3px;padding:0 5px;margin-left:4px;vertical-align:1px}
+.stabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.stabs button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:5px 12px;cursor:pointer;font:inherit;font-size:13px}
+.stabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.scr{display:none}.scr.on{display:grid;grid-template-columns:1fr 290px;gap:16px}
+.frame{border:1.5px solid var(--ink);border-radius:10px;background:var(--paper);overflow:hidden;min-height:470px;display:flex;flex-direction:column}
+.bar{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--line);font-size:12px}.bar i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.url{flex:1;background:var(--fill);border-radius:6px;padding:2px 10px;color:var(--mid)}
+.box{border:1px solid var(--line);border-radius:6px;padding:10px;background:#fff}.fill{background:var(--fill)}
+.btn{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--ink);border-radius:5px;padding:4px 10px;background:#fff;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn.pri{background:var(--ink);color:#fff}.btn.ghost{border-color:var(--line)}
+.in{border:1px solid var(--line);border-radius:5px;padding:5px 9px;color:var(--soft);font-size:13px;background:#fff}
+.m{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--mark);color:#fff;font-size:11px;font-style:normal;font-weight:700;vertical-align:middle;margin:0 3px;flex:none}
+.notes{background:var(--note);padding:14px 14px 14px 30px;border-radius:4px;font-size:13px;align-self:start;margin:0;box-shadow:2px 3px 0 rgba(0,0,0,.06)}
+.notes li{margin-bottom:8px}.notes li::marker{font-weight:700;color:var(--mark)}
+[data-go]{cursor:pointer}[data-go]:not(button):hover{outline:1.5px dashed var(--mark);outline-offset:2px}
+.muted{color:var(--mid)}.small{font-size:12px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.col{display:flex;flex-direction:column;gap:8px}.grow{flex:1}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl td,.tbl th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}.tbl th{color:var(--mid);font-weight:600}
+.pill{border:1px solid var(--line);border-radius:99px;padding:1px 8px;font-size:12px;white-space:nowrap}.pill.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.scen{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);font-size:13px}.scen td,.scen th{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}.scen th{background:var(--fill)}
+.pc{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.pc>div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 14px}.pc h4{margin:0 0 6px}.pc ul{margin:0;padding-left:18px}
+@media(max-width:900px){.scr.on,.maps,.pc{grid-template-columns:1fr}}
+/* ---- variant-specific ---- */
+.steps{display:flex;border-bottom:1px solid var(--line);font-size:12px;overflow-x:auto}
+.steps div{flex:1;padding:8px 10px;border-right:1px solid var(--line);white-space:nowrap;color:var(--mid)}
+.steps div b{display:block;color:var(--ink)}.steps .done{background:var(--fill)}.steps .cur{background:var(--ink);color:#ccc}.steps .cur b{color:#fff}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13px}
+</style>
+</head>
+<body>
+<div class="doc">
+<a class="back" href="index.html">← Усі варіанти UX</a>
+<h1>Варіант 1 · Майстер семестру</h1>
+<p class="idea"><b>Ідея:</b> підготовка розкладу — це лінійний процес, тож адмінку будуємо як <b>покроковий майстер усередині семестру</b>. Семестр стає «проєктом», а меню — кроками: календар → ресурси → навчальні плани → обмеження → генерація → публікація. Кожен крок показує, чого бракує, і не пускає до генерації з блокерами.</p>
+<p class="idea"><b>Для кого:</b> адмін, який робить розклад 2 рази на рік і не памʼятає порядок дій.</p>
+
+<h2>Карта сторінок</h2>
+<div class="maps">
+<div><b>Адмінка</b>
+<ul class="tree">
+  <li><b>Семестри</b> — список карток зі статусом підготовки <span class="new">нове</span>
+    <ul><li><b>Семестр «Осінь 2026»</b> — майстер
+      <ul><li>1. Календар і дзвінки (замість великої модалки)</li>
+          <li>2. Ресурси: які викладачі / групи / аудиторії беруть участь</li>
+          <li>3. Навчальні плани (по групах, з прогресом)</li>
+          <li>4. Обмеження (по людях / групах)</li>
+          <li>5. Генерація: передперевірка → запуск → звіт</li>
+          <li>6. Перевірка і ручне редагування (конструктор)</li>
+          <li>7. Публікація для студентів <span class="new">нове</span></li></ul></li></ul></li>
+  <li><b>Довідники</b> (рідко): Викладачі · Групи і потоки · Аудиторії · Предмети</li>
+</ul></div>
+<div><b>Публічна частина</b>
+<ul class="tree">
+  <li><b>Головна</b> = одне поле пошуку «група / викладач / аудиторія»</li>
+  <li><b>Розклад</b> /g/КН-31 — тиждень, перемикач днів <span class="new">нове</span></li>
+  <li>Показується лише <i>опублікований</i> семестр</li>
+</ul>
+<p class="small muted">Зараз: 10 рівноцінних пунктів меню, порядок роботи ніде не видно, публічна сторінка показує чернетку.</p></div>
+</div>
+
+<h2>Клікабельний прототип</h2>
+<div class="stabs" id="stabs">
+  <button class="on" data-go="a">A. Список семестрів</button><button data-go="b">B. Крок 1: календар</button><button data-go="c">C. Крок 3: навч. плани</button><button data-go="d">D. Крок 5: генерація</button><button data-go="e">E. Студент</button>
+</div>
+
+<!-- A -->
+<section class="scr on" id="a"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin/semesters</span></div>
+  <div style="padding:16px" class="col">
+    <div class="row"><b style="font-size:18px">Семестри</b><span class="grow"></span><button class="btn pri" data-go="b">+ Новий семестр <i class="m">1</i></button></div>
+    <div class="box col" data-go="c">
+      <div class="row"><b>Осінь 2026</b><span class="pill dark">Підготовка</span><span class="grow"></span><span class="muted small">1 вер – 20 груд</span></div>
+      <div class="row small"><span>✓ Календар</span><span>✓ Ресурси</span><span>◐ Плани 18/24 груп</span><span class="muted">○ Обмеження</span><span class="muted">○ Генерація</span><span class="muted">○ Публікація</span><i class="m">2</i></div>
+      <div class="row"><span class="small">Далі: <b>заповнити плани для 6 груп</b></span><span class="grow"></span><button class="btn">Продовжити →</button></div>
+    </div>
+    <div class="box col"><div class="row"><b>Весна 2026</b><span class="pill">Опубліковано</span><span class="grow"></span><span class="muted small">архів · тільки перегляд</span></div></div>
+    <div class="box fill small muted">Довідники: Викладачі (42) · Групи (24) · Аудиторії (56) · Предмети (87) <i class="m">3</i></div>
+  </div></div>
+  <ol class="notes"><li>Створення семестру веде одразу в майстер, а не в модалку з 10 полями.</li><li>У кожного семестру видно прогрес по кроках і <b>одну наступну дію</b>.</li><li>Довідники відсунуті вбік: їх редагують рідко, тому вони не забирають місце в меню.</li></ol>
+</section>
+
+<!-- B -->
+<section class="scr" id="b"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin/semesters/osin-2026/calendar</span></div>
+  <div class="steps"><div class="cur"><b>1 Календар</b>зараз</div><div><b>2 Ресурси</b></div><div><b>3 Плани</b></div><div><b>4 Обмеження</b></div><div><b>5 Генерація</b></div><div><b>6 Перевірка</b></div><div><b>7 Публікація</b></div></div>
+  <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="col"><b>Основне</b><div class="in">Назва: Осінь 2026</div><div class="row"><div class="in grow">1.09.2026</div>–<div class="in grow">20.12.2026</div></div>
+      <b>Робочі дні <i class="m">1</i></b><div class="row"><span class="pill dark">Пн</span><span class="pill dark">Вт</span><span class="pill dark">Ср</span><span class="pill dark">Чт</span><span class="pill dark">Пт</span><span class="pill">Сб</span><span class="pill">Нд</span></div>
+      <b>Дзвінки</b><div class="small">1) 08:30–09:50 · 2) 10:00–11:20 · 3) 11:40–13:00 · 4) 13:30–14:50 <span class="muted">+ пара</span></div>
+      <span class="small muted">або <u>скопіювати з «Весна 2026»</u> <i class="m">2</i></span></div>
+    <div class="col"><b>Свята й перенесення <i class="m">3</i></b>
+      <div class="box fill" style="height:170px;display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:6px">
+        <script>document.write(Array.from({length:35},(_,i)=>`<div style="background:${[13,14].includes(i)?'#1d1d1f':i%7>4?'#e5e5ea':'#fff'};border-radius:3px"></div>`).join(''))</script></div>
+      <span class="small muted">Клік по дню → вихідний / робочий. Чорні — свята.</span></div>
+  </div>
+  <div class="row" style="padding:12px 16px;border-top:1px solid var(--line);margin-top:auto"><span class="small muted">Автозбереження ✓</span><span class="grow"></span><button class="btn ghost" data-go="a">← До семестрів</button><button class="btn pri" data-go="c">Далі: ресурси → <i class="m">4</i></button></div></div>
+  <ol class="notes"><li>Чипи днів замість 7 чекбоксів.</li><li>Копіювання налаштувань із минулого семестру економить 80% вводу.</li><li>Свята позначаються кліком у календарі, а не вводом «YYYY-MM-DD» у textarea, як зараз.</li><li>Кнопка «Далі» завжди на одному місці. Збереження автоматичне, окремої кнопки «Зберегти» немає.</li></ol>
+</section>
+
+<!-- C -->
+<section class="scr" id="c"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin/semesters/osin-2026/plans?group=kn-32</span></div>
+  <div class="steps"><div class="done" data-go="b"><b>1 Календар ✓</b></div><div class="done"><b>2 Ресурси ✓</b></div><div class="cur"><b>3 Плани</b>18 / 24</div><div><b>4 Обмеження</b></div><div><b>5 Генерація</b></div><div><b>6 Перевірка</b></div><div><b>7 Публікація</b></div></div>
+  <div style="display:grid;grid-template-columns:200px 1fr;flex:1">
+    <div style="border-right:1px solid var(--line);padding:10px" class="small">
+      <b>Групи <i class="m">1</i></b>
+      <div class="chk">✓ КН-31</div><div class="chk" style="background:var(--fill)"><b>⚠ КН-32</b></div><div class="chk">○ КН-21</div><div class="chk">○ ПІ-21</div><div class="chk">✓ ПІ-41</div>
+      <div class="muted" style="margin-top:6px">Фільтр: <u>лише незаповнені</u></div></div>
+    <div style="padding:12px" class="col">
+      <div class="row"><b>КН-32 · 3 курс · 24 студ.</b><span class="grow"></span><button class="btn ghost">Скопіювати план з КН-31 <i class="m">2</i></button></div>
+      <table class="tbl"><tr><th>Предмет</th><th>Лек</th><th>Прак</th><th>Лаб</th><th>Викладач</th></tr>
+        <tr><td>Бази даних</td><td>32</td><td>16</td><td>16</td><td>Коваленко О.</td></tr>
+        <tr><td>Алгоритми</td><td>32</td><td>32</td><td>—</td><td>⚠ <u>не призначено</u> <i class="m">3</i></td></tr>
+        <tr><td>Веб-технології</td><td>16</td><td>—</td><td>32</td><td>Мельник А.</td></tr>
+        <tr><td colspan="5" class="muted">+ рядок (Tab переходить між клітинками) <i class="m">4</i></td></tr></table>
+      <div class="small muted">Разом: 176 год · ≈ 5.5 пари / тиждень</div></div>
+  </div>
+  <div class="row" style="padding:12px 16px;border-top:1px solid var(--line)"><span class="small">⚠ 6 груп без плану. Можна продовжити, але ці групи не потраплять у генерацію.</span><span class="grow"></span><button class="btn ghost" data-go="b">← Назад</button><button class="btn pri" data-go="d">Далі: обмеження →</button></div></div>
+  <ol class="notes"><li>Ліворуч чекліст груп. Одразу видно, що ще не заповнено.</li><li>Масова дія «скопіювати з іншої групи» для паралельних груп.</li><li>Проблеми позначаються прямо в рядку. Клік відкриває вибір викладача.</li><li>Табличне редагування замість модалки на кожен план.</li></ol>
+</section>
+
+<!-- D -->
+<section class="scr" id="d"><div class="frame">
+  <div class="bar"><i></i><i></i><span class="url">/admin/semesters/osin-2026/generate</span></div>
+  <div class="steps"><div class="done"><b>1 ✓</b></div><div class="done"><b>2 ✓</b></div><div class="done" data-go="c"><b>3 Плани ✓</b></div><div class="done"><b>4 Обмеження ✓</b></div><div class="cur"><b>5 Генерація</b></div><div><b>6 Перевірка</b></div><div><b>7 Публікація</b></div></div>
+  <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="col"><b>Передперевірка <i class="m">1</i></b>
+      <div class="chk">✓ 24 групи мають навчальні плани</div><div class="chk">✓ Усім заняттям призначено викладачів</div>
+      <div class="chk">⚠ Ауд. «Лаб» — 3 шт., потрібно ≈ 4 на лабораторні <u>Як виправити?</u></div>
+      <div class="chk">✕ Кравчук Д.: 20 год плану, але доступний лише 2 дні <u>Відкрити</u> <i class="m">2</i></div>
+      <div class="row"><button class="btn pri">⚡ Згенерувати</button><span class="small muted">≈ 40 с · попередній результат буде збережено <i class="m">3</i></span></div></div>
+    <div class="col"><b>Результат</b>
+      <div class="box fill col small"><span>Розподілено <b>412 / 438</b> занять</span><span>Порушено мʼяких обмежень: 3</span><span>Вікна у студентів: 11</span>
+      <div class="row"><button class="btn">Порівняти з версією 1</button><button class="btn pri">Перевірити вручну →</button></div></div>
+      <span class="small muted">Історія: v1 (вчора, 398/438) · v2 (зараз)</span></div>
+  </div></div>
+  <ol class="notes"><li>Перед генерацією система сама перевіряє дані. Зараз генерація просто падає або дає порожній результат.</li><li>Кожен блокер має посилання на місце, де його виправляють.</li><li>Генерація створює <b>версію</b>, тож можна порівняти результат і відкотитися.</li></ol>
+</section>
+
+<!-- E -->
+<section class="scr" id="e"><div class="frame" style="max-width:420px">
+  <div class="bar"><i></i><i></i><span class="url">rozklad.ua/g/kn-31</span></div>
+  <div style="padding:14px" class="col">
+    <div class="in" style="color:var(--ink)">🔍 КН-31 <i class="m">1</i></div>
+    <div class="row small"><span class="pill dark">Сьогодні</span><span class="pill">Пн</span><span class="pill">Вт</span><span class="pill">Ср</span><span class="pill">Чт</span><span class="pill">Пт</span></div>
+    <div class="box col"><b>11:40 · Алгоритми</b><span class="small muted">Практика · ауд. 207 · Бондар С.</span></div>
+    <div class="box col"><b>13:30 · Вища математика</b><span class="small muted">Лекція · Ауд. 1 · Шевченко Т.</span></div>
+    <div class="small muted">Посилання можна зберегти: /g/kn-31 <i class="m">2</i></div>
+  </div></div>
+  <ol class="notes"><li>Одне поле замість 5 (викладач, група, курс, з дати, по дату). Тип об'єкта визначається автоматично.</li><li>Кожен розклад має власну адресу, і поле дат не потрібне.</li></ol>
+</section>
+
+<h2>Ключові сценарії: кількість кроків</h2>
+<table class="scen"><tr><th>Сценарій</th><th>Зараз</th><th>У цьому варіанті</th></tr>
+<tr><td>Студент бачить пари на сьогодні</td><td>5 дій щоразу (ввести групу, вибрати, дати, кнопка)</td><td>1 дія (або 0 за збереженим посиланням)</td></tr>
+<tr><td>Додати викладача з недоступністю</td><td>2 сторінки, ~12 дій (Викладачі + Обмеження)</td><td>Довідник + крок 4 «Обмеження». Майстер нагадає про це.</td></tr>
+<tr><td>Підготувати новий семестр</td><td>5 розрізнених сторінок без порядку</td><td>7 кроків по черзі, з прогресом і підказкою «що далі»</td></tr>
+<tr><td>Виправити конфлікт</td><td>Шукати очима в сітці</td><td>Перелік у передперевірці з посиланням</td></tr></table>
+
+<h2>Оцінка</h2>
+<div class="pc">
+<div><h4>👍 Плюси</h4><ul><li>Неможливо загубитись: завжди видно наступний крок</li><li>Валідація до генерації</li><li>Версії розкладу</li><li>Легко пояснити на захисті курсової</li></ul></div>
+<div><h4>👎 Мінуси</h4><ul><li>Повільно для дрібних правок посеред семестру</li><li>Потрібні нові API: статус кроків, версії</li><li>Більше коду в навігації</li></ul></div>
+<div><h4>🎯 Коли обирати</h4><ul><li>Головна цінність — правильно згенерувати розклад</li><li>Користувачі — новачки або рідко працюють</li><li>Добре поєднується з варіантом 5</li></ul></div>
+</div>
+</div>
+<script>
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));document.querySelectorAll('#stabs button').forEach(b=>b.classList.toggle('on',b.dataset.go===id))}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)});
+</script>
+</body>
+</html>

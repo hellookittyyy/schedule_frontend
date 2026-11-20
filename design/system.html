@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<!-- Living reference for the Mosaic production CSS/JS (plan 0001). Loads only assets/*; no ui.js. -->
+<html lang="uk">
+<head>
+<script src="/assets/js/theme-boot.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mosaic — дизайн-система</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/base.css">
+<link rel="stylesheet" href="/assets/css/components.css">
+<link rel="stylesheet" href="/assets/css/shell.css">
+<style>
+  /* showcase layout only (tokens, no colour values) */
+  .sys{max-width:1200px;margin:0 auto;padding:28px 32px 120px}
+  .sys-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+  .sys-head h1{font-size:var(--title-size);font-weight:600;letter-spacing:-.015em;flex:1;min-width:0}
+  .sys-toc{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 8px}
+  .sys-sec{margin-top:40px;scroll-margin-top:16px}
+  .sys-sec>h2{font-size:18px;font-weight:600;margin-bottom:4px}
+  .sys-sec>p{margin-bottom:14px}
+  .sys-label{font-size:12px;color:var(--muted);margin:16px 0 8px}
+  .sw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .sw{border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;background:var(--surface);font-size:12px}
+  .sw-chip{height:44px;border-bottom:1px solid var(--line)}
+  .sw-meta{padding:6px 8px;display:flex;flex-direction:column}
+  .sw-meta code{font-size:11.5px}
+  .frame{position:relative;transform:translateZ(0);overflow:hidden;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
+  .frame-shell{height:520px}.frame-drawer{height:520px}.frame-toast{height:220px}.frame-busy{height:360px}
+  .frame .sh-main{min-height:100%}
+  .combo-demo{max-width:360px;padding-bottom:150px}
+  .ic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+  .ic-cell{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);font-size:12px;min-width:0}
+  .uq-demo{max-width:260px}
+  @media (max-width:980px){.sys{padding:20px 16px 120px}}
+</style>
+</head>
+<body>
+<div class="sys">
+  <header class="sys-head">
+    <h1>Mosaic — дизайн-система</h1>
+    <span class="muted sm">тема: <b id="theme-name"></b></span>
+    <button class="btn" id="theme-btn" type="button"><span data-ic="moon"></span>Змінити тему</button>
+  </header>
+  <p class="muted">Живий довідник: сторінка підключає лише продакшн-файли <code>assets/css/*</code> та <code>assets/js/icons.js</code>. План: <code>docs/plans/0001-mosaic-redesign.md</code>.</p>
+  <nav class="sys-toc chips" aria-label="Розділи">
+    <a class="chip link" href="#tokens">Токени</a><a class="chip link" href="#type">Типографіка</a><a class="chip link" href="#buttons">Кнопки</a>
+    <a class="chip link" href="#forms">Поля</a><a class="chip link" href="#chips">Чипи, бейджі</a><a class="chip link" href="#cards">Картки</a>
+    <a class="chip link" href="#tables">Таблиці</a><a class="chip link" href="#progress">Прогрес</a><a class="chip link" href="#feedback">Стани</a>
+    <a class="chip link" href="#md">Майстер–деталь</a><a class="chip link" href="#avail">Сітка доступності</a><a class="chip link" href="#week">Тиждень</a>
+    <a class="chip link" href="#steps">Кроки</a><a class="chip link" href="#drawer">Drawer</a><a class="chip link" href="#shell">Оболонка</a><a class="chip link" href="#icons">Іконки</a>
+  </nav>
+
+  <!-- ===== tokens ===== -->
+  <section class="sys-sec" id="tokens">
+    <h2>Токени кольорів</h2>
+    <p class="muted">Значення читаються з <code>getComputedStyle</code> і оновлюються при зміні теми.</p>
+    <div id="swatches"></div>
+  </section>
+
+  <!-- ===== typography ===== -->
+  <section class="sys-sec" id="type">
+    <h2>Типографіка</h2>
+    <div class="card stack">
+      <div style="font-size:var(--title-size);font-weight:600;letter-spacing:-.015em">Заголовок сторінки — 28 / 600</div>
+      <div class="card-title">Заголовок картки — 15 / 600 (.card-title)</div>
+      <div class="detail-name">Назва в деталях — 20 / 600 (.detail-name)</div>
+      <div class="section-title">Заголовок секції (.section-title) <span class="muted">з приміткою</span></div>
+      <p>Основний текст 14 / 1.5. Commissioner, яким набрано весь інтерфейс розкладу.</p>
+      <p class="muted">.muted — другорядний текст</p>
+      <p class="faint">.faint — найслабший текст, підказки</p>
+      <p class="sm">.sm — 12px</p><p class="xs-t">.xs-t — 11px</p>
+      <p><span class="num">0123456789</span> — .num (tabular) · <kbd>Ctrl</kbd> + <kbd>K</kbd></p>
+      <p><span class="t-ok">.t-ok</span> · <span class="t-warn">.t-warn</span> · <span class="t-err">.t-err</span></p>
+      <p class="ellipsis" style="max-width:260px">.ellipsis — дуже довгий текст, що не вміщається в рядок і обрізається</p>
+      <div class="divider"></div>
+      <span class="sr-only">.sr-only — прихований текст</span>
+      <p class="muted sm">.divider вище; .sr-only невидимий.</p>
+    </div>
+  </section>
+
+  <!-- ===== buttons ===== -->
+  <section class="sys-sec" id="buttons">
+    <h2>Кнопки</h2>
+    <div class="card">
+      <div class="sys-label">Варіанти (.btn)</div>
+      <div class="row wrap">
+        <button class="btn">Звичайна</button>
+        <button class="btn btn-primary"><span data-ic="plus"></span>Основна</button>
+        <button class="btn btn-ghost">Ghost</button>
+        <button class="btn btn-danger"><span data-ic="trash"></span>Видалити</button>
+        <button class="btn btn-danger-ghost">Danger ghost</button>
+        <a class="btn" href="#buttons">Посилання .btn</a>
+      </div>
+      <div class="sys-label">Малі (.btn-sm)</div>
+      <div class="row wrap">
+        <button class="btn btn-sm">Звичайна</button><button class="btn btn-sm btn-primary">Основна</button>
+        <button class="btn btn-sm btn-ghost">Ghost</button><button class="btn btn-sm btn-danger">Danger</button>
+        <button class="btn btn-sm btn-danger-ghost">Danger ghost</button>
+      </div>
+      <div class="sys-label">Вимкнені / зайняті</div>
+      <div class="row wrap">
+        <button class="btn" disabled>disabled</button><button class="btn btn-primary" disabled>disabled</button>
+        <button class="btn btn-danger" disabled>disabled</button><button class="btn btn-primary is-busy"><span class="spinner"></span>.is-busy</button>
+      </div>
+      <div class="sys-label">.btn-block</div>
+      <div style="max-width:320px"><button class="btn btn-primary btn-block">На всю ширину</button></div>
+      <div class="sys-label">.link-btn, .icon-btn (.sm, .bare, .dot)</div>
+      <div class="row wrap">
+        <button class="link-btn">Посилання-кнопка</button>
+        <button class="icon-btn" aria-label="Пошук"><span data-ic="search"></span></button>
+        <button class="icon-btn" aria-label="Сповіщення"><span data-ic="bell"></span><span class="dot"></span></button>
+        <button class="icon-btn sm" aria-label="Редагувати"><span data-ic="edit" data-cls="xs"></span></button>
+        <button class="icon-btn bare" aria-label="Ще"><span data-ic="more"></span></button>
+      </div>
+      <div class="sys-label">Аватари (.avatar .sm .lg .sq .sec)</div>
+      <div class="row wrap">
+        <span class="avatar sm">ОК</span><span class="avatar">ОК</span><span class="avatar lg">ОК</span>
+        <span class="avatar sq">ІП</span><span class="avatar sec">КН</span><span class="avatar sec" style="--sec:var(--c3)">ПІ</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== forms ===== -->
+  <section class="sys-sec" id="forms">
+    <h2>Поля, select, combobox</h2>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label for="f1">Прізвище <span class="req">*</span></label><input class="input" id="f1" placeholder="Напр. Коваленко"><span class="help">.help — підказка під полем</span></div>
+        <div class="field"><label for="f2">Посада</label><select class="select" id="f2"><option>Доцент</option><option>Професор</option></select></div>
+        <div class="field"><label for="f3">Email</label><input class="input is-err" id="f3" value="kovalenko@"><span class="err-t">.err-t — неправильний email</span></div>
+        <div class="field"><label for="f4">Малі (.sm)</label><div class="row"><input class="input sm" id="f4" placeholder="input.sm"><select class="select sm" aria-label="select.sm"><option>select.sm</option></select></div></div>
+        <div class="field full"><span class="label">Коментар (.textarea, .full)</span><textarea class="textarea" aria-label="Коментар" placeholder="Текст…"></textarea></div>
+        <div class="field"><label for="f5">Select з помилкою</label><select class="select is-err" id="f5"><option>—</option></select></div>
+        <div class="field"><label for="f6">Вимкнене поле</label><input class="input" id="f6" value="disabled" disabled></div>
+      </div>
+      <div class="form-actions"><button class="btn btn-primary">Зберегти</button><button class="btn btn-ghost">Скасувати</button><span class="saved"><span data-ic="check" data-cls="xs"></span>Збережено</span></div>
+
+      <div class="sys-label">.search</div>
+      <label class="search"><span data-ic="search"></span><input placeholder="Пошук викладача…"><kbd>/</kbd></label>
+
+      <div class="sys-label">.combo (список відкритий, .combo-item.is-active, .combo-empty)</div>
+      <div class="row wrap top">
+        <div class="combo combo-demo grow">
+          <input class="input" value="Кова" aria-label="Combobox">
+          <div class="combo-list is-open">
+            <div class="combo-item is-active">Коваленко О. П. <small>доцент</small></div>
+            <div class="combo-item">Ковальчук І. М. <small>асистент</small></div>
+            <div class="combo-item">Коваль Н. В. <small>професор</small></div>
+          </div>
+        </div>
+        <div class="combo combo-demo grow">
+          <input class="input" value="Ххх" aria-label="Combobox порожній">
+          <div class="combo-list is-open"><div class="combo-empty">Нічого не знайдено</div></div>
+        </div>
+      </div>
+
+      <div class="sys-label">.stepper, .switch, .check-row, .days</div>
+      <div class="row wrap">
+        <div class="stepper"><button aria-label="Менше"><span data-ic="x" data-cls="xs"></span></button><b>4</b><button aria-label="Більше"><span data-ic="plus" data-cls="xs"></span></button></div>
+        <button class="switch" aria-label="Вимкнено"></button><button class="switch is-on" aria-label="Увімкнено"></button>
+        <label class="check-row"><input type="checkbox" checked>Тільки активні</label>
+        <label class="check-row"><input type="checkbox">Архів</label>
+      </div>
+      <div class="days mt"><button class="is-on">Пн</button><button>Вт</button><button class="is-on">Ср</button><button>Чт</button><button>Пт</button><button>Сб</button></div>
+
+      <div class="sys-label">.check-list</div>
+      <div class="check-list" style="max-width:360px">
+        <label class="check-item"><input type="checkbox" checked>КН-21<span class="meta">28 студ.</span></label>
+        <label class="check-item"><input type="checkbox" checked>КН-22<span class="meta">25 студ.</span></label>
+        <label class="check-item"><input type="checkbox">КН-23<span class="meta">30 студ.</span></label>
+      </div>
+
+      <div class="sys-label">.rcards</div>
+      <div class="rcards">
+        <button class="rcard is-on" style="--c:var(--c3)"><span class="ri"><span data-ic="bolt"></span></span><span><b>Автоматично</b><span>Генератор розставить усі пари</span></span></button>
+        <button class="rcard" style="--c:var(--c2)"><span class="ri"><span data-ic="edit"></span></span><span><b>Вручну</b><span>Перетягуйте пари в сітку самі</span></span></button>
+        <button class="rcard"><span class="ri"><span data-ic="copy"></span></span><span><b>Копія семестру</b><span>Без --c: фон .ri — surface-2</span></span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== chips / seg / badges ===== -->
+  <section class="sys-sec" id="chips">
+    <h2>Чипи, сегменти, вкладки, бейджі</h2>
+    <div class="card">
+      <div class="sys-label">.chips / .chip (.is-on, .chip-add, .link, .x)</div>
+      <div class="chips">
+        <span class="chip is-on">Обрано</span><span class="chip">Звичайний</span><a class="chip link" href="#chips">.link</a>
+        <span class="chip">КН-21<button class="x" aria-label="Прибрати"><span data-ic="x" data-cls="xs"></span></button></span>
+        <span class="chip chip-add"><span data-ic="plus" data-cls="xs"></span>Додати</span>
+        <span class="chip"><span class="dotc" style="--c:var(--c1)"></span>З крапкою</span>
+      </div>
+      <div class="sys-label">.seg</div>
+      <div class="seg"><button class="is-on">Тиждень</button><button>День</button><button>Список</button></div>
+      <div class="sys-label">.tabs</div>
+      <div class="tabs" style="margin-top:0"><button class="is-on">Загальне<span>3</span></button><button>Навантаження<span>12</span></button><button>Доступність</button></div>
+      <div class="sys-label">.badge</div>
+      <div class="row wrap">
+        <span class="badge">badge</span><span class="badge badge-lec">Лекція</span><span class="badge badge-pr">Практика</span>
+        <span class="badge badge-lab">Лабораторна</span><span class="badge badge-exam">Екзамен</span><span class="badge badge-status">42</span>
+        <span class="badge badge-ok">Готово</span><span class="badge badge-warn">Увага</span><span class="badge badge-err">Помилка</span><span class="tag">.tag</span>
+      </div>
+      <div class="sys-label">.dotc, .sev, .sev-ico, .status</div>
+      <div class="row wrap">
+        <span class="dotc"></span><span class="dotc" style="--c:var(--c1)"></span><span class="dotc" style="--c:var(--c3)"></span><span class="dotc" style="--c:var(--c4)"></span>
+        <span class="sev sev-high"></span><span class="sev sev-mid"></span><span class="sev sev-low"></span><span class="sev sev-ok"></span>
+        <span class="sev-ico sev-high"><span data-ic="alert"></span></span><span class="sev-ico sev-mid"><span data-ic="info"></span></span><span class="sev-ico sev-ok"><span data-ic="check"></span></span>
+        <span class="status">Активний</span><span class="status st-warn">Чернетка</span><span class="status st-err">Конфлікт</span><span class="status st-off">Архів</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== cards ===== -->
+  <section class="sys-sec" id="cards">
+    <h2>Картки</h2>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><span class="card-title">.card з .card-head</span><span class="sp"></span><button class="btn btn-sm btn-ghost">Дія</button></div>
+        <p class="muted">Вміст картки з відступом var(--pad).</p>
+        <div class="section"><div class="section-title">.section <span class="muted">відступ зверху 26px</span></div>
+          <dl class="kv"><dt>Посада</dt><dd>Доцент</dd><dt>Кафедра</dt><dd>Інформатики</dd><dt>Ставка</dt><dd class="num">1.0</dd></dl>
+        </div>
+      </div>
+      <div class="card flush">
+        <div style="padding:var(--pad) var(--pad) 0"><div class="card-head"><span class="card-title">.card.flush</span></div></div>
+        <div class="check" style="padding:11px var(--pad)"><span class="check-ico"><span data-ic="check" data-cls="xs"></span></span><span>.check без стану</span><span class="muted sm">—</span></div>
+        <div class="check is-ok" style="padding:11px var(--pad)"><span class="check-ico"><span data-ic="check" data-cls="xs"></span></span><span>Календар заповнено</span><span class="badge badge-ok">ok</span></div>
+        <div class="check is-warn" style="padding:11px var(--pad)"><span class="check-ico"><span data-ic="alert" data-cls="xs"></span></span><span>3 викладачі без доступності</span><button class="link-btn">Виправити</button></div>
+        <div class="check is-err" style="padding:11px var(--pad)"><span class="check-ico"><span data-ic="x" data-cls="xs"></span></span><span>Немає аудиторій для лабораторних</span><button class="link-btn">Виправити</button></div>
+      </div>
+    </div>
+    <div class="split mt">
+      <div class="card"><span class="card-title">.split — ліва колонка</span><p class="muted">Права колонка 340px, складається на ≤1180px.</p></div>
+      <div class="card panel-sticky"><span class="card-title">.panel-sticky</span><p class="muted">Прилипає при прокрутці.</p></div>
+    </div>
+  </section>
+
+  <!-- ===== tables ===== -->
+  <section class="sys-sec" id="tables">
+    <h2>Таблиці</h2>
+    <div class="card flush"><div class="tbl-wrap">
+      <table class="tbl wide">
+        <thead><tr><th>Дисципліна</th><th>Тип</th><th class="r">Години</th><th>Статус</th><th class="act"></th></tr></thead>
+        <tbody>
+          <tr><td>Алгоритми і структури даних</td><td><span class="badge badge-lec">Лекція</span></td><td class="r num">48</td><td><span class="status">Розміщено</span></td><td class="act"><span class="row-actions"><button class="icon-btn sm bare" aria-label="Редагувати"><span data-ic="edit" data-cls="xs"></span></button><button class="icon-btn sm bare" aria-label="Видалити"><span data-ic="trash" data-cls="xs"></span></button></span></td></tr>
+          <tr class="is-new"><td>Бази даних (.is-new)</td><td><span class="badge badge-pr">Практика</span></td><td class="r num">32</td><td><span class="status st-warn">Чернетка</span></td><td class="act"><span class="row-actions"><button class="icon-btn sm bare" aria-label="Редагувати"><span data-ic="edit" data-cls="xs"></span></button></span></td></tr>
+          <tr><td>Операційні системи</td><td><span class="badge badge-lab">Лабораторна</span></td><td class="r num">24</td><td><span class="status st-err">Конфлікт</span></td><td class="act"><span class="row-actions"><button class="icon-btn sm bare" aria-label="Редагувати"><span data-ic="edit" data-cls="xs"></span></button></span></td></tr>
+          <tr><td>Фізика</td><td><span class="badge badge-exam">Екзамен</span></td><td class="r num">2</td><td><span class="status st-off">Архів</span></td><td class="act"><span class="row-actions"><button class="icon-btn sm bare" aria-label="Редагувати"><span data-ic="edit" data-cls="xs"></span></button></span></td></tr>
+        </tbody>
+        <tfoot><tr><td>Разом</td><td></td><td class="r num">106</td><td></td><td></td></tr></tfoot>
+      </table>
+    </div></div>
+    <p class="muted sm" style="margin-top:8px">.row-actions з'являються при наведенні на рядок.</p>
+  </section>
+
+  <!-- ===== progress / hint ===== -->
+  <section class="sys-sec" id="progress">
+    <h2>Прогрес і підказки</h2>
+    <div class="card stack">
+      <div class="progress"><i style="width:62%"></i></div>
+      <div class="progress warn"><i style="width:85%"></i></div>
+      <div class="progress err sm"><i style="width:100%"></i></div>
+      <div class="mini-steps" style="max-width:240px"><i class="d"></i><i class="d"></i><i class="c"></i><i></i><i></i><i></i></div>
+      <div class="load"><div class="progress"><i style="width:40%"></i></div><span class="num">16 / 40</span></div>
+      <div class="hint"><span data-ic="info"></span><div><b>.hint</b> — нейтральна підказка без модальних вікон.</div></div>
+      <div class="hint warn"><span data-ic="alert"></span><div><b>.hint.warn</b> — 3 групи без навчального плану.</div></div>
+      <div class="hint err"><span data-ic="x"></span><div><b>.hint.err</b> — генерацію зупинено: немає аудиторій.</div></div>
+    </div>
+  </section>
+
+  <!-- ===== feedback: toast, confirm, states ===== -->
+  <section class="sys-sec" id="feedback">
+    <h2>Тости, підтвердження, стани</h2>
+    <div class="sys-label">.toasts (у рамці; у продакшні фіксовані знизу екрана)</div>
+    <div class="frame frame-toast">
+      <div class="toasts">
+        <div class="toast is-ok"><span class="toast-msg">Викладача видалено</span><button class="toast-action">Скасувати</button><button class="toast-close" aria-label="Закрити"><span data-ic="x" data-cls="xs"></span></button></div>
+        <div class="toast is-warn"><span class="toast-msg">2 пари не розміщено</span><button class="toast-action">Показати</button></div>
+        <div class="toast is-err"><span class="toast-msg">Не вдалося зберегти</span><button class="toast-close" aria-label="Закрити"><span data-ic="x" data-cls="xs"></span></button></div>
+        <div class="toast"><span class="toast-msg">Без статусу</span></div>
+      </div>
+    </div>
+
+    <div class="sys-label">.danger — inline confirm (звичайний і .is-confirm)</div>
+    <div class="danger" style="margin-top:0"><div><b>Видалити викладача</b><div class="muted sm">Пари залишаться без викладача.</div></div><span class="sp"></span><button class="btn btn-sm btn-danger-ghost" data-confirm>Видалити</button><div class="confirm">Точно видалити? <button class="btn btn-sm btn-danger">Так, видалити</button><button class="btn btn-sm btn-ghost">Ні</button></div></div>
+    <div class="danger is-confirm" style="margin-top:10px"><div><b>Видалити викладача</b><div class="muted sm">Пари залишаться без викладача.</div></div><span class="sp"></span><button class="btn btn-sm btn-danger-ghost" data-confirm>Видалити</button><div class="confirm">Точно видалити? <button class="btn btn-sm btn-danger">Так, видалити</button><button class="btn btn-sm btn-ghost">Ні</button></div></div>
+
+    <div class="sys-label">.empty, .empty.is-err, .loading, .spinner, .skeleton</div>
+    <div class="grid-2">
+      <div class="card"><div class="empty"><div class="empty-ico"><span data-ic="users"></span></div><b>Ще немає викладачів</b><span class="muted">Додайте першого або імпортуйте список</span><button class="btn btn-sm btn-primary"><span data-ic="plus" data-cls="xs"></span>Додати</button></div></div>
+      <div class="card"><div class="empty is-err"><div class="empty-ico"><span data-ic="alert"></span></div><b>Не вдалося завантажити</b><span class="muted">Сервер не відповідає</span><button class="btn btn-sm">Спробувати ще</button></div></div>
+      <div class="card"><div class="loading"><span class="spinner"></span>Завантаження…</div><div class="loading"><span class="spinner lg"></span></div></div>
+      <div class="card stack"><div class="skeleton" style="width:60%"></div><div class="skeleton"></div><div class="skeleton" style="width:80%"></div></div>
+    </div>
+
+    <div class="sys-label">.busy.is-open + .log (у рамці)</div>
+    <div class="frame frame-busy">
+      <div class="busy is-open"><div class="busy-box"><span class="spinner lg"></span><h3>Генеруємо розклад</h3><p>Це може зайняти хвилину.</p><div class="log">Перевірка обмежень… ok
+Розміщення лекцій… 120 / 140
+Розміщення практик…</div></div></div>
+    </div>
+  </section>
+
+  <!-- ===== master-detail ===== -->
+  <section class="sys-sec" id="md">
+    <h2>Майстер–деталь</h2>
+    <div class="card md">
+      <div class="md-list">
+        <label class="search md-search"><span data-ic="search"></span><input placeholder="Пошук…"></label>
+        <div class="md-filters chips"><span class="chip is-on">Усі</span><span class="chip">Без навантаження</span></div>
+        <div class="md-rows">
+          <div class="md-group">Кафедра інформатики <span>3</span></div>
+          <div class="md-row is-active"><span class="avatar sm sec">ОК</span><div class="grow"><div class="name">Коваленко Оксана Петрівна</div><div class="meta">доцент · 18 год/тиж</div></div><span class="num">18</span></div>
+          <div class="md-row"><span class="avatar sm sec" style="--sec:var(--c3)">ІМ</span><div class="grow"><div class="name">Ковальчук Ігор</div><div class="meta">асистент</div></div><span class="num warn">26</span></div>
+          <div class="md-row"><span class="avatar sm sec" style="--sec:var(--c4)">НК</span><div class="grow"><div class="name">Коваль Наталія</div><div class="meta">професор</div></div><span class="num">12</span></div>
+          <div class="md-group">Кафедра математики <span>1</span></div>
+          <div class="md-row"><span class="avatar sm sec" style="--sec:var(--c5)">ПС</span><div class="grow"><div class="name">Петренко Сергій</div><div class="meta">доцент</div></div><span class="num">14</span></div>
+        </div>
+        <div class="md-foot"><span>4 викладачі</span><span class="sp"></span><button class="link-btn">Експорт</button></div>
+      </div>
+      <div>
+        <div class="new-form"><div class="section-title">.new-form</div><div class="form-grid"><div class="field"><label for="nf1">Прізвище</label><input class="input" id="nf1"></div><div class="field"><label for="nf2">Посада</label><select class="select" id="nf2"><option>Доцент</option></select></div></div></div>
+        <div class="md-detail">
+          <div class="detail-head"><span class="avatar lg sec">ОК</span><div class="grow"><div class="detail-name">Коваленко Оксана Петрівна</div><div class="muted">Кафедра інформатики</div></div><button class="btn btn-sm">Дія</button></div>
+          <div class="tabs mt"><button class="is-on">Загальне</button><button>Доступність</button></div>
+          <div class="fields">
+            <div class="f-label">Посада</div><div class="f-value editable">Доцент</div>
+            <div class="f-label">Email</div><div class="f-value"><input class="input" value="kovalenko@uni.ua" aria-label="Email"></div>
+            <div class="f-label">Кафедра</div><div class="f-value"><select class="select" aria-label="Кафедра"><option>Інформатики</option></select></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== avail grid ===== -->
+  <section class="sys-sec" id="avail">
+    <h2>Сітка день × пара (.avail)</h2>
+    <div class="grid-2">
+      <div class="card">
+        <div class="sys-label" style="margin-top:0">6 днів (типово): .c, .off, .block</div>
+        <div class="avail" id="avail6"></div>
+        <p class="muted sm" style="margin-top:10px">Пт–Сб і вечір — .off (недоступно); Вт 3–4 — .block (заблоковано).</p>
+      </div>
+      <div class="card">
+        <div class="sys-label" style="margin-top:0">--days:7, .ro, теплова карта .h0–.h4</div>
+        <div class="avail ro" id="avail7" style="--days:7"></div>
+        <div class="legend"><span><i class="h0"></i>0</span><span><i class="h1"></i>1</span><span><i class="h2"></i>2</span><span><i class="h3"></i>3</span><span><i class="h4"></i>4+</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== semester list ===== -->
+  <section class="sys-sec" id="sem">
+    <h2>Список семестрів (.sem-list)</h2>
+    <div class="card flush sem-list">
+      <div class="sem-row sem-head"><span>Семестр</span><span>Період</span><span>Прогрес</span><span>Статус</span><span></span></div>
+      <a class="sem-row" href="#sem"><span class="sem-name">Осінь 2026</span><span class="muted">01.09 — 24.12</span><div class="mini-steps"><i class="d"></i><i class="d"></i><i class="c"></i><i></i><i></i><i></i></div><span class="badge badge-warn">Чернетка</span><span data-ic="chevron-right"></span></a>
+      <a class="sem-row" href="#sem"><span class="sem-name">Весна 2026</span><span class="muted">02.02 — 30.05</span><div class="mini-steps"><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i></div><span class="badge badge-ok">Опубліковано</span><span data-ic="chevron-right"></span></a>
+    </div>
+  </section>
+
+  <!-- ===== week grid ===== -->
+  <section class="sys-sec" id="week">
+    <h2>Тижнева сітка (.wk) і пари (.ls)</h2>
+    <div class="wk" style="--days:5">
+      <div class="wh"></div><div class="wh">Пн <span>3</span></div><div class="wh is-today">Вт <span>4</span></div><div class="wh">Ср <span>5</span></div><div class="wh">Чт <span>6</span></div><div class="wh">Пт <span>7</span></div>
+      <div class="tm"><b>08:30</b>09:50</div>
+      <div class="cell"><div class="ls lec"><span class="tp">Лекція</span><b>Алгоритми</b><span class="m">ауд. 101 · Коваленко</span></div></div>
+      <div class="cell"><div class="ls pr" draggable="true"><span class="tp">Практика · draggable</span><b>Бази даних</b><span class="m">ауд. 214</span></div></div>
+      <div class="cell"><div class="ls lab"><span class="tp">Лабораторна</span><b>Операційні системи</b><span class="m">ауд. 7а</span></div></div>
+      <div class="cell"><div class="ls exam"><span class="tp">Екзамен</span><b>Фізика</b><span class="m">ауд. 300</span></div></div>
+      <div class="cell drop"></div>
+      <div class="tm"><b>10:05</b>11:25</div>
+      <div class="cell"><div class="ls lec is-sel"><span class="tp">.is-sel</span><b>Дискретна математика</b><span class="m">ауд. 101</span></div></div>
+      <div class="cell is-conflict"><div class="ls pr conflict"><span class="flag" data-ic="alert" data-cls="xs"></span><span class="tp">.conflict</span><b>Мережі</b><span class="m">ауд. 214 зайнята</span></div></div>
+      <div class="cell is-over"></div>
+      <div class="cell"><div class="ls lab is-dragging"><span class="tp">.is-dragging</span><b>Фізика</b><span class="m">ауд. 7а</span></div></div>
+      <div class="cell"><div class="ls exam is-locked"><span class="tp">.is-locked</span><b>Англійська</b><span class="m">ауд. 12</span></div></div>
+      <div class="tm last"><b>11:40</b>13:00</div>
+      <div class="cell last blocked"></div><div class="cell last"></div><div class="cell last blocked"></div><div class="cell last"></div><div class="cell last"></div>
+    </div>
+    <p class="muted sm" style="margin-top:8px">Комірки: .drop / .is-over, .is-conflict, .blocked; Вт — .wh.is-today.</p>
+    <div class="sys-label">Черга нерозміщених (.uq) і .dropzone.is-over</div>
+    <div class="row wrap top">
+      <div class="uq uq-demo card">
+        <div class="ls lec" draggable="true"><span class="tp">Лекція</span><b>Алгоритми</b><span class="m">КН-21 · 2 пари</span></div>
+        <div class="ls lab" draggable="true"><span class="tp">Лабораторна</span><b>ОС</b><span class="m">КН-22</span></div>
+      </div>
+      <div class="dropzone is-over card uq-demo"><p class="muted">.dropzone.is-over</p></div>
+    </div>
+  </section>
+
+  <!-- ===== steps ===== -->
+  <section class="sys-sec" id="steps">
+    <h2>Кроки (.steps, .steps.compact)</h2>
+    <div class="card steps">
+      <button class="step is-done"><span class="step-n">1</span><span class="step-name">Календар</span><span class="step-meta">готово</span></button>
+      <button class="step is-done is-view"><span class="step-n">2</span><span class="step-name">Плани (.is-view)</span><span class="step-meta">24 з 24</span></button>
+      <button class="step is-cur"><span class="step-n">3</span><span class="step-name">Обмеження</span><span class="step-meta">5 з 12</span></button>
+      <a class="step is-todo" href="#steps"><span class="step-n">4</span><span class="step-name">Генерація</span><span class="step-meta">—</span></a>
+      <div class="step is-todo"><span class="step-n">5</span><span class="step-name">Перевірка</span><span class="step-meta">—</span></div>
+      <div class="step is-todo"><span class="step-n">6</span><span class="step-name">Публікація</span><span class="step-meta">—</span></div>
+    </div>
+    <div class="card">
+      <div class="steps compact">
+        <div class="step is-done"><span class="step-n">1</span><span class="step-name">Календар</span><span class="step-meta">прихований</span></div>
+        <div class="step is-cur"><span class="step-n">2</span><span class="step-name">Плани</span><span class="step-meta">12 з 24</span></div>
+        <div class="step is-todo"><span class="step-n">3</span><span class="step-name">Обмеження</span></div>
+        <div class="step is-todo"><span class="step-n">4</span><span class="step-name">Генерація</span></div>
+        <div class="step is-todo"><span class="step-n">5</span><span class="step-name">Перевірка</span></div>
+        <div class="step is-todo"><span class="step-n">6</span><span class="step-name">Публікація</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== drawer ===== -->
+  <section class="sys-sec" id="drawer">
+    <h2>Drawer (статично відкритий у рамці)</h2>
+    <div class="frame frame-drawer">
+      <div class="drawer-scrim is-open"></div>
+      <aside class="drawer is-open" aria-label="Нова пара">
+        <div class="drawer-head"><span class="drawer-title">Нова пара</span><button class="icon-btn sm bare" aria-label="Закрити"><span data-ic="x"></span></button></div>
+        <div class="drawer-body stack">
+          <div class="field"><label for="d1">Дисципліна</label><input class="input" id="d1" value="Алгоритми"></div>
+          <div class="field"><label for="d2">Тип</label><select class="select" id="d2"><option>Лекція</option></select></div>
+          <div class="field"><span class="label">Дні</span><div class="days"><button class="is-on">Пн</button><button>Вт</button><button>Ср</button></div></div>
+          <div class="hint"><span data-ic="info"></span><div>Drawer замість модальних вікон для довгих форм.</div></div>
+        </div>
+        <div class="drawer-foot"><button class="btn btn-ghost">Скасувати</button><button class="btn btn-primary">Зберегти</button></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ===== shell ===== -->
+  <section class="sys-sec" id="shell">
+    <h2>Оболонка (.sh-*)</h2>
+    <p class="muted">На ≤980px меню стає висувною панеллю; тут відкрите (.sh-nav-open).</p>
+    <div class="frame frame-shell">
+      <div class="sh-app sh-nav-open" id="demo-app">
+        <nav class="sh-nav" aria-label="Меню (зразок)">
+          <a class="sh-brand" href="#shell"><span class="sh-brand-mark">Р</span><span class="sh-brand-name">Розклад</span></a>
+          <div class="sh-nav-group">
+            <a class="sh-nav-item" style="--c:var(--c2)" href="#shell"><span data-ic="home" data-cls="sh-icon"></span><span class="sh-nav-text">Головна</span></a>
+            <a class="sh-nav-item" style="--c:var(--c1)" href="#shell"><span data-ic="tasks" data-cls="sh-icon"></span><span class="sh-nav-text">Задачі</span><span class="sh-nav-count">9</span></a>
+            <a class="sh-nav-item" style="--c:var(--c3)" href="#shell"><span data-ic="semester" data-cls="sh-icon"></span><span class="sh-nav-text">Семестр</span></a>
+          </div>
+          <div class="sh-nav-group">
+            <div class="sh-nav-label">Довідники</div>
+            <a class="sh-nav-item is-active" aria-current="page" style="--c:var(--c4)" href="#shell"><span data-ic="teachers" data-cls="sh-icon"></span><span class="sh-nav-text">Викладачі</span><span class="sh-nav-count">42</span></a>
+            <a class="sh-nav-item" style="--c:var(--c5)" href="#shell"><span data-ic="groups" data-cls="sh-icon"></span><span class="sh-nav-text">Групи</span></a>
+            <a class="sh-nav-item" style="--c:var(--c6)" href="#shell"><span data-ic="streams" data-cls="sh-icon"></span><span class="sh-nav-text">Потоки</span></a>
+          </div>
+          <div class="sh-nav-foot"><div class="sh-user"><span class="sh-avatar">ОК</span><div><div class="sh-user-name">Оксана К.</div><div class="sh-user-role">Диспетчер</div></div></div></div>
+        </nav>
+        <div class="sh-scrim" onclick="this.parentNode.classList.remove('sh-nav-open')"></div>
+        <main class="sh-main">
+          <header class="sh-top">
+            <button class="sh-menu-btn" aria-label="Меню" onclick="document.getElementById('demo-app').classList.add('sh-nav-open')"><span data-ic="menu" data-cls="sh-icon"></span></button>
+            <div class="sh-heading"><div class="sh-crumbs"><a href="#shell">Довідники</a><span class="sh-crumbs-sep">/</span>Викладачі</div><h1 class="sh-title">Викладачі <span class="badge badge-status">42</span></h1></div>
+            <div class="sh-actions"><button class="btn btn-primary"><span data-ic="plus"></span>Додати</button><button class="sh-theme" aria-label="Тема" onclick="toggleTheme()"><span data-ic="sun" data-cls="sh-icon"></span></button></div>
+          </header>
+          <div class="card"><p class="muted">.sh-main — робоча область; .sh-top — верхня панель.</p></div>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== icons ===== -->
+  <section class="sys-sec" id="icons">
+    <h2>Іконки (Icons.names)</h2>
+    <p class="muted">Розміри: <span data-ic="check" data-cls="xs"></span> .xs · <span data-ic="check"></span> типовий · <span data-ic="check" data-cls="lg"></span> .lg</p>
+    <div class="ic-grid" id="icons-grid"></div>
+  </section>
+</div>
+
+<script src="/assets/js/icons.js"></script>
+<script>
+(function () {
+  var TOKENS = {
+    'Поверхні й текст': ['--bg','--surface','--surface-2','--line','--text','--muted','--faint','--accent','--accent-ink','--accent-soft','--scrim'],
+    'Ідентичність (c1–c6)': ['--c1','--c2','--c3','--c4','--c5','--c6','--on-c'],
+    'Типи занять': ['--lec','--lec-soft','--pr','--pr-soft','--lab','--lab-soft','--exam','--exam-soft'],
+    'Статуси': ['--high','--mid','--ok','--low','--on-high'],
+    'Теплова карта': ['--heat0','--heat1','--heat2','--heat3','--heat4'],
+    'Тост': ['--toast-bg','--toast-text','--toast-action','--toast-ok','--toast-err','--toast-warn'],
+    'Відтінки': ['--tint-1','--tint-2','--tint-3','--tint-now','--tint-next','--tint-row'],
+    'Меню': ['--nav-bg','--nav-text','--nav-strong','--nav-active-bg','--nav-active-text','--nav-line'],
+    'Hero': ['--hero-bg','--hero-text','--hero-muted','--hero-track','--hero-bar']
+  };
+  var box = document.getElementById('swatches'), html = '';
+  Object.keys(TOKENS).forEach(function (g) {
+    html += '<div class="sys-label">' + g + '</div><div class="sw-grid">';
+    TOKENS[g].forEach(function (t) {
+      html += '<div class="sw"><div class="sw-chip" style="background:var(' + t + ')"></div><div class="sw-meta"><code>' + t + '</code><span class="muted" data-val="' + t + '"></span></div></div>';
+    });
+    html += '</div>';
+  });
+  box.innerHTML = html;
+
+  function fillValues() {
+    var cs = getComputedStyle(document.documentElement);
+    document.querySelectorAll('[data-val]').forEach(function (el) { el.textContent = cs.getPropertyValue(el.dataset.val).trim(); });
+    document.getElementById('theme-name').textContent = Theme.get();
+  }
+
+  // availability grids
+  function avail(id, days, cell) {
+    var D = ['Пн','Вт','Ср','Чт','Пт','Сб','Нд'], h = '<span class="hd tm"></span>';
+    for (var d = 0; d < days; d++) h += '<span class="hd">' + D[d] + '</span>';
+    for (var p = 1; p <= 5; p++) {
+      h += '<span class="hd tm">' + p + '</span>';
+      for (d = 0; d < days; d++) h += '<span class="c ' + cell(p, d) + '"></span>';
+    }
+    document.getElementById(id).innerHTML = h;
+  }
+  avail('avail6', 6, function (p, d) { return d === 5 ? 'off' : (p === 3 && d === 1) || (p === 4 && d === 1) ? 'block' : p === 5 && d > 2 ? 'off' : ''; });
+  avail('avail7', 7, function (p, d) { return 'h' + Math.min(4, (p * 3 + d * 2) % 5); });
+
+  // icons: placeholders, then the full set
+  var grid = document.getElementById('icons-grid'), g = '';
+  Icons.names.forEach(function (n) { g += '<div class="ic-cell">' + Icons.svg(n) + '<span class="ellipsis">' + n + '</span></div>'; });
+  grid.innerHTML = g;
+  document.querySelectorAll('[data-ic]').forEach(function (el) {
+    var svg = Icons.svg(el.dataset.ic, el.dataset.cls || '');
+    if (el.classList.contains('flag')) { el.removeAttribute('data-ic'); el.innerHTML = svg; } else el.outerHTML = svg;
+  });
+
+  window.toggleTheme = function () { Theme.toggle(); fillValues(); };
+  document.getElementById('theme-btn').addEventListener('click', window.toggleTheme);
+  fillValues();
+})();
+</script>
+</body>
+</html>
