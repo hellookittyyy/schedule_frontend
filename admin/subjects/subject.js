@@ -30,7 +30,7 @@
       '<span class="num">' + tt.length + '</span>';
   }
 
-  // Shown only for a saved subject (also inserted in place after a draft's first save).
+  // Shown only for a saved subject (MasterDetail re-renders the detail after a Draft is created).
   function savedHtml(tt) {
     return '<div class="section"><div class="section-title">Викладачі</div>' +
         (tt.length
@@ -70,18 +70,7 @@
     name.addEventListener('input', function () {
       el.querySelector('#s-title').textContent = name.value.trim() || 'Новий предмет';
     });
-    if (ctx.isDraft) {
-      // Hold draft autosave until the name is filled; save() POSTs the values captured on the item.
-      var fields = el.querySelector('.fields'), desc = el.querySelector('#s-desc');
-      var sync = function () { s._form = { name: name.value.trim(), description: desc.value.trim() }; };
-      sync();
-      ['input', 'change'].forEach(function (t) { fields.addEventListener(t, sync, true); });
-      var hold = function (e) { if (!ctx.item.id && name.value.trim() === '') e.stopPropagation(); };
-      ['change', 'focusout'].forEach(function (t) { fields.addEventListener(t, hold, true); });
-      fields.addEventListener('keydown', function (e) { if (e.key === 'Enter') hold(e); }, true);
-      return;
-    }
-    loadPlans(el, s, ctx);
+    if (!ctx.isDraft) loadPlans(el, s, ctx);
   }
 
   function loadPlans(el, s, ctx) {
@@ -139,25 +128,11 @@
     renderRow: renderRow,
     renderDetail: renderDetail,
     mount: mount,
-    onCreate: function () { return { name: '', description: '' }; },
-    onCreated: function (s, ctx) {
-      var el = ctx.el, tt = teachersOf(s);
-      var title = el.querySelector('#s-title');
-      if (title) title.insertAdjacentHTML('afterend', '<div class="muted">' + esc(teachersText(tt.length)) + '</div>');
-      var anchor = el.querySelector('[data-md-danger]');
-      if (anchor) anchor.insertAdjacentHTML('beforebegin', savedHtml(tt)); else el.insertAdjacentHTML('beforeend', savedHtml(tt));
-      loadPlans(el, s, ctx);
+    newItem: function () { return { name: '', description: '' }; },
+    create: function (v) {
+      return apiRequest('/subjects/', 'POST', { name: v.name, description: v.description || '' });
     },
-    save: function (s, ch) {
-      if (s.id == null) {
-        // Never read the DOM here: by the chain's turn it may show another record.
-        var f = Object.assign({ name: '', description: '' }, ch, s._form);
-        if (!f.name) return Promise.reject(new Error('Вкажіть назву предмета'));
-        return apiRequest('/subjects/', 'POST', { name: f.name, description: f.description || '' }).then(function (saved) {
-          delete s._form;
-          return saved;
-        });
-      }
+    update: function (s, ch) {
       return apiRequest('/subjects/' + s.id + '/', 'PUT', {
         name: ch.name != null ? ch.name : s.name,
         description: ch.description != null ? ch.description : (s.description || '')
