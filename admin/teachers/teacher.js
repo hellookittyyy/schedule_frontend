@@ -26,7 +26,7 @@
     return s ? s.name : '';
   }
   function subjCountText(n) { return n ? n + ' ' + plural(n, 'предмет', 'предмети', 'предметів') : 'Без предметів'; }
-  function errText(err, fb) { return MasterDetail.errorText(err, fb); }
+  function errText(err, fb) { return UI.errorText(err, fb); }
 
   /* ---------- list ---------- */
   function renderRow(t) {
@@ -38,7 +38,7 @@
   }
 
   /* ---------- detail ---------- */
-  // Sections that exist only for a saved teacher (also inserted in place after a draft's first save).
+  // Sections that exist only for a saved teacher (MasterDetail re-renders the detail after a Draft is created).
   function savedHtml() {
     if (!semesters.length) return '';
     var semOptions = semesters.map(function (s) {
@@ -199,32 +199,29 @@
     });
   }
 
+  // On a Draft the PUT is held until the teacher is created (it sends the full list, so a chip
+  // already in the create is harmless); the chips repaint at once.
   function addSubject(t, ctx, subjectId) {
     var subj = allSubjects.find(function (s) { return s.id === subjectId; });
     if (!subj) return Promise.resolve();
-    if (ctx.isDraft) {
-      if (!subjOf(t).some(function (s) { return s.id === subjectId; })) {
-        t.subjects_details = subjOf(t).concat([subj]);
-      }
-      renderSubjectChips(t, ctx);
-      return Promise.resolve();
-    }
     if (!subjOf(t).some(function (s) { return s.id === subjectId; })) {
       t.subjects_details = subjOf(t).concat([subj]);
     }
-    return saveSubjects(t, ctx, 'Не вдалося додати предмет');
+    var p = saveSubjects(t, ctx, 'Не вдалося додати предмет');
+    if (!ctx.isDraft) return p;
+    renderSubjectChips(t, ctx);
+    p.catch(function () {});
+    return Promise.resolve();
   }
 
   function removeSubject(t, ctx, subjectId) {
     var subj = subjOf(t).find(function (s) { return s.id === subjectId; });
     if (!subj) return;
-    if (ctx.isDraft) {
-      t.subjects_details = subjOf(t).filter(function (s) { return s.id !== subjectId; });
-      renderSubjectChips(t, ctx);
-      return;
-    }
+    var draft = ctx.isDraft;
     t.subjects_details = subjOf(t).filter(function (s) { return s.id !== subjectId; });
+    if (draft) renderSubjectChips(t, ctx);
     saveSubjects(t, ctx, 'Не вдалося прибрати предмет').then(function () {
+      if (draft) return;
       UI.toast('Предмет «' + subj.name + '» прибрано', {
         type: 'ok',
         action: { label: 'Повернути', onClick: function () { addSubject(t, ctx, subjectId); } }
@@ -439,30 +436,6 @@
     });
   }
 
-  /* ---------- first save of a draft: saved-only sections + chips changed during the POST ---------- */
-  var posted = new WeakMap();
-  function onCreated(t, ctx) {
-    var html = savedHtml();
-    if (html) {
-      var anchor = ctx.el.querySelector('[data-md-danger]');
-      if (anchor) anchor.insertAdjacentHTML('beforebegin', html); else ctx.el.insertAdjacentHTML('beforeend', html);
-      mountSaved(ctx.el, t, ctx);
-    }
-    var res = posted.get(t);
-    posted.delete(t);
-    var server = ((res && res.subjects_details) || []).map(function (s) { return s.id; });
-    var local = subjOf(t).map(function (s) { return s.id; });
-    var ops = local.filter(function (id) { return server.indexOf(id) < 0; }).map(function (id) { return { subject_id: id, action: 'add' }; })
-      .concat(server.filter(function (id) { return local.indexOf(id) < 0; }).map(function (id) { return { subject_id: id, action: 'remove' }; }));
-    if (!ops.length) return;
-    ctx.status('saving');
-    ops.reduce(function (p, body) {
-      return p.then(function () { return apiRequest('/teachers/' + t.id + '/manage_subjects/', 'POST', body); });
-    }, Promise.resolve())
-      .then(function () { return syncTeacher(t, ctx); })
-      .catch(function (err) { ctx.status('error'); UI.toast(errText(err, 'Не вдалося зберегти предмети'), { type: 'err' }); });
-  }
-
   /* ---------- controller ---------- */
   md = MasterDetail.create({
     root: '#teachers',
@@ -499,14 +472,13 @@
     renderRow: renderRow,
     renderDetail: renderDetail,
     mount: mount,
-    onCreate: function () { return { name: '', subjects_details: [] }; },
-    onCreated: onCreated,
-    save: function (t, ch) {
-      if (t.id == null) {
-        var payload = { name: ch.name };
-        if (subjOf(t).length) payload.subjects = subjOf(t).map(function (s) { return s.id; });
-        return apiRequest('/teachers/', 'POST', payload).then(function (r) { posted.set(t, r); return r; });
-      }
+    newItem: function () { return { name: '', subjects_details: [] }; },
+    create: function (v, t) {
+      var payload = { name: v.name };
+      if (subjOf(t).length) payload.subjects = subjOf(t).map(function (s) { return s.id; });
+      return apiRequest('/teachers/', 'POST', payload);
+    },
+    update: function (t, ch) {
       return apiRequest('/teachers/' + t.id + '/', 'PUT', { name: ch.name != null ? ch.name : t.name });
     },
     remove: function (t) { return apiRequest('/teachers/' + t.id + '/', 'DELETE'); }
