@@ -1,4 +1,4 @@
-/* Tests for assets/js/master-detail.js: ctx.load, ctx.queue, md.setScope, re-render flush. */
+/* Tests for assets/js/master-detail.js: ctx.load, ctx.queue, md.setScope, re-render flush, Draft lifecycle. */
 
 function defer() {
   var d = {};
@@ -23,6 +23,7 @@ function mount(opts) {
   var renders = [];
   var saves = [];
   var removes = [];
+  var creates = [];
   var md = MasterDetail.create({
     root: root,
     search: false,
@@ -32,18 +33,26 @@ function mount(opts) {
     renderDetail: function (item, c) {
       renders.push(c);
       return '<div class="detail-body">' +
-        '<input data-md-field="name" value="' + item.name + '">' +
+        '<input id="f-name" data-md-field="name" required value="' + (item.name || '') + '">' +
+        '<input id="f-note" data-md-field="note" value="' + (item.note || '') + '">' +
         '<span data-md-saved hidden></span></div>' +
         c.danger(opts.danger || {});
     },
-    save: opts.save || function (item, changes, c) {
+    newItem: function () { return { name: '', note: '' }; },
+    canCreate: opts.canCreate,
+    create: function (values, item) {
+      creates.push(values);
+      if (opts.create) return opts.create(values, item);
+      return Promise.resolve(Object.assign({ id: 100 + creates.length }, values));
+    },
+    update: opts.update || function (item, changes, c) {
       saves.push({ item: item, changes: changes, ctx: c });
       return Promise.resolve(Object.assign({}, item, changes));
     },
     remove: opts.remove || function (item) { removes.push(item); return Promise.resolve(); }
   });
   return delay(5).then(function () {
-    return { root: root, md: md, renders: renders, saves: saves, removes: removes };
+    return { root: root, md: md, renders: renders, saves: saves, removes: removes, creates: creates };
   });
 }
 
@@ -89,7 +98,7 @@ test('ctx.queue: two ops and a field autosave run in the queue order', async fun
   var saveGate = defer(), op1Gate = defer(), op2Gate = defer();
   var order = [];
   var m = await mount({
-    save: function (item, changes) { order.push('save'); return saveGate.promise; }
+    update: function (item, changes) { order.push('save'); return saveGate.promise; }
   });
   try {
     var c = m.renders[0];
@@ -192,5 +201,200 @@ test('md.rerender(): a field mid-debounce is saved by the re-render', async func
     await delay(20);
     assertEqual(m.saves.length, 1, 'exactly one save');
     assertEqual(m.saves[0].changes, { name: 'X' });
+  } finally { cleanup(m.root); }
+});
+
+/* ---------- Draft lifecycle (plan 0002 §4.4) ---------- */
+
+function field(m, key) { return m.root.querySelector('[data-md-field="' + key + '"]'); }
+function type(el, v) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); }
+function blur(el) {
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+  el.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+}
+function last(m) { return m.renders[m.renders.length - 1]; }
+
+test('Draft: a change with a required field empty sends nothing', async function () {
+  var m = await mount();
+  try {
+    m.md.startDraft();
+    type(field(m, 'note'), 'x');
+    blur(field(m, 'note'));
+    await delay(10);
+    assertEqual(m.creates.length, 0, 'no create');
+    assert(m.root.querySelector('.md-row.is-draft'), 'Draft row stays');
+  } finally { cleanup(m.root); }
+});
+
+test('Draft: filling the last required field and blurring sends one create with all values', async function () {
+  var m = await mount();
+  try {
+    m.md.startDraft();
+    type(field(m, 'note'), 'x');
+    type(field(m, 'name'), 'N');
+    blur(field(m, 'name'));
+    await delay(10);
+    assertEqual(m.creates, [{ name: 'N', note: 'x' }]);
+    assert(!m.root.querySelector('.md-row.is-draft'), 'Draft row is gone');
+    assert(m.root.querySelector('.md-row[data-md-id="101"].is-active'), 'the new record is selected');
+    assertEqual(last(m).isDraft, false, 'detail re-rendered as saved');
+  } finally { cleanup(m.root); }
+});
+
+test('Draft: ctx.save creates when canCreate passes and sends nothing when it fails', async function () {
+  var m = await mount({ canCreate: function (v) { return v.ok ? true : 'Need ok'; } });
+  try {
+    m.md.startDraft();
+    var c = last(m);
+    await c.save({ other: 1 });
+    assertEqual(m.creates.length, 0, 'failing canCreate sends nothing');
+    assertEqual(m.root.querySelector('[data-md-draft] .muted').textContent, 'Need ok', 'shows what is missing');
+    await c.save({ ok: 1 });
+    await delay(10);
+    assertEqual(m.creates.length, 1, 'one create');
+    assertEqual(m.creates[0].ok, 1);
+    assertEqual(m.creates[0].other, 1, 'earlier ctx.save changes are kept in the values');
+  } finally { cleanup(m.root); }
+});
+
+test('Draft: typing during a held create sends one update with the typed value', async function () {
+  var gate = defer();
+  var m = await mount({ create: function () { return gate.promise; } });
+  try {
+    m.md.startDraft();
+    type(field(m, 'name'), 'N');
+    blur(field(m, 'name'));
+    type(field(m, 'note'), 'late');
+    blur(field(m, 'note'));
+    await delay(5);
+    assertEqual(m.creates.length, 1, 'no second create while one is in flight');
+    gate.resolve({ id: 9, name: 'N', note: '' });
+    await delay(20);
+    assertEqual(m.saves.length, 1, 'one update');
+    assertEqual(m.saves[0].changes, { note: 'late' });
+    assertEqual(field(m, 'note').value, 'late', 'typed value shown after re-render');
+  } finally { cleanup(m.root); }
+});
+
+test('Draft: a ctx.queue op during a held create runs after it with the id, before the re-render', async function () {
+  var gate = defer();
+  var m = await mount({ create: function () { return gate.promise; } });
+  try {
+    m.md.startDraft();
+    var c = last(m);
+    type(field(m, 'name'), 'N');
+    blur(field(m, 'name'));
+    var seen = null;
+    var p = c.queue(function () { seen = { id: c.item.id, renders: m.renders.length }; return Promise.resolve(); });
+    var before = m.renders.length;
+    await delay(5);
+    assertEqual(seen, null, 'op waits for the create');
+    gate.resolve({ id: 9, name: 'N', note: '' });
+    await p;
+    assertEqual(seen, { id: 9, renders: before }, 'op sees the id and runs before the re-render');
+    await delay(10);
+    assertEqual(m.renders.length, before + 1, 'one re-render after the op');
+    assertEqual(last(m).isDraft, false);
+  } finally { cleanup(m.root); }
+});
+
+test('Draft: a ctx.queue op before any create is held until Promotion', async function () {
+  var m = await mount();
+  try {
+    m.md.startDraft();
+    var c = last(m);
+    var seen = null;
+    var p = c.queue(function () { seen = c.item.id; return Promise.resolve('ok'); });
+    await delay(10);
+    assertEqual(seen, null, 'held');
+    type(field(m, 'name'), 'N');
+    blur(field(m, 'name'));
+    assertEqual(await p, 'ok');
+    assertEqual(seen, 101, 'runs with the new id');
+  } finally { cleanup(m.root); }
+});
+
+test('Draft: a held ctx.queue op is dropped when the Draft is discarded', async function () {
+  var m = await mount();
+  try {
+    m.md.startDraft();
+    var c = last(m);
+    var ran = false;
+    var p = c.queue(function () { ran = true; return Promise.resolve(); });
+    m.root.querySelector('[data-md-discard]').click();
+    await delay(10);
+    assert(!ran, 'op never runs');
+    assert(await notSettled(p, 10), 'op promise never settles');
+    assert(!m.root.querySelector('.md-row.is-draft'), 'Draft is gone');
+  } finally { cleanup(m.root); }
+});
+
+test('Draft: focus and caret stay in the same field after Promotion', async function () {
+  var gate = defer();
+  var m = await mount({ create: function () { return gate.promise; } });
+  try {
+    m.md.startDraft();
+    type(field(m, 'name'), 'N');
+    var note = field(m, 'note');
+    note.focus();
+    blur(field(m, 'name'));
+    type(note, 'abc');
+    note.setSelectionRange(1, 1);
+    gate.resolve({ id: 9, name: 'N', note: '' });
+    await delay(20);
+    assertEqual(last(m).isDraft, false, 're-rendered');
+    assertEqual(document.activeElement && document.activeElement.id, 'f-note', 'focus kept');
+    assertEqual(document.activeElement.selectionStart, 1, 'caret kept');
+  } finally { cleanup(m.root); }
+});
+
+test('Draft: a failed create keeps the Draft and a later change retries', async function () {
+  var n = 0;
+  var m = await mount({ create: function (v) { n++; return n === 1 ? Promise.reject(new Error('boom')) : Promise.resolve(Object.assign({ id: 9 }, v)); } });
+  try {
+    m.md.startDraft();
+    type(field(m, 'name'), 'N');
+    blur(field(m, 'name'));
+    await delay(10);
+    assert(m.root.querySelector('.md-row.is-draft'), 'Draft stays after a failure');
+    assert(document.querySelector('.toast.is-err'), 'error toast');
+    type(field(m, 'name'), 'N2');
+    blur(field(m, 'name'));
+    await delay(10);
+    assertEqual(m.creates.length, 2, 'retried');
+    assertEqual(m.creates[1].name, 'N2');
+    assert(!m.root.querySelector('.md-row.is-draft'), 'promoted');
+  } finally { cleanup(m.root); }
+});
+
+test('Draft: md.rerender() keeps typed values', async function () {
+  var m = await mount();
+  try {
+    m.md.startDraft();
+    type(field(m, 'name'), 'abc');
+    type(field(m, 'note'), 'zz');
+    m.md.rerender();
+    assertEqual(last(m).isDraft, true);
+    assertEqual(field(m, 'name').value, 'abc');
+    assertEqual(field(m, 'note').value, 'zz');
+    await delay(10);
+    assertEqual(m.creates.length, 0, 'a re-render does not create');
+  } finally { cleanup(m.root); }
+});
+
+test('Draft: discarded while the create is held, the record joins the list unselected', async function () {
+  var gate = defer();
+  var m = await mount({ create: function () { return gate.promise; } });
+  try {
+    m.md.startDraft();
+    type(field(m, 'name'), 'N');
+    blur(field(m, 'name'));
+    m.root.querySelector('[data-md-discard]').click();
+    gate.resolve({ id: 9, name: 'N', note: '' });
+    await delay(20);
+    assert(m.md.items().some(function (x) { return x.id === 9; }), 'record is in the list');
+    assert(m.root.querySelector('.md-row[data-md-id="9"]'), 'row is shown');
+    assert(!m.root.querySelector('.md-row[data-md-id="9"].is-active'), 'not selected');
+    assert(new URLSearchParams(window.location.search).get('id') !== '9', 'URL does not point at it');
   } finally { cleanup(m.root); }
 });
