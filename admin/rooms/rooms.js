@@ -11,7 +11,7 @@
   var filterList = [{ id: 'all', label: 'Усі', test: function () { return true; } }];
 
   var plural = UI.pluralForm;
-  function errText(err, fb) { return MasterDetail.errorText(err, fb); }
+  function errText(err, fb) { return UI.errorText(err, fb); }
   function list(x) { return (x && x.results) || x || []; }
   function typeOf(r) { return r.room_type_details || null; }
   function typeId(r) { return r.room_type != null ? r.room_type : (typeOf(r) ? typeOf(r).id : null); }
@@ -56,7 +56,8 @@
 
   function renderDetail(r, ctx) {
     var draft = ctx.isDraft;
-    function fld(key, extra) { return draft ? '' : ' data-md-field="' + key + '"' + (extra || ''); }
+    function fld(key, extra) { return ' data-md-field="' + key + '"' + (extra || ''); }
+    var tid = draft || !typeById(typeId(r)) ? null : typeId(r);
     return '' +
       '<div class="detail-head">' +
         '<div class="grow"><h2 class="detail-name" id="r-title">' + esc(r.title || 'Нова аудиторія') + '</h2>' +
@@ -72,18 +73,15 @@
       '</div></div>' +
       '<div class="section"><div class="section-title">Тип</div><div class="fields">' +
         '<label class="f-label" for="r-type">Тип аудиторії</label>' +
-        '<div class="f-value"><select class="select" id="r-type"' + fld('room_type', ' data-md-type="number"') + ' required>' + typeOptions(draft ? null : typeId(r)) + '</select></div>' +
+        '<div class="f-value"><select class="select" id="r-type"' + fld('room_type', ' data-md-type="number"') + ' required>' + typeOptions(tid) + '</select></div>' +
         '<label class="f-label" for="r-cap">Місткість</label>' +
         '<div class="f-value"><input class="input" type="number" min="0" id="r-cap"' + fld('capacity', ' data-md-type="number"') + ' required value="' + esc(r.capacity == null ? '' : r.capacity) + '"></div>' +
       '</div></div>' +
       '<div class="section"><div class="section-title">Примітка</div>' +
         '<textarea class="textarea" id="r-note" aria-label="Примітка"' + fld('note') + ' placeholder="Наприклад: проєктор, 12 комп’ютерів">' + esc(r.note || '') + '</textarea></div>' +
       '</div>' +
-      (draft ? '<div class="section"><button type="button" class="btn btn-primary" id="r-create">Створити аудиторію</button></div>' : '') +
-      ctx.danger({ title: 'Видалити аудиторію', text: 'Аудиторію буде видалено з довідника.', draftText: 'З’явиться у списку після натискання «Створити аудиторію».' });
+      ctx.danger({ title: 'Видалити аудиторію', text: 'Аудиторію буде видалено з довідника.' });
   }
-
-  var FIELDS = [['r-name', 'title'], ['r-bld', 'building'], ['r-type', 'room_type', 'number'], ['r-cap', 'capacity', 'number'], ['r-note', 'note']];
 
   function paintSub(el, r) {
     var sub = el.querySelector('#r-sub'), bld = el.querySelector('#r-bld'), cap = el.querySelector('#r-cap'), ty = el.querySelector('#r-type');
@@ -102,59 +100,16 @@
     });
     form.addEventListener('input', function () { paintSub(el, r); });
     form.addEventListener('change', function () { paintSub(el, r); });
-    if (!ctx.isDraft) return;
-    // Draft: backend needs all four required fields at once, so create via an explicit button.
-    var btn = el.querySelector('#r-create');
-    function submit() {
-      if (!ctx.isDraft || btn.disabled) return;
-      var bad = ['r-name', 'r-bld', 'r-type', 'r-cap'].filter(function (id) {
-        var node = el.querySelector('#' + id), empty = node.value.trim() === '';
-        node.classList.toggle('is-err', empty);
-        return empty;
-      });
-      if (bad.length) {
-        UI.toast('Заповніть назву, корпус, тип і місткість', { type: 'warn' });
-        el.querySelector('#' + bad[0]).focus();
-        return;
-      }
-      btn.disabled = true;
-      ctx.save({
-        title: name.value.trim(),
-        building: el.querySelector('#r-bld').value.trim(),
-        room_type: Number(el.querySelector('#r-type').value),
-        capacity: Number(el.querySelector('#r-cap').value),
-        note: el.querySelector('#r-note').value.trim()
-      }).then(function () {
-        UI.toast('Аудиторію створено', { type: 'ok' });
-      }, function () { btn.disabled = false; });
-    }
-    btn.addEventListener('click', submit);
-    form.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); submit(); }
-    });
-    name.focus();
   }
 
-  // After «Створити аудиторію»: switch the form to autosave in place, keeping what was typed meanwhile.
-  function onCreated(r, ctx) {
-    var el = ctx.el;
-    var sec = el.querySelector('#r-create');
-    if (sec) sec.closest('.section').remove();
-    var grow = el.querySelector('.detail-head .grow');
-    if (grow && !el.querySelector('#r-sub')) grow.insertAdjacentHTML('beforeend', '<div class="muted" id="r-sub"></div>');
-    paintSub(el, r);
-    FIELDS.forEach(function (f) {
-      var node = el.querySelector('#' + f[0]);
-      if (!node) return;
-      node.setAttribute('data-md-field', f[1]);
-      if (f[2]) node.setAttribute('data-md-type', f[2]);
-      var v = node.value.trim(), cur = r[f[1]];
-      if (v !== String(cur == null ? '' : cur)) node.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+  // A Draft is created once name, building, type and capacity (the required fields) are filled.
+  function createRoom(v) {
+    return withType(apiRequest('/rooms/', 'POST', v), v);
   }
-
-  function saveRoom(r, ch) {
-    var req = r.id == null ? apiRequest('/rooms/', 'POST', ch) : apiRequest('/rooms/' + r.id + '/', 'PATCH', ch);
+  function updateRoom(r, ch) {
+    return withType(apiRequest('/rooms/' + r.id + '/', 'PATCH', ch), ch);
+  }
+  function withType(req, ch) {
     return req.then(function (saved) {
       if (ch.room_type != null) saved.room_type = ch.room_type;
       else if (saved.room_type_details) saved.room_type = saved.room_type_details.id;
@@ -197,19 +152,12 @@
 
   function typeById(id) { return roomTypes.find(function (t) { return t.id === id; }); }
 
-  // Refresh types in place: list chips/rows, counts and the open detail's select; never reload (keeps a draft).
+  // Refresh types in place: list chips/rows, counts and the open detail; never reload (a Draft keeps its values).
   function afterTypesChange() {
     rebuildFilters();
     renderTypes();
     md.setFilters(function () { return filterList; });
-    var el = document.querySelector('#rooms .md-detail');
-    var sel = el && el.querySelector('#r-type');
-    if (sel) {
-      var keep = sel.value && typeById(Number(sel.value)) ? Number(sel.value) : null;
-      sel.innerHTML = typeOptions(keep);
-      var cur = md.current();
-      if (cur) paintSub(el, cur);
-    }
+    md.rerender();
     return Promise.resolve();
   }
 
@@ -312,9 +260,9 @@
     renderRow: renderRow,
     renderDetail: renderDetail,
     mount: mount,
-    onCreated: onCreated,
-    onCreate: function () { return { title: '', building: '', capacity: null, room_type: null, note: '' }; },
-    save: saveRoom,
+    newItem: function () { return { title: '', building: '', capacity: null, room_type: null, note: '' }; },
+    create: createRoom,
+    update: updateRoom,
     remove: function (r) { return apiRequest('/rooms/' + r.id + '/', 'DELETE').then(function () { setTimeout(updateCounts, 0); }); }
   });
 })();
