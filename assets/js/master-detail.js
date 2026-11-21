@@ -1,5 +1,32 @@
 /* Generic list + detail controller for directories. Classic script: window.MasterDetail.
-   Needs ui.js (UI.*), icons.js; markup classes from components.css («master–detail»). */
+   Needs ui.js (UI.*), icons.js; markup classes from components.css («master–detail»).
+
+   MasterDetail.create(opts) -> md
+     opts.root, load(lc) -> list (lc.isCurrent() is false once a newer reload started),
+     renderRow(item), renderDetail(item, ctx) -> html, mount(el, item, ctx), remove(item),
+     update(item, changes, ctx) -> saved record (PUT/PATCH of a saved record),
+     newItem() -> Draft defaults (enables the add button), create(values, item) -> saved record,
+     canCreate(values, item, ctx) -> true | text of what is missing
+       (default: every [data-md-field][required] is non-empty),
+     sort, groupBy, search(item, q), filters, getId, idParam, debounce, color, title, labels
+       (addLabel, draftLabel, emptyText, selectText, removedText, removeQuestion, countLabel, …).
+   md: reload(), select(id), current(), refresh(item), rerender(), setScope(key), setFilters(f),
+       items(), startDraft().
+
+   ctx (one per detail render): item, isDraft, el, alive(), pending, status(kind), refresh(item),
+     rerender(), danger(o),
+     load(promise): settles only while the same render and scope are on screen; otherwise never.
+     queue(op, {errorText}): runs op() on the single write chain (field saves, page ops, DELETE),
+       drives the status chip and the error toast; op must reject on failure. On a Draft the op
+       runs after an in-flight create, or is held until the Draft is created (dropped on discard).
+     save(changes): an update through update(); on a Draft the changes join the Draft values
+       and ask to create.
+
+   Draft lifecycle: [data-md-field] values are snapshotted on every input; change, blur or Enter
+   (or ctx.save) asks to create; create(values) runs once when canCreate passes. Promotion adds
+   the record to the list and the URL, waits for the write chain to be idle, then re-renders the
+   detail, keeping focus, caret and values typed while the create was in flight (sent as updates).
+   A Draft discarded during its create still joins the list once the create succeeds. */
 (function () {
   'use strict';
 

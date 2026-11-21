@@ -4,7 +4,7 @@
 
   var esc = UI.escapeHtml;
   function ic(name, size) { return Icons.svg(name, { size: size || 16 }); }
-  function errText(err, fb) { return MasterDetail.errorText(err, fb); }
+  function errText(err, fb) { return UI.errorText(err, fb); }
   function list(d) { return (d && d.results) || d || []; }
 
   // /class_types/ may be missing on older backends (migration 0020): same fallback as before.

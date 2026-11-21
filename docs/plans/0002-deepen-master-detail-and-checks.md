@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | In progress — phases 0-3 done |
+| Status | Done — phases 0-6 (branch `deepen-master-detail`, not merged) |
 | Date | 2026-11-20 |
 | Baseline | frontend `290756b` (branch `deepen-master-detail`; app code identical to `fd6da26`, `main` after plan 0001) |
 | Source | Architecture review 2026-11-20, the three «Strong» candidates: (1) Draft creation inside MasterDetail, (2) detail-scoped async on `ctx`, (3) Readiness and stages beside Checks |
@@ -174,7 +174,9 @@ One commit per page; each deletes its workaround:
 - Phase 2 — `f2050a0` one write chain (`chain`), `ctx.queue(op, {errorText})`, `ctx.load(promise)` (never settles when stale), `md.setScope(key)`; `renderDetail()` flushes pending debounced fields; `save` receives `ctx` as third argument. `tests/master-detail.test.js` (9 tests). Verify: `PASS 18/18`.
 - Phase 3 — one commit per page: `9345a0a` subjects, `d0d80fa` rooms, `9921e8d` constraints, `2970a30` groups, `fde7e31` study plans, `3d40abc` streams, `01a2c60` teachers; fixes `e16d066` (teacher chips keep the list built while a PUT was in flight), `83ed58a` (a failed chip write no longer ends «Збережено»), `743a0dc` (study-plan copy freezes source, list and semester at click time). Detail loads go through `ctx.load`, writes through `ctx.queue`, Teachers switches semester with `md.setScope`; `AvailGrid.chain/pending/alive`, stream `enqueue/_posting/_name`, study-plan `tr._chain` and the private copy chain are gone. Kept: study-plan's `sem !== semId` / `sem === semId` on write completions and `lc.isCurrent()` on the list load, Constraint's in-render type/semester checks and `sid !== semId`, no `setScope` on study plans or constraints. Verify: `PASS 18/18`. Note: the done-grep's `_name\b` also matches legitimate API fields (`subject_name`, `teacher_name`); the intent check `grep -rnE "\._name\b|\b_name\b" admin` is empty.
 
-Remaining: phases 4-6 (Draft lifecycle, pages onto it, clean-up).
+- Phase 4 — `3759717` `newItem`/`create`/`update`/`canCreate` replace `onCreate`/`save`/`onCreated`; Draft values snapshotted from `[data-md-field]`; create asked on change/blur/Enter or `ctx.save`; `ctx.queue` on a Draft runs after an in-flight create or is held until Promotion (dropped on discard); Promotion waits for an idle chain (started a macrotask later, so ops queued in reaction to the create are counted) and re-renders keeping focus, caret and typed values (sent as updates); `md.create` → `md.startDraft`; a re-render never asks to create (focusout from the removed field is ignored). 11 new tests. Verify: `PASS 29/29`.
+- Phase 5 — one commit per page: `ae78423` subjects, `4e4f0f1` groups, `b941f35` teachers, `f7dbce4` streams, `9794069` rooms (create button gone, `afterTypesChange` → `md.rerender()`, a deleted type shows the placeholder), `d5890c3` constraints. Study plans unchanged except `errText`. Done-grep `grep -nE "onCreated|_form|data-md-draft|posted\.|r-create" admin` is empty; `stopPropagation` in `admin` only in combobox Escape handlers. Checked against the local backend with a throwaway headless scenario (create by blur on all six pages, chips added on a Draft saved after create, Rooms Draft surviving a type rename, Constraint created via `ctx.save`; no console errors; records removed afterwards).
+- Phase 6 — `MasterDetail.errorText` removed (pages use `UI.errorText`); `master-detail.js` header documents the interface; regression checklist has the «type / add a chip / click a grid cell during create» checks for the six pages with Drafts.
 
 ## Revision log
 
