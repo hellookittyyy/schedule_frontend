@@ -93,7 +93,7 @@
       '<a class="btn btn-sm" href="/admin/study-plans/?group=' + esc(g.id) + '&semester=' + esc(curSem.id) + '">' + ic('chevR', 14) + 'Навчальний план групи</a>';
   }
 
-  // Shown only for a saved group (also inserted in place after a draft's first save).
+  // Shown only for a saved group (MasterDetail re-renders the detail after a Draft is created).
   function courseHtml(g) {
     return '<span class="f-label">Поточний курс</span><div class="f-value" id="g-course">' + esc(courseLabel(course(g))) + '</div>';
   }
@@ -137,23 +137,6 @@
 
   function mount(el, g, ctx) {
     var name = el.querySelector('#g-name');
-    if (ctx.isDraft) {
-      // Hold autosave until all required fields are filled (API needs them together).
-      var fields = el.querySelector('.fields');
-      // Capture values on the item: save() must not read the DOM, which may show another record by then.
-      var sync = function () {
-        g._form = { name: name.value.trim(), amount: el.querySelector('#g-amount').value.trim(), start_year: el.querySelector('#g-year').value.trim() };
-      };
-      sync();
-      ['input', 'change'].forEach(function (t) { fields.addEventListener(t, sync, true); });
-      var hold = function (e) {
-        if (!ctx.isDraft) return;
-        var empty = Array.prototype.some.call(fields.querySelectorAll('input[required]'), function (i) { return i.value.trim() === ''; });
-        if (empty) e.stopPropagation();
-      };
-      ['change', 'focusout'].forEach(function (t) { fields.addEventListener(t, hold, true); });
-      fields.addEventListener('keydown', function (e) { if (e.key === 'Enter') hold(e); }, true);
-    }
     name.addEventListener('input', function () {
       el.querySelector('#g-title').textContent = name.value.trim() || 'Нова група';
     });
@@ -192,29 +175,12 @@
     renderRow: renderRow,
     renderDetail: renderDetail,
     mount: mount,
-    onCreate: function () { return { name: '', amount: null, start_year: null }; },
-    onCreated: function (g, ctx) {
-      var el = ctx.el;
-      var sub = el.querySelector('#g-sub');
-      if (sub) sub.textContent = subText(g);
-      var fields = el.querySelector('.fields');
-      if (fields && !el.querySelector('#g-course')) fields.insertAdjacentHTML('beforeend', courseHtml(g));
-      var anchor = el.querySelector('[data-md-danger]');
-      if (anchor) anchor.insertAdjacentHTML('beforebegin', savedHtml(g)); else el.insertAdjacentHTML('beforeend', savedHtml(g));
+    newItem: function () { return { name: '', amount: null, start_year: null }; },
+    // The API needs all three fields together; they are all required fields, so MasterDetail waits for them.
+    create: function (v) {
+      return apiRequest('/groups/', 'POST', { name: v.name, amount: v.amount, start_year: v.start_year });
     },
-    save: function (g, ch, ctx) {
-      if (g.id == null) {
-        // Draft: the API requires all three fields; use the values mount() captured on the item.
-        var p = Object.assign({ name: '', amount: '', start_year: '' }, g._form);
-        if (!p.name || p.amount === '' || p.start_year === '') {
-          return Promise.reject(new Error('Заповніть назву, кількість студентів і рік вступу'));
-        }
-        p.amount = Number(p.amount); p.start_year = Number(p.start_year);
-        return apiRequest('/groups/', 'POST', p).then(function (saved) {
-          delete g._form;
-          return saved;
-        });
-      }
+    update: function (g, ch, ctx) {
       var body = { name: g.name, amount: g.amount, start_year: g.start_year };
       Object.assign(body, ch);
       return apiRequest('/groups/' + g.id + '/', 'PUT', body).then(function (saved) {
