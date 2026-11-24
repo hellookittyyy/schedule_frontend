@@ -4,6 +4,8 @@
    MasterDetail.create(opts) -> md
      opts.root, load(lc) -> list (lc.isCurrent() is false once a newer reload started),
      renderRow(item), renderDetail(item, ctx) -> html, mount(el, item, ctx), remove(item),
+     removeWarning(item) -> text | promise of text (optional; shown in the delete confirm,
+       which opens once it settles; '' or null shows none),
      update(item, changes, ctx) -> saved record (PUT/PATCH of a saved record),
      newItem() -> Draft defaults (enables the add button), create(values, item) -> saved record,
      canCreate(values, item, ctx) -> true | text of what is missing
@@ -434,11 +436,25 @@
       var trig = e.target.closest('[data-md-danger] [data-confirm]');
       if (trig && ctx) {
         var c = ctx;
-        UI.confirmInline(trig.closest('[data-md-danger]'), {
-          question: opts.removeQuestion || 'Точно видалити?',
-          yes: 'Так, видалити',
-          onYes: function () { return doRemove(c); }
-        });
+        var dangerEl = trig.closest('[data-md-danger]');
+        var ask = function (warning) {
+          UI.confirmInline(dangerEl, {
+            question: opts.removeQuestion || 'Точно видалити?',
+            warning: warning || '',
+            yes: 'Так, видалити',
+            onYes: function () { return doRemove(c); }
+          });
+        };
+        if (!opts.removeWarning || c.isDraft) { ask(''); return; }
+        // Ask only once the warning is known, so «Так» is never clicked without it.
+        if (trig.disabled) return;
+        trig.disabled = true;
+        c.load(Promise.resolve().then(function () { return opts.removeWarning(c.item); })
+          .catch(function () { return 'Не вдалося перевірити, що ще буде видалено разом із записом.'; }))
+          .then(function (warning) {
+            trig.disabled = false;
+            if (document.contains(dangerEl)) ask(warning);
+          });
       }
     });
 

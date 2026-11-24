@@ -191,6 +191,39 @@ test('ctx.queue: DELETE waits for a pending queued op', async function () {
   } finally { cleanup(m.root); }
 });
 
+test('removeWarning: the delete confirm opens only after the warning is known, and shows it', async function () {
+  var root = document.createElement('div');
+  document.body.appendChild(root);
+  var gate = defer();
+  var removed = [];
+  var md = MasterDetail.create({
+    root: root, search: false, debounce: 5,
+    load: function () { return Promise.resolve([{ id: 1, name: 'A' }]); },
+    renderRow: function (it) { return '<div class="name">' + it.name + '</div>'; },
+    renderDetail: function (item, c) { return '<div class="detail-body"></div>' + c.danger({}); },
+    removeWarning: function () { return gate.promise; },
+    remove: function (item) { removed.push(item.id); return Promise.resolve(); }
+  });
+  try {
+    await delay(5);
+    md.select('1');
+    await delay(5);
+    var trig = root.querySelector('[data-confirm]');
+    trig.click();
+    await delay(5);
+    assert(!root.querySelector('.confirm .btn-danger'), 'no «Так» button before the warning arrives');
+    assert(trig.disabled, 'trigger is disabled while checking');
+
+    gate.resolve('Разом буде видалено 2 плани');
+    await delay(5);
+    var warn = root.querySelector('.confirm-warning');
+    assert(warn && warn.textContent === 'Разом буде видалено 2 плани', 'warning text is shown');
+    root.querySelector('.confirm .btn-danger').click();
+    await delay(15);
+    assertEqual(removed, [1], 'remove runs after confirming');
+  } finally { cleanup(root); }
+});
+
 test('md.rerender(): a field mid-debounce is saved by the re-render', async function () {
   var m = await mount();
   try {

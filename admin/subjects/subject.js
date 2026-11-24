@@ -138,6 +138,18 @@
         description: ch.description != null ? ch.description : (s.description || '')
       });
     },
+    // The backend deletes a subject's study plans and their lessons with the subject (CASCADE).
+    removeWarning: function (s) {
+      return apiRequest('/study_plans/?subject=' + s.id).then(function (res) {
+        var plans = list(res);
+        if (!plans.length) return '';
+        return Promise.all(plans.map(function (p) { return apiRequest('/lessons/?study_plan=' + p.id); })).then(function (r) {
+          var lessons = r.reduce(function (n, l) { return n + list(l).length; }, 0);
+          return 'Разом із предметом буде видалено ' + UI.plural(plans.length, 'навчальний план', 'навчальні плани', 'навчальних планів') +
+            (lessons ? ' і ' + UI.plural(lessons, 'пару', 'пари', 'пар') + ' в розкладі' : '') + '. Повернути їх не можна.';
+        });
+      });
+    },
     remove: function (s) { return apiRequest('/subjects/' + s.id + '/', 'DELETE'); }
   });
 })();

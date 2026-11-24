@@ -481,6 +481,19 @@
     update: function (t, ch) {
       return apiRequest('/teachers/' + t.id + '/', 'PUT', { name: ch.name != null ? ch.name : t.name });
     },
+    // The backend deletes a teacher's study plans and their lessons with the teacher (CASCADE).
+    removeWarning: function (t) {
+      return Promise.all([
+        apiRequest('/study_plans/?teacher=' + t.id),
+        apiRequest('/lessons/?teacher_id=' + t.id)
+      ]).then(function (r) {
+        var plans = ((r[0] && r[0].results) || r[0] || []).length;
+        var lessons = ((r[1] && r[1].results) || r[1] || []).length;
+        if (!plans) return '';
+        return 'Разом із викладачем буде видалено ' + UI.plural(plans, 'навчальний план', 'навчальні плани', 'навчальних планів') +
+          (lessons ? ' і ' + UI.plural(lessons, 'пару', 'пари', 'пар') + ' в розкладі' : '') + '. Повернути їх не можна.';
+      });
+    },
     remove: function (t) { return apiRequest('/teachers/' + t.id + '/', 'DELETE'); }
   });
 })();
