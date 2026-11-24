@@ -119,23 +119,17 @@
     var per = Checks.plansPerGroup(d);
     var ready = d.groups.filter(function (g) { return per[g.id] > 0; }).length;
     var blocks = m.checks.filter(function (c) { return c.severity === 'block'; }).length;
-    var resOk = d.rooms.length && d.teachers.length && d.groups.length && d.subjects.length;
     var semHref = '/admin/semesters/?id=' + encodeURIComponent(m.sem.id);
-    return {
-      blocks: blocks, ready: ready, semHref: semHref,
-      list: [
-        { id: 'calendar', name: 'Календар', done: d.slots.length > 0, req: true, href: semHref + '&view=calendar',
-          meta: d.slots.length ? plural(d.slots.length, 'слот', 'слоти', 'слотів') : 'немає слотів' },
-        { id: 'resources', name: 'Ресурси', done: !!resOk, req: true, href: semHref,
-          meta: plural(d.rooms.length, 'аудиторія', 'аудиторії', 'аудиторій') + ' · ' + plural(d.teachers.length, 'викладач', 'викладачі', 'викладачів') },
-        { id: 'plans', name: 'Плани', done: d.plans.length > 0 && ready === d.groups.length, req: true, href: '/admin/study-plans/?semester=' + encodeURIComponent(m.sem.id),
-          meta: d.plans.length ? ready + ' з ' + d.groups.length + ' груп' : 'немає планів' },
-        { id: 'constraints', name: 'Обмеження', done: m.constraints > 0, href: '/admin/constraints/?semester=' + encodeURIComponent(m.sem.id),
-          meta: m.constraints ? plural(m.constraints, 'обмеження', 'обмеження', 'обмежень') : 'не задано' },
-        { id: 'generation', name: 'Генерація', done: m.lessons > 0, req: true, href: semHref,
-          meta: m.lessons ? plural(m.lessons, 'заняття', 'заняття', 'занять') : blocks ? 'блокерів: ' + blocks : 'не запускали' }
-      ]
+    var hrefById = {
+      calendar: semHref + '&view=calendar',
+      resources: semHref,
+      plans: '/admin/study-plans/?semester=' + encodeURIComponent(m.sem.id),
+      constraints: '/admin/constraints/?semester=' + encodeURIComponent(m.sem.id),
+      generation: semHref
     };
+    var list = Checks.stages(d, m.checks, { constraints: m.constraints, lessons: m.lessons })
+      .map(function (s) { s.href = hrefById[s.id]; return s; });
+    return { blocks: blocks, ready: ready, semHref: semHref, list: list };
   }
 
   function nextStep(m, s, cur) {

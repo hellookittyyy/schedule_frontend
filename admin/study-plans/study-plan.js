@@ -4,7 +4,7 @@
 
   var esc = UI.escapeHtml;
   function ic(name, size) { return Icons.svg(name, { size: size || 16 }); }
-  function errText(err, fb) { return MasterDetail.errorText(err, fb); }
+  function errText(err, fb) { return UI.errorText(err, fb); }
   function list(d) { return (d && d.results) || d || []; }
 
   // /class_types/ may be missing on older backends (migration 0020): same fallback as before.
@@ -335,8 +335,11 @@
 
   // Saves the row when it is complete: POST for a draft, full PUT for an existing entry.
   function commitRow(st, tr) {
-    tr._chain = (tr._chain || Promise.resolve()).then(function () { return saveRow(st, tr); }).catch(function () {});
-    return tr._chain;
+    var p = entryOf(st, tr);
+    var course = p && p._tmp && st.scope === 'course' && hasCourse(st.it);
+    return st.ctx.queue(function () { return saveRow(st, tr); }, {
+      errorText: course ? 'Не вдалося створити записи для курсу' : 'Не вдалося зберегти'
+    }).catch(function () {});
   }
   function saveRow(st, tr) {
     var p = entryOf(st, tr);
@@ -355,7 +358,6 @@
       return String(p[k] == null ? '' : p[k]) === String(v[k] == null ? '' : v[k]);
     })) return;
     var ctx = st.ctx;
-    ctx.status('saving');
     if (p._tmp && st.scope === 'course' && hasCourse(st.it)) return saveForCourse(st, tr, p, body);
     var sem = semId;
     var req = p._tmp ? apiRequest('/study_plans/', 'POST', body) : apiRequest('/study_plans/' + p.id + '/', 'PUT', body);
@@ -366,7 +368,7 @@
         plans.push(saved);
         if (!tr.isConnected) { // re-rendered meanwhile: patching the old row would be lost
           md.refresh(st.it);
-          if (ctx.alive()) { renderPlan(st); ctx.status('saved'); }
+          if (ctx.alive()) renderPlan(st);
           return;
         }
         tr.setAttribute('data-k', saved.id);
@@ -380,12 +382,10 @@
         Object.assign(p, saved);
       }
       updateTotal(st);
-      ctx.status('saved');
     }, function (err) {
-      ctx.status('error');
-      UI.toast(errText(err, 'Не вдалося зберегти'), { type: 'err' });
       var d = err && err.data;
       if (d && typeof d === 'object') markErr(tr, Object.keys(d));
+      throw err;
     });
   }
 
@@ -403,11 +403,8 @@
         if (sem !== semId) return;
         plans = list(d);
         md.items().forEach(function (x) { md.refresh(x); });
-        if (ctx.alive()) { renderPlan(st); ctx.status('saved'); }
+        if (ctx.alive()) renderPlan(st);
       });
-    }, function (err) {
-      ctx.status('error');
-      UI.toast(errText(err, 'Не вдалося створити записи для курсу'), { type: 'err' });
     });
   }
 
@@ -530,10 +527,16 @@
     panel.querySelector('[data-copy-close]').addEventListener('click', function () { toggleCopy(st, btn); btn.focus(); });
     go.addEventListener('click', function () {
       if (!chosen || !todo.length) return;
+      var src = chosen, list = todo.slice(), sem = semId;
       go.disabled = true; go.classList.add('is-busy');
-      runCopy(st, chosen, todo.slice()).then(function () {
+      st.ctx.queue(function () {
+        if (String(sem) !== String(semId)) return null; // semester switched while the op waited
+        return runCopy(st, src, list);
+      }, { errorText: 'Не вдалося скопіювати план' }).then(function () {
         if (!st.ctx.alive()) return;
         panel.hidden = true; btn.setAttribute('aria-expanded', 'false');
+      }, function () {
+        go.disabled = false; go.classList.remove('is-busy');
       });
     });
     input.focus();
@@ -541,7 +544,6 @@
 
   function runCopy(st, src, todo) {
     var ctx = st.ctx, made = 0, failed = 0, lastErr = null, sem = semId;
-    ctx.status('saving');
     var chain = Promise.resolve();
     todo.forEach(function (p) {
       chain = chain.then(function () {
@@ -557,8 +559,9 @@
     return chain.then(function () {
       if (sem === semId) md.refresh(st.it);
       if (made) UI.toast('Скопійовано з ' + src.name + ': ' + plural(made, 'запис', 'записи', 'записів'), { type: 'ok' });
-      if (failed) UI.toast('Не скопійовано ' + plural(failed, 'запис', 'записи', 'записів') + ': ' + errText(lastErr, 'помилка'), { type: 'err' });
-      if (ctx.alive()) { renderPlan(st); ctx.status(made ? 'saved' : 'error'); }
+      if (failed && made) UI.toast('Не скопійовано ' + plural(failed, 'запис', 'записи', 'записів') + ': ' + errText(lastErr, 'помилка'), { type: 'err' });
+      if (ctx.alive()) renderPlan(st);
+      if (!made && failed) throw lastErr;
     });
   }
 

@@ -216,8 +216,9 @@
     renderGroupPlans();
     var gen = document.querySelector('[data-generate]');
     if (gen) {
-      var blocks = st.checks.filter(function (c) { return c.severity === 'block'; }).length;
-      gen.disabled = st.generating || blocks > 0;
+      var blocked = Checks.isBlocked(st.checks);
+      var blocks = Checks.summary(st.checks).block;
+      gen.disabled = st.generating || blocked;
       gen.classList.toggle('is-busy', st.generating);
       gen.title = st.generating ? 'Генерація триває…' : blocks ? 'Спершу усуньте блокери: ' + blocks : '';
     }
@@ -233,21 +234,18 @@
   }
 
   function renderSteps() {
-    var d = st.data, g = groupStats();
-    var blocks = st.checks.filter(function (c) { return c.severity === 'block'; }).length;
-    var resOk = d.rooms.length && d.teachers.length && d.groups.length && d.subjects.length;
-    var steps = [
-      { name: 'Календар', done: d.slots.length > 0, meta: d.slots.length ? plural(d.slots.length, 'слот', 'слоти', 'слотів') : 'немає слотів',
-        view: 'calendar', req: true },
-      { name: 'Ресурси', done: !!resOk, meta: plural(d.rooms.length, 'аудиторія', 'аудиторії', 'аудиторій') + ' · ' +
-        plural(d.teachers.length, 'викладач', 'викладачі', 'викладачів'), view: 'overview', req: true },
-      { name: 'Плани', done: d.plans.length > 0 && g.ready === g.total, meta: d.plans.length ? g.ready + ' з ' + g.total + ' груп' : 'немає планів',
-        href: '/admin/study-plans/?semester=' + encodeURIComponent(st.sem.id), req: true },
-      { name: 'Обмеження', done: st.constraints > 0, meta: st.constraints ? plural(st.constraints, 'обмеження', 'обмеження', 'обмежень') : 'не задано',
-        href: '/admin/constraints/?semester=' + encodeURIComponent(st.sem.id) },
-      { name: 'Генерація', done: st.lessons.total > 0, meta: st.lessons.total ? plural(st.lessons.total, 'заняття', 'заняття', 'занять')
-        : blocks ? 'блокерів: ' + blocks : 'не запускали', view: 'overview', req: true }
-    ];
+    var byId = {
+      calendar: { view: 'calendar' },
+      resources: { view: 'overview' },
+      plans: { href: '/admin/study-plans/?semester=' + encodeURIComponent(st.sem.id) },
+      constraints: { href: '/admin/constraints/?semester=' + encodeURIComponent(st.sem.id) },
+      generation: { view: 'overview' }
+    };
+    var steps = Checks.stages(st.data, st.checks, { constraints: st.constraints, lessons: st.lessons.total });
+    steps.forEach(function (s) {
+      if (byId[s.id].href) s.href = byId[s.id].href;
+      if (byId[s.id].view) s.view = byId[s.id].view;
+    });
     var cur = steps.find(function (s) { return s.req && !s.done; });
     document.getElementById('semSteps').innerHTML = steps.map(function (s, i) {
       var cls = 'step ' + (s.done ? 'is-done' : s === cur ? 'is-cur' : 'is-todo') + (s.view === 'calendar' && st.view === 'calendar' ? ' is-view' : '');

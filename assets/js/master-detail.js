@@ -1,15 +1,47 @@
 /* Generic list + detail controller for directories. Classic script: window.MasterDetail.
-   Needs ui.js (UI.*), icons.js; markup classes from components.css («master–detail»). */
+   Needs ui.js (UI.*), icons.js; markup classes from components.css («master–detail»).
+
+   MasterDetail.create(opts) -> md
+     opts.root, load(lc) -> list (lc.isCurrent() is false once a newer reload started),
+     renderRow(item), renderDetail(item, ctx) -> html, mount(el, item, ctx), remove(item),
+     removeWarning(item) -> text | promise of text (optional; shown in the delete confirm,
+       which opens once it settles; '' or null shows none),
+     update(item, changes, ctx) -> saved record (PUT/PATCH of a saved record),
+     newItem() -> Draft defaults (enables the add button), create(values, item) -> saved record,
+     canCreate(values, item, ctx) -> true | text of what is missing
+       (default: every [data-md-field][required] is non-empty),
+     sort, groupBy, search(item, q), filters, getId, idParam, debounce, color, title, labels
+       (addLabel, draftLabel, emptyText, selectText, removedText, removeQuestion, countLabel, …).
+   md: reload(), select(id), current(), refresh(item), rerender(), setScope(key), setFilters(f),
+       items(), startDraft().
+
+   ctx (one per detail render): item, isDraft, el, alive(), pending, status(kind), refresh(item),
+     rerender(), danger(o),
+     load(promise): settles only while the same render and scope are on screen; otherwise never.
+     queue(op, {errorText}): runs op() on the single write chain (field saves, page ops, DELETE),
+       drives the status chip and the error toast; op must reject on failure. On a Draft the op
+       runs after an in-flight create, or is held until the Draft is created (dropped on discard).
+     save(changes): an update through update(); on a Draft the changes join the Draft values
+       and ask to create.
+
+   Draft lifecycle: [data-md-field] values are snapshotted on every input; change, blur or Enter
+   (or ctx.save) asks to create; create(values) runs once when canCreate passes. Promotion adds
+   the record to the list and the URL, waits for the write chain to be idle, then re-renders the
+   detail, keeping focus, caret and values typed while the create was in flight (sent as updates).
+   A Draft discarded during its create still joins the list once the create succeeds. */
 (function () {
   'use strict';
 
   var DRAFT = '__draft';
+  var DRAFT_TEXT = 'З’явиться у списку, щойно ви заповните обов’язкові поля.';
+  // Returned by ctx.load when its result is stale: the promise never settles, so no page callback runs.
+  var NEVER = new Promise(function () {});
 
   function esc(s) { return window.UI ? UI.escapeHtml(s) : String(s == null ? '' : s); }
   function icon(name, size) { return window.Icons ? Icons.svg(name, { size: size || 16 }) : ''; }
   function same(a, b) { return (a == null ? '' : String(a)) === (b == null ? '' : String(b)); }
 
-  function errorText(err, fallback) { return UI.errorText(err, fallback); }
+  function noop() {}
 
   function create(opts) {
     opts = opts || {};
@@ -28,9 +60,23 @@
 
     var items = [], loaded = false, query = '', filterId = urlFilter() || 'all';
     function urlFilter() { return new URLSearchParams(window.location.search).get('filter'); }
-    var selectedId = null, beforeDraft = null, draft = null, ctx = null, renderToken = 0, loadToken = 0;
+    var selectedId = null, beforeDraft = null, draft = null, dstate = null, ctx = null, renderToken = 0, loadToken = 0;
     var saveChain = Promise.resolve();
     var timers = {};
+    var replacing = false;
+    var scope = null;
+
+    // One write chain for everything this master–detail sends: field saves, page ops and DELETE.
+    function chain(fn) {
+      var p = saveChain.then(fn);
+      saveChain = p.then(null, noop);
+      return p;
+    }
+    // Resolves once nothing is left on the write chain, including ops queued while waiting.
+    function chainIdle() {
+      var tail = saveChain;
+      return tail.then(function () { return tail === saveChain ? null : chainIdle(); });
+    }
 
     root.classList.add('card', 'md');
     if (opts.color) root.style.setProperty('--sec', 'var(' + opts.color + ')');
@@ -54,7 +100,7 @@
     /* ---------- add button ---------- */
     var addBtn = null;
     function placeAdd() {
-      if (!opts.onCreate || addBtn) return;
+      if (!opts.newItem || addBtn) return;
       var host = opts.addTarget || (window.Shell && Shell.actionsEl && Shell.actionsEl());
       addBtn = document.createElement('button');
       addBtn.type = 'button';
@@ -136,7 +182,7 @@
       var vis = visibleItems();
       var focusedId = document.activeElement && rowsEl.contains(document.activeElement) ? document.activeElement.getAttribute('data-md-id') : null;
       if (!items.length && !draft) {
-        UI.state(rowsEl, 'empty', { text: opts.emptyText || 'Записів поки немає', actionLabel: opts.onCreate ? (opts.addLabel || 'Додати') : null, onAction: startDraft });
+        UI.state(rowsEl, 'empty', { text: opts.emptyText || 'Записів поки немає', actionLabel: opts.newItem ? (opts.addLabel || 'Додати') : null, onAction: startDraft });
         footEl.classList.add('hide');
         return;
       }
@@ -238,11 +284,22 @@
       var c = {
         item: item,
         isDraft: item === draft,
+        ds: item === draft ? dstate : null,
         el: detailEl,
         sent: {},
         pending: 0,
         alive: function () { return token === renderToken; },
-        save: function (changes) { return doSave(c, changes); },
+        load: function (p) {
+          // The result only reaches the page while this render is still on screen.
+          return Promise.resolve(p).then(function (v) {
+            return c.alive() ? v : NEVER;
+          }, function (err) {
+            if (c.alive()) throw err;
+            return NEVER;
+          });
+        },
+        save: function (changes) { return c.isDraft ? draftSave(c, changes) : doSave(c, changes); },
+        queue: function (op, o) { return c.isDraft ? draftQueue(c, op, o) : queue(c, op, o); },
         status: function (kind) { setStatus(c, kind); },
         refresh: function (it) { return refresh(it || c.item); },
         rerender: function () { if (c.alive()) renderDetail(); },
@@ -252,6 +309,8 @@
     }
 
     function renderDetail() {
+      var prev = ctx;
+      if (ctx) flushPending();
       var token = ++renderToken;
       clearTimers();
       var item = current();
@@ -260,19 +319,46 @@
         UI.state(detailEl, 'empty', { text: selectedId != null && loaded ? 'Запис не знайдено' : (opts.selectText || 'Оберіть запис зі списку') });
         return;
       }
-      var keep = document.activeElement && detailEl.contains(document.activeElement) ? document.activeElement.id : null;
+      var keep = focusState();
       var c = ctx = makeCtx(item, token);
       var out = opts.renderDetail(item, c);
-      detailEl.innerHTML = '';
-      if (typeof out === 'string') detailEl.innerHTML = out; else if (out) detailEl.appendChild(out);
+      // Removing a focused field fires focusout: that is not a user commit (a Draft must not create).
+      replacing = true;
+      try {
+        detailEl.innerHTML = '';
+        if (typeof out === 'string') detailEl.innerHTML = out; else if (out) detailEl.appendChild(out);
+      } finally { replacing = false; }
       if (opts.mount) opts.mount(detailEl, item, c);
-      if (keep) { var k = document.getElementById(keep); if (k && detailEl.contains(k)) k.focus(); }
+      if (c.isDraft) restoreDraft(c);
+      // First render after Promotion: what was typed while the create was in flight goes out as updates.
+      if (!c.isDraft && prev && prev.isDraft && prev.ds && prev.ds.created && prev.item === item) {
+        setStatus(c, 'saved');
+        applyTyped(c, prev.ds);
+      }
+      restoreFocus(keep);
+    }
+
+    function focusState() {
+      var a = document.activeElement;
+      if (!a || !a.id || !detailEl.contains(a)) return null;
+      var st = { id: a.id };
+      try { if (typeof a.selectionStart === 'number') { st.start = a.selectionStart; st.end = a.selectionEnd; } } catch (e) { /* no caret */ }
+      return st;
+    }
+    function restoreFocus(st) {
+      if (!st) return;
+      var k = document.getElementById(st.id);
+      if (!k || !detailEl.contains(k)) return;
+      if (document.activeElement !== k) k.focus();
+      if (st.start != null) {
+        try { var n = String(k.value || '').length; k.setSelectionRange(Math.min(st.start, n), Math.min(st.end, n)); } catch (e) { /* no caret */ }
+      }
     }
 
     function dangerHtml(c, o) {
       if (c.isDraft) {
         return '<div class="danger" data-md-draft><div><b>Новий запис</b><div class="muted sm">' +
-          esc(o.draftText || 'З’явиться у списку, щойно ви заповните обов’язкові поля.') + '</div></div><span class="sp"></span>' +
+          esc(o.draftText || DRAFT_TEXT) + '</div></div><span class="sp"></span>' +
           '<button type="button" class="btn btn-sm btn-ghost" data-md-discard>Скасувати</button></div>';
       }
       if (!opts.remove) return '';
@@ -290,12 +376,13 @@
     function clearTimers() { Object.keys(timers).forEach(function (k) { clearTimeout(timers[k]); }); timers = {}; }
     function commitField(el) {
       var c = ctx;
-      if (!c || !el.isConnected || !detailEl.contains(el)) return;
+      if (replacing || !c || !el.isConnected || !detailEl.contains(el)) return;
+      if (c.isDraft) { snapshotFields(c); requestCreate(c).catch(noop); return; }
       var key = el.getAttribute('data-md-field');
       clearTimeout(timers[key]); delete timers[key];
       var v = fieldValue(el);
       if (el.required && (v === '' || v == null)) {
-        if (!c.isDraft) { el.classList.add('is-err'); el.setAttribute('aria-invalid', 'true'); }
+        el.classList.add('is-err'); el.setAttribute('aria-invalid', 'true');
         return;
       }
       var ref = Object.prototype.hasOwnProperty.call(c.sent, key) ? c.sent[key] : c.item[key];
@@ -319,7 +406,8 @@
       var el = e.target.closest && e.target.closest('[data-md-field]');
       if (!el || !ctx) return;
       el.classList.remove('is-err');
-      if (ctx.isDraft || el.tagName === 'SELECT' || el.type === 'checkbox') return; // commit on change/blur
+      if (ctx.isDraft) { snapshotFields(ctx); return; } // a Draft asks to create on change/blur/Enter
+      if (el.tagName === 'SELECT' || el.type === 'checkbox') return; // commit on change/blur
       var key = el.getAttribute('data-md-field');
       clearTimeout(timers[key]);
       timers[key] = setTimeout(function () { commitField(el); }, debounceMs);
@@ -348,11 +436,25 @@
       var trig = e.target.closest('[data-md-danger] [data-confirm]');
       if (trig && ctx) {
         var c = ctx;
-        UI.confirmInline(trig.closest('[data-md-danger]'), {
-          question: opts.removeQuestion || 'Точно видалити?',
-          yes: 'Так, видалити',
-          onYes: function () { return doRemove(c); }
-        });
+        var dangerEl = trig.closest('[data-md-danger]');
+        var ask = function (warning) {
+          UI.confirmInline(dangerEl, {
+            question: opts.removeQuestion || 'Точно видалити?',
+            warning: warning || '',
+            yes: 'Так, видалити',
+            onYes: function () { return doRemove(c); }
+          });
+        };
+        if (!opts.removeWarning || c.isDraft) { ask(''); return; }
+        // Ask only once the warning is known, so «Так» is never clicked without it.
+        if (trig.disabled) return;
+        trig.disabled = true;
+        c.load(Promise.resolve().then(function () { return opts.removeWarning(c.item); })
+          .catch(function () { return 'Не вдалося перевірити, що ще буде видалено разом із записом.'; }))
+          .then(function (warning) {
+            trig.disabled = false;
+            if (document.contains(dangerEl)) ask(warning);
+          });
       }
     });
 
@@ -370,60 +472,155 @@
       return o;
     }
 
-    // A draft's first save: the same ctx becomes the saved record; the detail is NOT re-rendered.
-    function promote(c) {
-      c.isDraft = false;
-      items.push(c.item);
-      if (opts.sort) items.sort(opts.sort);
-      if (draft !== c.item) { renderRows(); return; }
-      draft = null;
-      if (selectedId === DRAFT) { selectedId = String(getId(c.item)); setUrl(selectedId, true); }
-      renderRows();
-      if (!c.alive()) return;
-      var block = detailEl.querySelector('[data-md-draft]');
-      if (block) {
-        block.insertAdjacentHTML('afterend', dangerHtml(c, c.dangerOpts || {}));
-        block.remove();
-      }
-      if (opts.onCreated) opts.onCreated(c.item, c);
-    }
-
-    function doSave(c, changes) {
-      if (!opts.save) return Promise.reject(new Error('MasterDetail: save is not configured'));
+    // Every page write goes through this: status chip, error toast, and «batch had a failure».
+    function queue(c, op, o) {
+      o = o || {};
       c.pending++;
       setStatus(c, 'saving');
-      // Merge inside the chain so a queued save sees the id assigned by a draft's POST.
-      var p = saveChain.then(function () {
-        var snap = snapshot(c.item);
-        return Promise.resolve(opts.save(c.item, changes)).then(function (saved) {
-          merge(c.item, saved || changes, saved ? snap : null);
-          if (c.isDraft) promote(c);
-          else {
-            if (opts.sort) items.sort(opts.sort);
-            renderRows();
-          }
-          return c.item;
-        });
-      });
-      saveChain = p.then(null, function () {});
-      return p.then(function (item) {
-        // A failed save earlier in this batch keeps the batch from ending as «Збережено».
+      return chain(function () { return op(); }).then(function (v) {
         if (--c.pending === 0) { setStatus(c, c.batchFailed ? 'error' : 'saved'); c.batchFailed = false; }
-        return item;
+        return v;
       }, function (err) {
         c.batchFailed = --c.pending > 0;
         setStatus(c, 'error');
-        UI.toast(errorText(err, 'Не вдалося зберегти'), { type: 'err' });
+        UI.toast(UI.errorText(err, o.errorText || 'Не вдалося зберегти'), { type: 'err' });
         throw err;
       });
+    }
+
+    // Field-style update of a saved record (also a Draft's update queued behind its create).
+    function doSave(c, changes) {
+      return queue(c, function () {
+        if (getId(c.item) == null) return Promise.reject(new Error('Запис ще не створено'));
+        var snap = snapshot(c.item);
+        return Promise.resolve(opts.update(c.item, changes, c)).then(function (saved) {
+          merge(c.item, saved || changes, saved ? snap : null);
+          if (opts.sort) items.sort(opts.sort);
+          renderRows();
+          return c.item;
+        });
+      });
+    }
+
+    /* ---------- Draft lifecycle: hold until creatable -> create -> Promotion -> re-render ---------- */
+    function newDraftState() {
+      return { values: {}, raw: {}, required: [], held: [], sent: null, creating: null, created: false };
+    }
+    // The detail's [data-md-field] values become the Draft values (create never reads the DOM).
+    function snapshotFields(c) {
+      var ds = c.ds;
+      if (!ds || !c.alive()) return;
+      ds.required = [];
+      detailEl.querySelectorAll('[data-md-field]').forEach(function (el) {
+        var key = el.getAttribute('data-md-field');
+        ds.values[key] = fieldValue(el);
+        ds.raw[key] = el.type === 'checkbox' ? el.checked : el.value;
+        if (el.required) ds.required.push(key);
+      });
+    }
+    // A re-render of a Draft puts the typed values back and lets the page's own listeners see them.
+    function restoreDraft(c) {
+      var ds = c.ds;
+      if (!ds) return;
+      var restored = [];
+      detailEl.querySelectorAll('[data-md-field]').forEach(function (el) {
+        var key = el.getAttribute('data-md-field');
+        if (!Object.prototype.hasOwnProperty.call(ds.raw, key)) return;
+        if (el.type === 'checkbox') el.checked = !!ds.raw[key]; else el.value = ds.raw[key];
+        restored.push(el);
+      });
+      restored.forEach(function (el) { el.dispatchEvent(new Event('input', { bubbles: true })); });
+      snapshotFields(c);
+    }
+    function applyTyped(c, ds) {
+      detailEl.querySelectorAll('[data-md-field]').forEach(function (el) {
+        var key = el.getAttribute('data-md-field');
+        if (!Object.prototype.hasOwnProperty.call(ds.raw, key)) return;
+        if (same(ds.values[key], ds.sent && ds.sent[key])) return;
+        if (el.type === 'checkbox') el.checked = !!ds.raw[key]; else el.value = ds.raw[key];
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        commitField(el);
+      });
+    }
+    function canCreate(c) {
+      var ds = c.ds;
+      if (opts.canCreate) return opts.canCreate(ds.values, c.item, c);
+      return ds.required.every(function (k) { var v = ds.values[k]; return !(v === '' || v == null); });
+    }
+    function showMissing(c, why) {
+      if (!c.alive()) return;
+      var t = detailEl.querySelector('[data-md-draft] .muted');
+      if (!t) return;
+      t.textContent = typeof why === 'string' && why ? why : ((c.dangerOpts && c.dangerOpts.draftText) || DRAFT_TEXT);
+    }
+    // The ctx that currently shows this Draft (a re-render made a newer one), else the given one.
+    function live(c) { return ctx && ctx.ds && ctx.ds === c.ds ? ctx : c; }
+
+    // Asks to create the Draft: once, with all values, when canCreate passes. Resolves null when not creatable.
+    function requestCreate(c) {
+      var ds = c.ds, item = c.item;
+      if (ds.created) return Promise.resolve(item);
+      if (ds.creating) return ds.creating;
+      var ok = canCreate(c);
+      showMissing(c, ok);
+      if (ok !== true) return Promise.resolve(null);
+      var sent = ds.sent = Object.assign({}, ds.values);
+      var snap = snapshot(item);
+      ds.creating = queue(live(c), function () { return opts.create(Object.assign({}, sent), item); }).then(function (saved) {
+        merge(item, saved || sent, saved ? snap : null);
+        ds.created = true;
+        promote(c);
+        return item;
+      }, function (err) {
+        ds.creating = null;
+        throw err;
+      });
+      return ds.creating;
+    }
+
+    // Promotion: the record joins the list and the URL; once the write chain is idle the detail re-renders.
+    function promote(c) {
+      var ds = c.ds, item = c.item;
+      items.push(item);
+      if (opts.sort) items.sort(opts.sort);
+      if (draft !== item) { ds.held = []; renderRows(); return; } // discarded while the create was in flight
+      draft = null; dstate = null;
+      if (selectedId === DRAFT) { selectedId = String(getId(item)); setUrl(selectedId, true); }
+      renderRows();
+      ds.held.splice(0).forEach(function (h) { queue(live(c), h.op, h.o).then(h.res, h.rej); });
+      // A macrotask later, so ops queued in reaction to this create are on the chain before we wait for it.
+      setTimeout(function () {
+        chainIdle().then(function () {
+          var cur = live(c);
+          if (cur === ctx && cur.alive() && cur.isDraft && current() === item) renderDetail();
+        });
+      }, 0);
+    }
+
+    // ctx.queue on a Draft: runs after an in-flight create, or is held until Promotion (dropped on discard).
+    function draftQueue(c, op, o) {
+      var ds = c.ds;
+      if (ds.created) return queue(live(c), op, o);
+      return new Promise(function (res, rej) {
+        function hold() { ds.held.push({ op: op, o: o, res: res, rej: rej }); }
+        if (ds.creating) ds.creating.then(function () { queue(live(c), op, o).then(res, rej); }, hold);
+        else hold();
+      });
+    }
+    // ctx.save on a Draft: the changes join the Draft values and ask to create (an update once created).
+    function draftSave(c, changes) {
+      var ds = c.ds;
+      if (ds.created) return doSave(live(c), changes);
+      Object.assign(ds.values, changes);
+      if (ds.creating) return ds.creating.then(function () { return doSave(live(c), changes); });
+      return requestCreate(c);
     }
 
     function doRemove(c) {
       var item = c.item;
       // Queue behind pending saves (e.g. the blur-save from clicking «Видалити»), so DELETE goes last.
       flushPending();
-      var p = saveChain.then(function () { return opts.remove(item); });
-      saveChain = p.then(null, function () {});
+      var p = chain(function () { return opts.remove(item); });
       return p.then(function () {
         var vis = visibleItems();
         var idx = vis.indexOf(item);
@@ -433,14 +630,15 @@
         UI.toast(opts.removedText || 'Видалено', { type: 'ok' });
         select(nxt ? String(getId(nxt)) : null, { replace: true });
       }, function (err) {
-        UI.toast(errorText(err, 'Не вдалося видалити'), { type: 'err' });
+        UI.toast(UI.errorText(err, 'Не вдалося видалити'), { type: 'err' });
       });
     }
 
     /* ---------- selection ---------- */
     function discardDraft() {
       if (!draft) return;
-      draft = null;
+      if (dstate) dstate.held = [];
+      draft = null; dstate = null;
       if (selectedId === DRAFT) selectedId = null;
     }
 
@@ -457,11 +655,12 @@
     }
 
     function startDraft() {
-      if (!opts.onCreate || !loaded) return;
+      if (!opts.newItem || !loaded) return;
       if (!draft) {
         flushPending();
         beforeDraft = selectedId;
-        draft = opts.onCreate() || {};
+        draft = opts.newItem() || {};
+        dstate = newDraftState();
         selectedId = DRAFT;
         setUrl(null, false);
         renderRows();
@@ -478,6 +677,13 @@
       if (opts.sort) items.sort(opts.sort);
       renderRows();
       return ex || item;
+    }
+
+    // The page's current scope (a semester id): a change invalidates every pending ctx.load.
+    function setScope(key) {
+      if (same(scope, key)) return;
+      scope = key;
+      renderDetail();
     }
 
     function reload() {
@@ -516,11 +722,12 @@
       current: current,
       refresh: refresh,
       rerender: function () { renderDetail(); },
+      setScope: function (key) { setScope(key); },
       setFilters: function (f) { filtersSrc = f; renderRows(); },
       items: function () { return items.slice(); },
-      create: startDraft
+      startDraft: startDraft
     };
   }
 
-  window.MasterDetail = { create: create, errorText: errorText };
+  window.MasterDetail = { create: create };
 })();

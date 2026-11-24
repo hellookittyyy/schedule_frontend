@@ -17,8 +17,6 @@
     var n = groupsOf(s).length;
     return n ? groupsText(n) + ' · ' + total(s) + ' студ.' : 'Без груп';
   }
-  function errText(err, fb) { return MasterDetail.errorText(err, fb); }
-
   function renderRow(s) {
     var g = groupsOf(s);
     return '<div class="grow"><div class="name">' + esc(s.name) + '</div>' +
@@ -128,24 +126,12 @@
     });
   }
 
-  /* All stream writes go through one queue; each PUT is built when it runs from the local
-     membership list (s.groups_details, updated immediately) and the latest requested name. */
-  var queue = Promise.resolve();
-  function enqueue(fn) {
-    var p = queue.then(fn);
-    queue = p.then(null, function () {});
-    return p;
-  }
   function ids(s) { return groupsOf(s).map(function (g) { return g.id; }); }
-  function nameOf(s) { return s._name != null ? s._name : s.name; }
-  function putNow(s) {
-    return apiRequest('/streams/' + s.id + '/', 'PUT', { name: nameOf(s), groups: ids(s) });
-  }
 
   function resync(s, ctx) {
     if (s.id == null) return;
     apiRequest('/streams/' + s.id + '/').then(function (fresh) {
-      Object.assign(s, fresh); delete s._name;
+      Object.assign(s, fresh);
       md.refresh(s);
       if (ctx.alive()) renderChips(s, ctx);
     }, function () {});
@@ -154,15 +140,12 @@
   function syncGroups(s, ctx, failText) {
     md.refresh(s);
     renderChips(s, ctx);
-    if (s.id == null && !s._posting) return Promise.resolve();
-    ctx.status('saving');
-    return enqueue(function () { return s.id == null ? null : putNow(s); })
-      .then(function () { ctx.status('saved'); }, function (err) {
-        ctx.status('error');
-        UI.toast(errText(err, failText), { type: 'err' });
-        resync(s, ctx);
-        throw err;
-      });
+    // On a Draft the PUT is held until the stream is created; it is built when it runs.
+    var p = ctx.queue(function () {
+      return apiRequest('/streams/' + s.id + '/', 'PUT', { name: s.name, groups: ids(s) });
+    }, { errorText: failText });
+    p.catch(function () { resync(s, ctx); });
+    return p;
   }
 
   function addGroup(s, ctx, groupId) {
@@ -176,7 +159,7 @@
     var grp = groupsOf(s).find(function (g) { return g.id === groupId; });
     if (!grp) return;
     s.groups_details = groupsOf(s).filter(function (g) { return g.id !== groupId; });
-    var draft = s.id == null && !s._posting;
+    var draft = ctx.isDraft;
     syncGroups(s, ctx, 'Не вдалося прибрати групу').then(function () {
       if (draft) return;
       UI.toast('Групу «' + grp.name + '» прибрано з потоку', {
@@ -215,21 +198,14 @@
     renderRow: renderRow,
     renderDetail: renderDetail,
     mount: mount,
-    onCreate: function () { return { name: '', groups_details: [] }; },
-    save: function (s, ch) {
-      var sent = ch.name != null ? ch.name : nameOf(s);
-      s._name = sent;
-      function undo(err) { if (s._name === sent) delete s._name; throw err; }
-      if (s.id == null) {
-        s._posting = true;
-        return enqueue(function () { return apiRequest('/streams/', 'POST', { name: nameOf(s), groups: ids(s) }); })
-          .then(function (r) {
-            s._posting = false; s.id = r.id;
-            return Object.assign({}, r, { groups_details: groupsOf(s) });
-          }, function (err) { s._posting = false; undo(err); });
-      }
-      // Resolve only the name: queued membership changes may be newer than this response.
-      return enqueue(function () { return putNow(s); }).then(function () { return { name: sent }; }, undo);
+    newItem: function () { return { name: '', groups_details: [] }; },
+    create: function (v, s) {
+      return apiRequest('/streams/', 'POST', { name: v.name, groups: ids(s) }).then(function (r) {
+        return Object.assign({}, r, { groups_details: groupsOf(s) });
+      });
+    },
+    update: function (s, ch) {
+      return apiRequest('/streams/' + s.id + '/', 'PUT', { name: ch.name != null ? ch.name : s.name, groups: ids(s) });
     },
     remove: function (s) { return apiRequest('/streams/' + s.id + '/', 'DELETE'); }
   });

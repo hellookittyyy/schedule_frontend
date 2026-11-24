@@ -103,20 +103,17 @@
   function renderTop() {
     var box = document.getElementById('tkTop');
     var s = Checks.summary(st.list);
-    var total = st.list.length;
-    var pct = total ? Math.round(s.ok / total * 100) : 0;
-    var capped = s.block > 0 && pct > 50;
-    if (capped) pct = 50;
+    var r = Checks.readiness(st.list);
     var items = { block: 0, warn: 0, tip: 0 };
     st.list.forEach(function (c) { if (items[c.severity] != null) items[c.severity] += c.count || 0; });
 
     var hero = '<div class="card hero">' +
       '<div class="hero-label">Готовність до генерації</div>' +
-      '<div class="hero-row"><span class="hero-value">' + pct + '<small>%</small></span>' +
-      '<span class="hero-note">' + (s.block ? 'Блокерів: ' + s.block : 'Блокерів немає') + '</span></div>' +
-      '<div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></div>' +
-      '<div class="hero-cap">Пройдено ' + s.ok + ' з ' + total + ' перевірок семестру' +
-        (capped ? '; поки є блокери, готовність не перевищує 50%' : '') + '</div>' +
+      '<div class="hero-row"><span class="hero-value">' + r.pct + '<small>%</small></span>' +
+      '<span class="hero-note">' + (r.blocks ? 'Блокерів: ' + r.blocks : 'Блокерів немає') + '</span></div>' +
+      '<div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + r.pct + '"><i style="width:' + r.pct + '%"></i></div>' +
+      '<div class="hero-cap">Пройдено ' + r.passed + ' з ' + r.total + ' перевірок семестру' +
+        (r.capped ? '; поки є блокери, готовність не перевищує 50%' : '') + '</div>' +
       '<a class="btn btn-hero" href="/admin/semesters/?id=' + encodeURIComponent(st.sid) + '">Відкрити семестр ' + ic('arrow') + '</a></div>';
 
     var kpis = ['block', 'warn', 'tip'].map(function (k) {

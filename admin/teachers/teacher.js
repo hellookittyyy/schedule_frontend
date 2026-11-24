@@ -26,7 +26,7 @@
     return s ? s.name : '';
   }
   function subjCountText(n) { return n ? n + ' ' + plural(n, 'предмет', 'предмети', 'предметів') : 'Без предметів'; }
-  function errText(err, fb) { return MasterDetail.errorText(err, fb); }
+  function errText(err, fb) { return UI.errorText(err, fb); }
 
   /* ---------- list ---------- */
   function renderRow(t) {
@@ -38,7 +38,7 @@
   }
 
   /* ---------- detail ---------- */
-  // Sections that exist only for a saved teacher (also inserted in place after a draft's first save).
+  // Sections that exist only for a saved teacher (MasterDetail re-renders the detail after a Draft is created).
   function savedHtml() {
     if (!semesters.length) return '';
     var semOptions = semesters.map(function (s) {
@@ -93,7 +93,7 @@
     if (sel) {
       sel.addEventListener('change', function () {
         semId = sel.value;
-        loadSemesterParts(t, ctx);
+        md.setScope(semId);
       });
       loadSemesterParts(t, ctx);
     }
@@ -166,48 +166,67 @@
     });
   }
 
-  function syncTeacher(t, ctx) {
+  function syncTeacher(t, ctx, quiet) {
     return apiRequest('/teachers/' + t.id + '/').then(function (fresh) {
       Object.assign(t, fresh);
       md.refresh(t);
-      if (ctx.alive()) { renderSubjectChips(t, ctx); ctx.status('saved'); }
+      if (ctx.alive()) { renderSubjectChips(t, ctx); if (!quiet) ctx.status('saved'); }
     });
   }
 
+  function subjectIds(t) {
+    return subjOf(t).map(function (s) { return s.id; }).join(',');
+  }
+
+  // One PUT per chip edit. Chip edits queue, so a newer edit may already be in flight when this
+  // op fails; that newer op carries the failed change, so only re-read the server when it does not.
+  function saveSubjects(t, ctx, failText) {
+    var sent = null;
+    return ctx.queue(function () {
+      sent = subjectIds(t);
+      return apiRequest('/teachers/' + t.id + '/', 'PUT', { name: t.name, subjects: subjOf(t).map(function (s) { return s.id; }) });
+    }, { errorText: failText }).then(function (fresh) {
+      var local = subjOf(t);
+      var localIds = subjectIds(t);
+      Object.assign(t, fresh);
+      if (localIds !== sent) t.subjects_details = local; // a newer chip write owns the list; its response follows
+      md.refresh(t);
+      if (ctx.alive()) renderSubjectChips(t, ctx);
+    }, function () {
+      // No newer chip edit: re-read the server truth. Otherwise the queued op already carries the failed change.
+      if (sent == null || sent !== subjectIds(t)) return;
+      return syncTeacher(t, ctx, true).catch(function () {});
+    });
+  }
+
+  // On a Draft the PUT is held until the teacher is created (it sends the full list, so a chip
+  // already in the create is harmless); the chips repaint at once.
   function addSubject(t, ctx, subjectId) {
     var subj = allSubjects.find(function (s) { return s.id === subjectId; });
     if (!subj) return Promise.resolve();
-    if (ctx.isDraft) {
-      if (!subjOf(t).some(function (s) { return s.id === subjectId; })) {
-        t.subjects_details = subjOf(t).concat([subj]);
-      }
-      renderSubjectChips(t, ctx);
-      return Promise.resolve();
+    if (!subjOf(t).some(function (s) { return s.id === subjectId; })) {
+      t.subjects_details = subjOf(t).concat([subj]);
     }
-    ctx.status('saving');
-    return apiRequest('/teachers/' + t.id + '/manage_subjects/', 'POST', { subject_id: subjectId, action: 'add' })
-      .then(function () { return syncTeacher(t, ctx); })
-      .catch(function (err) { ctx.status('error'); UI.toast(errText(err, 'Не вдалося додати предмет'), { type: 'err' }); });
+    var p = saveSubjects(t, ctx, 'Не вдалося додати предмет');
+    if (!ctx.isDraft) return p;
+    renderSubjectChips(t, ctx);
+    p.catch(function () {});
+    return Promise.resolve();
   }
 
   function removeSubject(t, ctx, subjectId) {
     var subj = subjOf(t).find(function (s) { return s.id === subjectId; });
     if (!subj) return;
-    if (ctx.isDraft) {
-      t.subjects_details = subjOf(t).filter(function (s) { return s.id !== subjectId; });
-      renderSubjectChips(t, ctx);
-      return;
-    }
-    ctx.status('saving');
-    apiRequest('/teachers/' + t.id + '/manage_subjects/', 'POST', { subject_id: subjectId, action: 'remove' })
-      .then(function () { return syncTeacher(t, ctx); })
-      .then(function () {
-        UI.toast('Предмет «' + subj.name + '» прибрано', {
-          type: 'ok',
-          action: { label: 'Повернути', onClick: function () { addSubject(t, ctx, subjectId); } }
-        });
-      })
-      .catch(function (err) { ctx.status('error'); UI.toast(errText(err, 'Не вдалося прибрати предмет'), { type: 'err' }); });
+    var draft = ctx.isDraft;
+    t.subjects_details = subjOf(t).filter(function (s) { return s.id !== subjectId; });
+    if (draft) renderSubjectChips(t, ctx);
+    saveSubjects(t, ctx, 'Не вдалося прибрати предмет').then(function () {
+      if (draft) return;
+      UI.toast('Предмет «' + subj.name + '» прибрано', {
+        type: 'ok',
+        action: { label: 'Повернути', onClick: function () { addSubject(t, ctx, subjectId); } }
+      });
+    }, function () {});
   }
 
   /* ---------- semester grid: days × periods from the semester's timeslots ---------- */
@@ -247,22 +266,19 @@
     var box = ctx.el.querySelector('#t-avail');
     if (!box) return;
     UI.state(box, 'loading');
-    Promise.all([
+    ctx.load(Promise.all([
       semesterGrid(sid),
       apiRequest('/semester_constraints/?semester=' + encodeURIComponent(sid) + '&teacher=' + t.id + '&is_active=true')
-    ]).then(function (r) {
-      if (!ctx.alive() || semId !== sid) return;
+    ])).then(function (r) {
       var cons = (r[1] && r[1].results) || r[1] || [];
       new AvailGrid(box, t, sid, r[0], cons, ctx);
     }, function (err) {
-      if (!ctx.alive() || semId !== sid) return;
       UI.state(box, 'error', { text: errText(err, 'Не вдалося завантажити доступність'), actionLabel: 'Спробувати ще', onAction: function () { loadAvailability(t, ctx, sid); } });
     });
   }
 
   function AvailGrid(box, t, sid, grid, cons, ctx) {
     this.box = box; this.t = t; this.sid = sid; this.grid = grid; this.cons = cons; this.ctx = ctx;
-    this.chain = Promise.resolve(); this.pending = 0;
     if (!grid.periods.length) {
       UI.state(box, 'empty', { text: 'У семестрі ще немає розкладу дзвінків' });
       return;
@@ -279,11 +295,21 @@
       if (c) {
         var on = !c.classList.contains('off');
         c.classList.toggle('off', on); c.setAttribute('aria-pressed', String(on));
-        self.queue(function () { return self.setBlocked(Number(c.dataset.day), Number(c.dataset.p), on); });
+        self.ctx.queue(function () { return self.setBlocked(Number(c.dataset.day), Number(c.dataset.p), on); },
+          { errorText: 'Не вдалося зберегти доступність' }).then(function () {
+            if (self.ctx.pending === 0 && self.ctx.alive() && document.contains(self.box)) self.render();
+          }, function () {
+            if (self.ctx.alive()) loadAvailability(self.t, self.ctx, self.sid);
+          });
       } else if (h) {
         var off = !h.classList.contains('is-off');
         h.classList.toggle('is-off', off); h.setAttribute('aria-pressed', String(off));
-        self.queue(function () { return self.setDayOff(Number(h.dataset.day), off); });
+        self.ctx.queue(function () { return self.setDayOff(Number(h.dataset.day), off); },
+          { errorText: 'Не вдалося зберегти доступність' }).then(function () {
+            if (self.ctx.pending === 0 && self.ctx.alive() && document.contains(self.box)) self.render();
+          }, function () {
+            if (self.ctx.alive()) loadAvailability(self.t, self.ctx, self.sid);
+          });
       }
     });
   }
@@ -322,21 +348,6 @@
     this.box.innerHTML = '<div class="avail" style="--days:' + g.days.length + '">' + h + '</div>' +
       '<div class="legend"><span><i class="free"></i>доступний</span><span><i class="off"></i>недоступний</span><span><i class="block"></i>вихідний день</span></div>';
   };
-  AvailGrid.prototype.queue = function (op) {
-    var self = this;
-    this.pending++;
-    this.ctx.status('saving');
-    this.chain = this.chain.then(op).then(function () {
-      if (--self.pending === 0 && self.alive()) { self.render(); self.ctx.status('saved'); }
-    }, function (err) {
-      self.pending--;
-      UI.toast(errText(err, 'Не вдалося зберегти доступність'), { type: 'err' });
-      if (self.alive()) { self.ctx.status('error'); loadAvailability(self.t, self.ctx, self.sid); }
-      self.pending = 0;
-      self.chain = Promise.resolve();
-    });
-  };
-  AvailGrid.prototype.alive = function () { return this.ctx.alive() && semId === this.sid && document.contains(this.box); };
   AvailGrid.prototype.replace = function (old, fresh) {
     var i = this.cons.indexOf(old);
     if (fresh) { if (i >= 0) this.cons[i] = fresh; else this.cons.push(fresh); }
@@ -403,8 +414,7 @@
     var box = ctx.el.querySelector('#t-groups');
     if (!box) return;
     UI.state(box, 'loading');
-    apiRequest('/study_plans/?semester=' + encodeURIComponent(sid) + '&teacher=' + t.id).then(function (plans) {
-      if (!ctx.alive() || semId !== sid) return;
+    ctx.load(apiRequest('/study_plans/?semester=' + encodeURIComponent(sid) + '&teacher=' + t.id)).then(function (plans) {
       plans = (plans && plans.results) || plans || [];
       var seen = {}, list = [];
       plans.forEach(function (p) {
@@ -422,33 +432,8 @@
           esc(g.name) + (g.stream ? ' <span class="muted">потік</span>' : '') + ic('chevR', 12) + '</a>';
       }).join('') + '</div>';
     }, function (err) {
-      if (!ctx.alive() || semId !== sid) return;
       UI.state(box, 'error', { text: errText(err, 'Не вдалося завантажити навчальні плани'), actionLabel: 'Спробувати ще', onAction: function () { loadGroups(t, ctx, sid); } });
     });
-  }
-
-  /* ---------- first save of a draft: saved-only sections + chips changed during the POST ---------- */
-  var posted = new WeakMap();
-  function onCreated(t, ctx) {
-    var html = savedHtml();
-    if (html) {
-      var anchor = ctx.el.querySelector('[data-md-danger]');
-      if (anchor) anchor.insertAdjacentHTML('beforebegin', html); else ctx.el.insertAdjacentHTML('beforeend', html);
-      mountSaved(ctx.el, t, ctx);
-    }
-    var res = posted.get(t);
-    posted.delete(t);
-    var server = ((res && res.subjects_details) || []).map(function (s) { return s.id; });
-    var local = subjOf(t).map(function (s) { return s.id; });
-    var ops = local.filter(function (id) { return server.indexOf(id) < 0; }).map(function (id) { return { subject_id: id, action: 'add' }; })
-      .concat(server.filter(function (id) { return local.indexOf(id) < 0; }).map(function (id) { return { subject_id: id, action: 'remove' }; }));
-    if (!ops.length) return;
-    ctx.status('saving');
-    ops.reduce(function (p, body) {
-      return p.then(function () { return apiRequest('/teachers/' + t.id + '/manage_subjects/', 'POST', body); });
-    }, Promise.resolve())
-      .then(function () { return syncTeacher(t, ctx); })
-      .catch(function (err) { ctx.status('error'); UI.toast(errText(err, 'Не вдалося зберегти предмети'), { type: 'err' }); });
   }
 
   /* ---------- controller ---------- */
@@ -487,15 +472,27 @@
     renderRow: renderRow,
     renderDetail: renderDetail,
     mount: mount,
-    onCreate: function () { return { name: '', subjects_details: [] }; },
-    onCreated: onCreated,
-    save: function (t, ch) {
-      if (t.id == null) {
-        var payload = { name: ch.name };
-        if (subjOf(t).length) payload.subjects = subjOf(t).map(function (s) { return s.id; });
-        return apiRequest('/teachers/', 'POST', payload).then(function (r) { posted.set(t, r); return r; });
-      }
+    newItem: function () { return { name: '', subjects_details: [] }; },
+    create: function (v, t) {
+      var payload = { name: v.name };
+      if (subjOf(t).length) payload.subjects = subjOf(t).map(function (s) { return s.id; });
+      return apiRequest('/teachers/', 'POST', payload);
+    },
+    update: function (t, ch) {
       return apiRequest('/teachers/' + t.id + '/', 'PUT', { name: ch.name != null ? ch.name : t.name });
+    },
+    // The backend deletes a teacher's study plans and their lessons with the teacher (CASCADE).
+    removeWarning: function (t) {
+      return Promise.all([
+        apiRequest('/study_plans/?teacher=' + t.id),
+        apiRequest('/lessons/?teacher_id=' + t.id)
+      ]).then(function (r) {
+        var plans = ((r[0] && r[0].results) || r[0] || []).length;
+        var lessons = ((r[1] && r[1].results) || r[1] || []).length;
+        if (!plans) return '';
+        return 'Разом із викладачем буде видалено ' + UI.plural(plans, 'навчальний план', 'навчальні плани', 'навчальних планів') +
+          (lessons ? ' і ' + UI.plural(lessons, 'пару', 'пари', 'пар') + ' в розкладі' : '') + '. Повернути їх не можна.';
+      });
     },
     remove: function (t) { return apiRequest('/teachers/' + t.id + '/', 'DELETE'); }
   });

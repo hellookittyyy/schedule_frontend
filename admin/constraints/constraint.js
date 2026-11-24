@@ -43,7 +43,7 @@
     var s = semesters.find(function (x) { return String(x.id) === String(id); });
     return s ? s.name : '';
   }
-  function errText(err, fb) { return MasterDetail.errorText(err, fb); }
+  function errText(err, fb) { return UI.errorText(err, fb); }
 
   /* ---------- reading a constraint ---------- */
   function catOf(c) {
@@ -224,9 +224,9 @@
       '<div class="section" id="cn-editor-sec"><div class="section-title" id="cn-editor-title">Параметри</div>' +
         '<div id="cn-editor"></div></div>' +
       '<div class="section"><div class="fields">' +
-        // Shown once the draft is saved (MasterDetail does not re-render then).
-        '<label class="f-label" for="cn-sem" data-cn-saved' + (ctx.isDraft ? ' hidden' : '') + '>Семестр</label>' +
-        '<div class="f-value" data-cn-saved' + (ctx.isDraft ? ' hidden' : '') + '><select class="select" id="cn-sem">' + semOptions + '</select></div>' +
+        (ctx.isDraft ? '' :
+          '<label class="f-label" for="cn-sem">Семестр</label>' +
+          '<div class="f-value"><select class="select" id="cn-sem">' + semOptions + '</select></div>') +
         '<span class="f-label" id="cn-active-l">Активне</span>' +
         '<div class="f-value"><button type="button" class="switch" id="cn-active" role="switch" aria-labelledby="cn-active-l"></button>' +
           '<span class="muted sm cn-active-t" id="cn-active-t"></span></div>' +
@@ -276,9 +276,6 @@
       var first = el.querySelector('#cn-cats [data-cat]');
       if (first) first.focus();
     }
-  }
-  function onCreated(item, ctx) {
-    ctx.el.querySelectorAll('[data-cn-saved]').forEach(function (n) { n.hidden = false; });
   }
 
   function paintHead(ctx) {
@@ -451,8 +448,8 @@
   function editTimeBlock(ctx, box) {
     var w = ctx.w, sid = w.semester;
     UI.state(box, 'loading');
-    semesterGrid(sid).then(function (g) {
-      if (!ctx.alive() || w.type !== 'time_block' || w.semester !== sid) return;
+    ctx.load(semesterGrid(sid)).then(function (g) {
+      if (w.type !== 'time_block' || w.semester !== sid) return;
       var v = w.cfg.value || (w.cfg.value = {});
       // Keep periods/days stored in the value even if the semester grid lacks them.
       var days = g.days.slice(), pers = g.periods.slice();
@@ -513,7 +510,6 @@
         commit(ctx);
       };
     }, function (err) {
-      if (!ctx.alive()) return;
       UI.state(box, 'error', { text: errText(err, 'Не вдалося завантажити розклад дзвінків'), actionLabel: 'Спробувати ще', onAction: function () { paintEditor(ctx); } });
     });
   }
@@ -522,8 +518,8 @@
     var w = ctx.w, sid = w.semester;
     if (!w.cfg.value) w.cfg.value = { time_gap: 1 };
     UI.state(box, 'loading');
-    plansFor(sid).then(function (plans) {
-      if (!ctx.alive() || w.type !== 'sequential_lessons' || w.semester !== sid) return;
+    ctx.load(plansFor(sid)).then(function (plans) {
+      if (w.type !== 'sequential_lessons' || w.semester !== sid) return;
       var v = w.cfg.value;
       if (!plans.length) { UI.state(box, 'empty', { text: 'У семестрі ще немає навчальних планів' }); return; }
       plans = plans.slice().sort(function (a, b) { return planOption(a).localeCompare(planOption(b), 'uk'); });
@@ -570,7 +566,6 @@
         commit(ctx);
       };
     }, function (err) {
-      if (!ctx.alive()) return;
       UI.state(box, 'error', { text: errText(err, 'Не вдалося завантажити навчальні плани'), actionLabel: 'Спробувати ще', onAction: function () { paintEditor(ctx); } });
     });
   }
@@ -695,14 +690,13 @@
     },
     renderDetail: renderDetail,
     mount: mount,
-    onCreated: onCreated,
-    onCreate: function () {
+    newItem: function () {
       return { semester: semId != null ? Number(semId) : null, teacher: null, group: null, stream: null, room: null, configuration: null, is_active: true };
     },
-    save: function (c, payload) {
-      if (c.id == null) return apiRequest('/semester_constraints/', 'POST', payload);
-      return apiRequest('/semester_constraints/' + c.id + '/', 'PUT', payload);
-    },
+    // Category, entity and type are not fields: the working state on ctx decides (commit() calls ctx.save).
+    canCreate: function (values, item, ctx) { return missing(ctx.w) || true; },
+    create: function (payload) { return apiRequest('/semester_constraints/', 'POST', payload); },
+    update: function (c, payload) { return apiRequest('/semester_constraints/' + c.id + '/', 'PUT', payload); },
     remove: function (c) { return apiRequest('/semester_constraints/' + c.id + '/', 'DELETE'); }
   });
 

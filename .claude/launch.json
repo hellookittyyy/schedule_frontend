@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "static",
+      "runtimeExecutable": "py",
+      "runtimeArgs": ["scripts/dev-server.py"],
+      "port": 5500
+    },
+    {
+      "name": "backend",
+      "runtimeExecutable": "D:/projects/course_work_schedule/schedule_backend/.venv/Scripts/python.exe",
+      "runtimeArgs": ["D:/projects/course_work_schedule/schedule_backend/manage.py", "runserver", "127.0.0.1:8000", "--noreload"],
+      "port": 8000
+    }
+  ]
+}
