@@ -1,0 +1,1353 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Чекліст тестування розкладу</title>
+<!-- Робочий файл для ручного тестування. Список перевірок береться з docs/test-cases.md:
+     після змін у ньому запусти  py scripts/build-test-checklist.py
+     Відмітки й баги зберігаються в цьому браузері (localStorage) автоматично. -->
+<style>
+  :root {
+    --bg: #f6f6f3; --card: #fff; --text: #1d1d1b; --muted: #6b6b66; --line: #e2e2dc;
+    --ok: #2f7d4f; --ok-bg: #e3f2e8; --fail: #b3392f; --fail-bg: #fbe6e3;
+    --skip: #8a6d1f; --skip-bg: #f7efd7; --accent: #2d5fa8; --code: #efefea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181a; --card: #212226; --text: #ececea; --muted: #9a9a95; --line: #34353a;
+      --ok: #6cc48f; --ok-bg: #1f3a2a; --fail: #f08a80; --fail-bg: #45231f;
+      --skip: #e0c26a; --skip-bg: #3d331a; --accent: #7aa7ec; --code: #2c2d31;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, "Segoe UI", sans-serif; }
+  code { background: var(--code); padding: 0 4px; border-radius: 4px; font-size: 13px; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; border: 1px solid var(--line); background: var(--card); border-radius: 6px; padding: 5px 10px; }
+  button:hover { border-color: var(--muted); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  input, select, textarea { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
+  textarea { width: 100%; resize: vertical; min-height: 54px; }
+
+  header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 12px 20px; }
+  h1 { font-size: 20px; margin: 0 0 8px; }
+  .top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .run { display: flex; gap: 6px; align-items: center; color: var(--muted); }
+  .run input { width: 240px; }
+  .bar { height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; display: flex; flex: 1; min-width: 200px; }
+  .bar span { height: 100%; }
+  .stats { display: flex; gap: 14px; font-size: 14px; flex-wrap: wrap; }
+  .stats b { font-variant-numeric: tabular-nums; }
+  .tabs { display: flex; gap: 4px; margin-top: 10px; }
+  .tabs button { border-radius: 6px 6px 0 0; border-bottom: none; }
+  .tabs button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 14px 0; }
+  .tools .sp { flex: 1; }
+
+  details.sec { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 12px; }
+  details.sec > summary { padding: 12px 16px; cursor: pointer; font-weight: 600; display: flex; gap: 10px; align-items: center; }
+  details.sec > summary .cnt { margin-left: auto; font-weight: 400; color: var(--muted); font-size: 13px; }
+  .grp { padding: 0 16px 10px; }
+  .grp h3 { font-size: 14px; margin: 10px 0 6px; color: var(--muted); }
+  .item { display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); align-items: start; }
+  .item.ok { background: linear-gradient(90deg, var(--ok-bg), transparent 40%); }
+  .item.fail { background: linear-gradient(90deg, var(--fail-bg), transparent 40%); }
+  .item.skip { background: linear-gradient(90deg, var(--skip-bg), transparent 40%); }
+  .id { font-weight: 600; font-size: 13px; padding-left: 4px; }
+  .warn { color: var(--skip); font-size: 12px; display: block; font-weight: 400; }
+  .exp { color: var(--muted); margin-top: 3px; }
+  .exp::before { content: "Очікую: "; font-weight: 600; }
+  .acts { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+  .acts button { padding: 4px 8px; font-size: 13px; }
+  .acts .b-ok.on { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .acts .b-fail.on { background: var(--fail); border-color: var(--fail); color: #fff; }
+  .acts .b-skip.on { background: var(--skip); border-color: var(--skip); color: #fff; }
+  .note { grid-column: 2 / 4; }
+  .note textarea { min-height: 36px; font-size: 14px; }
+  .linked { grid-column: 2 / 4; font-size: 13px; color: var(--fail); }
+  .linked a { color: var(--fail); }
+
+  .bugs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .card h2 { font-size: 16px; margin: 0 0 10px; }
+  .field { margin-bottom: 10px; }
+  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 3px; }
+  .field input, .field select { width: 100%; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .bug { border-top: 1px solid var(--line); padding: 10px 0; }
+  .bug:first-of-type { border-top: none; }
+  .bug .hd { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .bug .hd b { font-size: 15px; }
+  .tag { font-size: 12px; padding: 1px 7px; border-radius: 4px; background: var(--code); }
+  .tag.open { background: var(--fail-bg); color: var(--fail); }
+  .tag.fixed { background: var(--ok-bg); color: var(--ok); }
+  .bug dl { display: grid; grid-template-columns: 130px 1fr; gap: 2px 10px; margin: 6px 0; font-size: 14px; }
+  .bug dt { color: var(--muted); }
+  .bug dd { margin: 0; white-space: pre-wrap; word-break: break-word; }
+  .empty { color: var(--muted); padding: 10px 0; }
+  .hide { display: none !important; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 8px 16px; border-radius: 6px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  @media (max-width: 800px) { .bugs-grid { grid-template-columns: 1fr; } .item { grid-template-columns: 1fr; } .note, .linked { grid-column: 1; } .acts { justify-content: flex-start; } }
+  @media print {
+    header .tabs, .tools, .acts button:not(.on), #tab-bugs .card:first-child { display: none !important; }
+    header { position: static; }
+    details.sec { break-inside: avoid-page; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Чекліст тестування розкладу</h1>
+    <div class="top">
+      <div class="run"><span>Прогін:</span><input id="run-name" placeholder="напр. перевірка 24.11, гілка deepen-master-detail"></div>
+      <div class="bar" id="bar" title="Зелене: ок, червоне: не ок, жовте: пропущено"></div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="tabs">
+      <button class="on" data-tab="checks">Перевірки</button>
+      <button data-tab="bugs">Баги <span id="bug-count"></span></button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="tab-checks">
+    <div class="tools">
+      <input id="q" type="search" placeholder="Пошук: номер або текст" style="width:240px">
+      <select id="flt">
+        <option value="all">Показати все</option>
+        <option value="todo">Ще не перевірені</option>
+        <option value="fail">Тільки «Не ок»</option>
+        <option value="skip">Тільки пропущені</option>
+        <option value="noted">З коментарем</option>
+      </select>
+      <button id="open-all">Розгорнути все</button>
+      <button id="close-all">Згорнути все</button>
+      <span class="sp"></span>
+      <button id="export">Зберегти копію (файл)</button>
+      <button id="import">Відкрити копію</button>
+      <button id="reset">Новий прогін</button>
+      <button onclick="window.print()">Друк</button>
+      <input type="file" id="import-file" accept=".json" class="hide">
+    </div>
+    <div id="sections"></div>
+  </section>
+
+  <section id="tab-bugs" class="hide">
+    <div class="tools">
+      <span class="sp"></span>
+      <button id="copy-bugs">Скопіювати всі баги текстом</button>
+    </div>
+    <div class="bugs-grid">
+      <div class="card">
+        <h2 id="bug-form-title">Новий баг</h2>
+        <form id="bug-form">
+          <div class="row2">
+            <div class="field"><label>Кейс (номер)</label><input name="caseId" placeholder="В-7"></div>
+            <div class="field"><label>Наскільки серйозно</label>
+              <select name="severity">
+                <option>Заважає працювати</option>
+                <option selected>Помітно, але можна обійти</option>
+                <option>Дрібниця / вигляд</option>
+              </select></div>
+          </div>
+          <div class="field"><label>Коротко: що не так</label><input name="title" required placeholder="Доступність викладача не зберігається після F5"></div>
+          <div class="field"><label>Сторінка (адреса)</label><input name="page" placeholder="http://localhost:5500/admin/teachers/?id=2"></div>
+          <div class="field"><label>Що робила (кроки)</label><textarea name="steps" placeholder="1. ...&#10;2. ..."></textarea></div>
+          <div class="field"><label>Що очікувала</label><textarea name="expected"></textarea></div>
+          <div class="field"><label>Що сталося насправді</label><textarea name="actual"></textarea></div>
+          <div class="field"><label>Консоль (F12 → Console), якщо є червоні рядки</label><textarea name="console"></textarea></div>
+          <div class="field"><label>Скриншот (назва файлу або посилання)</label><input name="screenshot"></div>
+          <div class="row2">
+            <div class="field"><label>Стан</label>
+              <select name="status"><option value="open">Відкритий</option><option value="fixed">Виправлено</option><option value="wontfix">Не баг / не виправляємо</option></select></div>
+            <div class="field"><label>&nbsp;</label>
+              <div style="display:flex;gap:6px"><button class="primary" type="submit">Зберегти баг</button><button type="button" id="bug-cancel">Очистити</button></div></div>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Знайдені баги</h2>
+        <div id="bug-list"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+/*DATA*/
+var DATA = {
+ "sections": [
+  {
+   "title": "Швидкий чекліст (10 хвилин)",
+   "groups": [
+    {
+     "title": "",
+     "items": [
+      {
+       "id": "Ш-1",
+       "do": "Обидва сервери запущені, у вікнах PowerShell немає червоних помилок",
+       "warn": false
+      },
+      {
+       "id": "Ш-2",
+       "do": "http://127.0.0.1:8000/api/ відкривається і показує список посилань",
+       "warn": false
+      },
+      {
+       "id": "Ш-3",
+       "do": "http://localhost:5500/admin/ відкривається, видно картку семестру і цифри ресурсів",
+       "warn": false
+      },
+      {
+       "id": "Ш-4",
+       "do": "Клік по кожному пункту бокового меню відкриває сторінку без помилок (11 пунктів)",
+       "warn": false
+      },
+      {
+       "id": "Ш-5",
+       "do": "У «Викладачах» видно список викладачів (не порожньо)",
+       "warn": false
+      },
+      {
+       "id": "Ш-6",
+       "do": "У «Розкладі» адмінки після вибору семестру видно пари в сітці",
+       "warn": false
+      },
+      {
+       "id": "Ш-7",
+       "do": "На http://localhost:5500/ пошук «ФЕІ-21» знаходить групу і показує її пари",
+       "warn": false
+      },
+      {
+       "id": "Ш-8",
+       "do": "Перемикач теми (світла/темна) працює, після перезавантаження тема лишається",
+       "warn": false
+      },
+      {
+       "id": "Ш-9",
+       "do": "У консолі браузера (`F12`) немає червоних помилок на жодній з цих сторінок",
+       "warn": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Тест-кейси: адмін-панель",
+   "groups": [
+    {
+     "title": "4.1 Загальне (на всіх сторінках адмінки)",
+     "items": [
+      {
+       "id": "З-1",
+       "do": "Відкрий будь-яку сторінку адмінки",
+       "expect": "Зліва меню: «Головна», «Задачі», «Семестр»; група «Довідники» (Викладачі, Групи, Потоки, Аудиторії, Предмети); група «Планування» (Навчальні плани, Обмеження, Розклад)",
+       "warn": false
+      },
+      {
+       "id": "З-2",
+       "do": "Клікни по пункту меню",
+       "expect": "Відкривається цей розділ, пункт у меню підсвічений, заголовок сторінки відповідає",
+       "warn": false
+      },
+      {
+       "id": "З-3",
+       "do": "Натисни перемикач теми вгорі",
+       "expect": "Тема змінюється. Текст читається, нічого не «зникає» на фоні",
+       "warn": false
+      },
+      {
+       "id": "З-4",
+       "do": "Перезавантаж сторінку (`F5`)",
+       "expect": "Вибрана тема збереглася",
+       "warn": false
+      },
+      {
+       "id": "З-5",
+       "do": "Відкрий бічну панель (наприклад, клік по парі в «Розкладі»), натисни `Esc`",
+       "expect": "Панель закрилася",
+       "warn": false
+      },
+      {
+       "id": "З-6",
+       "do": "Почни видаляти будь-що, у підтвердженні натисни «Скасувати»",
+       "expect": "Нічого не видалилося",
+       "warn": false
+      },
+      {
+       "id": "З-7",
+       "do": "Зупини бекенд (`Ctrl + C`), онови сторінку адмінки",
+       "expect": "Зрозуміле повідомлення про помилку, а не порожня або «зламана» сторінка. Потім запусти бекенд знову",
+       "warn": false
+      }
+     ]
+    },
+    {
+     "title": "4.2 Головна — `/admin/`",
+     "items": [
+      {
+       "id": "Г-1",
+       "do": "Відкрий головну",
+       "expect": "Привітання за часом доби («Доброго ранку» тощо), дата",
+       "warn": false
+      },
+      {
+       "id": "Г-2",
+       "do": "Подивись на картку семестру",
+       "expect": "Назва поточного семестру, статус, «N з 5 етапів готово», смуга етапів: Календар, Ресурси, Плани, Обмеження, Генерація",
+       "warn": false
+      },
+      {
+       "id": "Г-3",
+       "do": "Подивись на «Наступний крок», клікни посилання",
+       "expect": "Веде на сторінку, де цей крок робиться",
+       "warn": false
+      },
+      {
+       "id": "Г-4",
+       "do": "Картка «Як працює система» → «Зрозуміло, сховати»",
+       "expect": "Картка зникла. Кнопка «Як це працює?» повертає її",
+       "warn": false
+      },
+      {
+       "id": "Г-5",
+       "do": "Подивись на «Ресурси семестру»",
+       "expect": "4 плитки: викладачі, групи, аудиторії, предмети з кількістю. Цифри збігаються з кількістю записів у відповідних розділах",
+       "warn": false
+      },
+      {
+       "id": "Г-6",
+       "do": "Клікни по плитці ресурсу",
+       "expect": "Відкривається відповідний довідник",
+       "warn": false
+      },
+      {
+       "id": "Г-7",
+       "do": "Якщо є блок про проблеми, клікни «Задачі»",
+       "expect": "Відкривається сторінка «Задачі»",
+       "warn": false
+      }
+     ]
+    },
+    {
+     "title": "4.3 Задачі — `/admin/tasks/`",
+     "items": [
+      {
+       "id": "Т-1",
+       "do": "Відкрий сторінку",
+       "expect": "Відсоток готовності до генерації. Якщо є блокери, він не більше 50 % і поруч пояснення",
+       "warn": false
+      },
+      {
+       "id": "Т-2",
+       "do": "Подивись на три лічильники",
+       "expect": "«Блокує», «Погіршує», «Поради» з числами",
+       "warn": false
+      },
+      {
+       "id": "Т-3",
+       "do": "Знайди групу задач з понад 6 рядками",
+       "expect": "Список згорнутий; «Показати всі» розгортає, «Згорнути» згортає",
+       "warn": false
+      },
+      {
+       "id": "Т-4",
+       "do": "У задачі «Призначити викладача» вибери викладача → «Зберегти»",
+       "expect": "Задача зникла або кількість зменшилась; зʼявилось сповіщення з «Скасувати»",
+       "warn": true
+      },
+      {
+       "id": "Т-5",
+       "do": "Одразу натисни «Скасувати» у сповіщенні",
+       "expect": "Призначення скасоване, задача повернулась",
+       "warn": false
+      },
+      {
+       "id": "Т-6",
+       "do": "Подивись «Завантаженість аудиторій», погортай тижні ‹ ›",
+       "expect": "Сітка тижня змінюється; на першому/останньому тижні семестру відповідна стрілка неактивна",
+       "warn": false
+      }
+     ]
+    },
+    {
+     "title": "4.4 Семестр — `/admin/semesters/`",
+     "items": [
+      {
+       "id": "С-1",
+       "do": "Відкрий `/admin/semesters/?list=1`",
+       "expect": "Список семестрів з датами; у поточного позначка «Поточний»",
+       "warn": false
+      },
+      {
+       "id": "С-2",
+       "do": "«Новий семестр», залиш назву порожньою, спробуй зберегти",
+       "expect": "Не зберігається, порожнє поле підсвічене",
+       "warn": true
+      },
+      {
+       "id": "С-3",
+       "do": "Новий семестр: дата кінця **раніше** за дату початку",
+       "expect": "Не зберігається, видно пояснення",
+       "warn": true
+      },
+      {
+       "id": "С-4",
+       "do": "Новий семестр з правильними даними: назва «Тестовий семестр», дати, вихідні дні, 4–6 пар у розкладі дзвінків → зберегти",
+       "expect": "Семестр зʼявився у списку",
+       "warn": true
+      },
+      {
+       "id": "С-5",
+       "do": "На тестовому семестрі «Зробити поточним» → підтвердити",
+       "expect": "Позначка «Поточний» переїхала на нього; головна сторінка тепер показує його. **Поверни потім старий поточний семестр**",
+       "warn": true
+      },
+      {
+       "id": "С-6",
+       "do": "Відкрий семестр **з розкладом**, зміни тільки назву, збережи",
+       "expect": "Зберігається; розклад цього семестру лишився на місці (перевір у «Розкладі»)",
+       "warn": true
+      },
+      {
+       "id": "С-7",
+       "do": "Семестр з розкладом: зміни дату кінця, збережи",
+       "expect": "Зʼявляється попередження, що розклад буде видалено. «Скасувати» нічого не змінює",
+       "warn": true
+      },
+      {
+       "id": "С-8",
+       "do": "Те саме, але «Так, видалити та змінити»",
+       "expect": "Зберігається; розклад семестру видалено (бо змінились дати)",
+       "warn": true
+      },
+      {
+       "id": "С-9",
+       "do": "Відкрий семестр, подивись «Передперевірку»",
+       "expect": "Список перевірок з кількістю блокерів/попереджень; кнопка «Перевірити ще раз» оновлює список",
+       "warn": false
+      },
+      {
+       "id": "С-10",
+       "do": "Якщо є блокери",
+       "expect": "Кнопка «Згенерувати» неактивна і поруч пояснення чому",
+       "warn": false
+      },
+      {
+       "id": "С-11",
+       "do": "Відкрий «Календар» семестру",
+       "expect": "Сітка місяця, ‹ › гортають місяці; дні з парами підсвічені, вихідні відрізняються",
+       "warn": false
+      },
+      {
+       "id": "С-12",
+       "do": "Клікни по дню в календарі, додай пару, потім видали її",
+       "expect": "Пара додалась, потім після підтвердження видалилась",
+       "warn": true
+      },
+      {
+       "id": "С-13",
+       "do": "Видали тестовий семестр з С-4",
+       "expect": "Підтвердження в рядку; після нього семестру немає у списку",
+       "warn": true
+      }
+     ]
+    },
+    {
+     "title": "4.5 Викладачі — `/admin/teachers/`",
+     "items": [
+      {
+       "id": "В-1",
+       "do": "Введи в пошук «Викладач 1»",
+       "expect": "Список звузився до збігів; внизу лічильник змінився",
+       "warn": false
+      },
+      {
+       "id": "В-2",
+       "do": "Увімкни фільтр «Без предметів»",
+       "expect": "Лишились лише викладачі без жодного предмета",
+       "warn": false
+      },
+      {
+       "id": "В-3",
+       "do": "Клікни по викладачу, скопіюй адресу сторінки, відкрий її в новій вкладці",
+       "expect": "Відкривається той самий викладач",
+       "warn": false
+      },
+      {
+       "id": "В-4",
+       "do": "«Додати викладача» → введи ПІБ «Тест Тестович» → `Tab`",
+       "expect": "«Зберігаю…» → «Збережено»; викладач у списку. Зʼявились блоки «Доступність» і «Веде в групах»",
+       "warn": true
+      },
+      {
+       "id": "В-5",
+       "do": "У полі «Додати предмет…» почни вводити назву, вибери стрілками і `Enter`",
+       "expect": "Предмет зʼявився чипом під полем",
+       "warn": true
+      },
+      {
+       "id": "В-6",
+       "do": "Натисни хрестик на чипі предмета",
+       "expect": "Предмет прибрано; сповіщення з «Повернути» повертає його",
+       "warn": true
+      },
+      {
+       "id": "В-7",
+       "do": "У «Доступності» клікни по клітинці (день × пара)",
+       "expect": "Клітинка позначена як недоступна; після `F5` позначка лишилась",
+       "warn": true
+      },
+      {
+       "id": "В-8",
+       "do": "Клікни по назві дня в сітці доступності",
+       "expect": "Весь день став вихідним",
+       "warn": true
+      },
+      {
+       "id": "В-9",
+       "do": "Видали «Тест Тестович»",
+       "expect": "Підтвердження в рядку → викладача немає, вибраний сусідній",
+       "warn": true
+      },
+      {
+       "id": "В-10",
+       "do": "Відкрий «Викладач 1», натисни видалити, але **не** підтверджуй",
+       "expect": "У підтвердженні є попередження: «Разом із викладачем буде видалено 2 навчальні плани і 2 пари в розкладі. Повернути їх не можна.» «Ні» нічого не змінює",
+       "warn": false
+      },
+      {
+       "id": "В-11",
+       "do": "Те саме для викладача без навчальних планів (напр. «Тест Тестович» з В-4)",
+       "expect": "Попередження немає, лише «Точно видалити викладача?»",
+       "warn": false
+      },
+      {
+       "id": "В-12",
+       "do": "Видали викладача з планами і підтверди (лише на копії бази!)",
+       "expect": "Викладач, його плани і пари зникли (перевір «Навчальні плани» і «Розклад»)",
+       "warn": true
+      }
+     ]
+    },
+    {
+     "title": "4.6 Групи — `/admin/groups/`",
+     "items": [
+      {
+       "id": "Гр-1",
+       "do": "Подивись на список",
+       "expect": "Групи згруповані за курсами, у рядку кількість студентів",
+       "warn": false
+      },
+      {
+       "id": "Гр-2",
+       "do": "Увімкни фільтр «Без плану» і фільтр курсу",
+       "expect": "Список звужується відповідно",
+       "warn": false
+      },
+      {
+       "id": "Гр-3",
+       "do": "«Додати групу»: назва «ТЕСТ-11», кількість 20, рік вступу 2025 → `Tab`",
+       "expect": "Група створена; зʼявились «Поточний курс», «Потоки», «Навчальний план», «Розклад»",
+       "warn": true
+      },
+      {
+       "id": "Гр-4",
+       "do": "Введи кількість студентів **−5**",
+       "expect": "Не зберігається, поле підсвічене",
+       "warn": true
+      },
+      {
+       "id": "Гр-5",
+       "do": "Клікни «Навчальний план групи»",
+       "expect": "Відкриваються «Навчальні плани» саме для цієї групи",
+       "warn": false
+      },
+      {
+       "id": "Гр-6",
+       "do": "Видали «ТЕСТ-11»",
+       "expect": "Видалено після підтвердження",
+       "warn": true
+      },
+      {
+       "id": "Гр-7",
+       "do": "Спробуй видалити групу, у якої є навчальний план (напр. ФЕІ-21)",
+       "expect": "Повідомлення, що групу використовують плани. Група **не** видалилась",
+       "warn": true
+      }
+     ]
+    },
+    {
+     "title": "4.7 Потоки — `/admin/streams/`",
+     "items": [
+      {
+       "id": "П-1",
+       "do": "Подивись на рядок потоку",
+       "expect": "Підпис «N груп · M студ.»",
+       "warn": false
+      },
+      {
+       "id": "П-2",
+       "do": "«Додати потік»: назва «Тест-потік» → `Tab`",
+       "expect": "Потік створено",
+       "warn": true
+      },
+      {
+       "id": "П-3",
+       "do": "Додай дві групи через поле додавання",
+       "expect": "Обидві зʼявились чипами; кількість студентів у підписі зросла",
+       "warn": true
+      },
+      {
+       "id": "П-4",
+       "do": "Клікни назву групи в чипі",
+       "expect": "Відкривається сторінка цієї групи",
+       "warn": false
+      },
+      {
+       "id": "П-5",
+       "do": "Прибери групу хрестиком, потім «Повернути»",
+       "expect": "Група повернулась у потік",
+       "warn": true
+      },
+      {
+       "id": "П-6",
+       "do": "Видали «Тест-потік»",
+       "expect": "Потік видалено, **а групи лишились** у «Групах»",
+       "warn": true
+      }
+     ]
+    },
+    {
+     "title": "4.8 Аудиторії — `/admin/rooms/`",
+     "items": [
+      {
+       "id": "А-1",
+       "do": "Пошук «105»",
+       "expect": "Знайдено аудиторію 105",
+       "warn": false
+      },
+      {
+       "id": "А-2",
+       "do": "Фільтр за типом «лабораторна»",
+       "expect": "Лишились лише лабораторні",
+       "warn": false
+      },
+      {
+       "id": "А-3",
+       "do": "«Додати аудиторію»: назва «999», корпус «Тестовий», тип, місткість 25 → `Tab`",
+       "expect": "Аудиторія створилась сама (кнопки «Створити» немає); підпис під назвою показує корпус, тип, місця",
+       "warn": true
+      },
+      {
+       "id": "А-4",
+       "do": "У «Типах аудиторій» додай тип «тестовий тип»",
+       "expect": "Тип одразу зʼявився у фільтрах і у виборі типу аудиторії",
+       "warn": true
+      },
+      {
+       "id": "А-5",
+       "do": "Видали «тестовий тип» (ніде не використовується)",
+       "expect": "Видалено після підтвердження",
+       "warn": true
+      },
+      {
+       "id": "А-6",
+       "do": "Спробуй видалити тип «лекційна»",
+       "expect": "Зрозуміле повідомлення на кшталт «Тип аудиторії використовують аудиторії (N)…». Тип **не** видалився",
+       "warn": true
+      },
+      {
+       "id": "А-7",
+       "do": "Видали аудиторію «999»",
+       "expect": "Видалено після підтвердження",
+       "warn": true
+      }
+     ]
+    },
+    {
+     "title": "4.9 Предмети — `/admin/subjects/`",
+     "items": [
+      {
+       "id": "Пр-1",
+       "do": "Фільтр «Без викладача»",
+       "expect": "Лишились предмети, яких ніхто не веде",
+       "warn": false
+      },
+      {
+       "id": "Пр-2",
+       "do": "«Додати предмет», залиш назву порожньою, заповни опис",
+       "expect": "Запис **не** створюється",
+       "warn": true
+      },
+      {
+       "id": "Пр-3",
+       "do": "Введи назву «Тестовий предмет» → `Tab`",
+       "expect": "Створено; зʼявився блок «Викладачі»",
+       "warn": true
+      },
+      {
+       "id": "Пр-4",
+       "do": "Відкрий «WEB-технології»",
+       "expect": "Видно викладачів (чипи ведуть на викладача) і «Де використовується»",
+       "warn": false
+      },
+      {
+       "id": "Пр-5",
+       "do": "Видали «Тестовий предмет»",
+       "expect": "Видалено після підтвердження; попередження немає, бо планів у нього немає",
+       "warn": true
+      },
+      {
+       "id": "Пр-6",
+       "do": "Відкрий «WEB-технології», натисни видалити, але **не** підтверджуй",
+       "expect": "Попередження: «Разом із предметом буде видалено 2 навчальні плани і 2 пари в розкладі. Повернути їх не можна.» «Ні» нічого не змінює",
+       "warn": false
+      }
+     ]
+    },
+    {
+     "title": "4.10 Навчальні плани — `/admin/study-plans/`",
+     "items": [
+      {
+       "id": "НП-1",
+       "do": "Вибери семестр угорі",
+       "expect": "Список груп і потоків перезавантажився",
+       "warn": false
+      },
+      {
+       "id": "НП-2",
+       "do": "Клікни групу «ФЕІ-21»",
+       "expect": "Справа її план: предмет, тип заняття, викладач, кількість пар",
+       "warn": false
+      },
+      {
+       "id": "НП-3",
+       "do": "Клікни будь-який потік",
+       "expect": "Видно чипи груп цього потоку",
+       "warn": false
+      },
+      {
+       "id": "НП-4",
+       "do": "«Додати предмет»: спершу поле «Викладач» неактивне. Вибери предмет",
+       "expect": "Поле викладача стало активним і показує лише тих, хто веде цей предмет",
+       "warn": true
+      },
+      {
+       "id": "НП-5",
+       "do": "Заповни предмет, тип, викладача, кількість, тривалість",
+       "expect": "Рядок зберігся; кількість «записів · пар» у заголовку змінилась",
+       "warn": true
+      },
+      {
+       "id": "НП-6",
+       "do": "Заповни не всі поля і вийди",
+       "expect": "Не зберігається, порожні поля підсвічені",
+       "warn": true
+      },
+      {
+       "id": "НП-7",
+       "do": "«Скопіювати план з іншої групи» → вибери групу-джерело",
+       "expect": "План скопійовано; якщо були дублікати, є попередження, скільки пропущено",
+       "warn": true
+      },
+      {
+       "id": "НП-8",
+       "do": "Видали доданий рядок",
+       "expect": "Підтвердження → рядок зник",
+       "warn": true
+      }
+     ]
+    },
+    {
+     "title": "4.11 Обмеження — `/admin/constraints/`",
+     "items": [
+      {
+       "id": "О-1",
+       "do": "Фільтри за цілями (Викладач, Група, Аудиторія, Потік, Глобальне)",
+       "expect": "Список звужується",
+       "warn": false
+      },
+      {
+       "id": "О-2",
+       "do": "Нове обмеження: ціль «Викладач» → вибери викладача → тип «Вихідний день» → вибери день",
+       "expect": "Кожен крок зберігся сам; обмеження у списку",
+       "warn": true
+      },
+      {
+       "id": "О-3",
+       "do": "Тип «Макс. пар на день»: степер до 3",
+       "expect": "Підпис «3 пари на день»; не дає піти нижче 1 і вище 10",
+       "warn": true
+      },
+      {
+       "id": "О-4",
+       "do": "Тип «Матриця часу»: клікни кілька клітинок",
+       "expect": "Клітинки позначились, після `F5` лишились",
+       "warn": true
+      },
+      {
+       "id": "О-5",
+       "do": "Ціль «Глобальне»",
+       "expect": "Тип сам став «Ланцюжок пар»",
+       "warn": true
+      },
+      {
+       "id": "О-6",
+       "do": "Вимкни перемикач «Активне»",
+       "expect": "Обмеження лишилось у списку з позначкою «вимкнене»",
+       "warn": true
+      },
+      {
+       "id": "О-7",
+       "do": "Видали створені обмеження",
+       "expect": "Видалено після підтвердження",
+       "warn": true
+      }
+     ]
+    },
+    {
+     "title": "4.12 Розклад (адмінка) — `/admin/schedule/`",
+     "items": [
+      {
+       "id": "Р-1",
+       "do": "Вибери семестр",
+       "expect": "Сітка тижня з парами; відкривається тиждень з найпершою парою",
+       "warn": false
+      },
+      {
+       "id": "Р-2",
+       "do": "‹ › тижні, «Оновити»",
+       "expect": "Тиждень змінюється, підпис дат правильний",
+       "warn": false
+      },
+      {
+       "id": "Р-3",
+       "do": "Фільтр «Група» → ФЕІ-21",
+       "expect": "Лишились пари лише цієї групи (і її потоків)",
+       "warn": false
+      },
+      {
+       "id": "Р-4",
+       "do": "Фільтр «Викладач», потім «Аудиторія»",
+       "expect": "Аналогічно звужується",
+       "warn": false
+      },
+      {
+       "id": "Р-5",
+       "do": "Клікни по парі",
+       "expect": "Бічна панель: тип, предмет, група, викладач, аудиторія",
+       "warn": false
+      },
+      {
+       "id": "Р-6",
+       "do": "У панелі зміни аудиторію → зберегти",
+       "expect": "Аудиторія змінилась на картці пари",
+       "warn": true
+      },
+      {
+       "id": "Р-7",
+       "do": "Перетягни пару мишкою в інший вільний слот",
+       "expect": "Пара переїхала; після `F5` вона там же",
+       "warn": true
+      },
+      {
+       "id": "Р-8",
+       "do": "Перетягни пару в «Нерозподілені»",
+       "expect": "Пара зникла з сітки, лічильник «Нерозподілені» +1",
+       "warn": true
+      },
+      {
+       "id": "Р-9",
+       "do": "Закріпи пару (замок) і спробуй її перетягнути",
+       "expect": "Не перетягується; поля в панелі неактивні",
+       "warn": true
+      },
+      {
+       "id": "Р-10",
+       "do": "«Згенерувати» (коли є блокери)",
+       "expect": "Повідомлення з посиланням на семестр; генерація не стартує",
+       "warn": true
+      },
+      {
+       "id": "Р-11",
+       "do": "«Згенерувати» (коли блокерів немає)",
+       "expect": "Підтвердження з кількістю занять, які буде видалено, і закріплених, які лишаться → видно процес → сітка оновилась, закріплені пари на місці",
+       "warn": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Тест-кейси: публічний розклад — `/`",
+   "groups": [
+    {
+     "title": "",
+     "items": [
+      {
+       "id": "ПР-1",
+       "do": "Введи в пошук «ФЕІ»",
+       "expect": "Підказки з позначкою «група»; стрілки й `Enter` вибирають, `Esc` закриває",
+       "warn": false
+      },
+      {
+       "id": "ПР-2",
+       "do": "Вибери групу ФЕІ-21",
+       "expect": "Її пари: час, предмет, викладач, аудиторія, тип заняття. Є і пари потоків, куди входить група",
+       "warn": false
+      },
+      {
+       "id": "ПР-3",
+       "do": "Введи «Викладач 1», вибери",
+       "expect": "Розклад викладача: замість викладача в парі показана група",
+       "warn": false
+      },
+      {
+       "id": "ПР-4",
+       "do": "Фільтр курсу",
+       "expect": "У підказках лишились групи цього курсу",
+       "warn": false
+      },
+      {
+       "id": "ПР-5",
+       "do": "«Поділитися», встав скопійоване посилання в нову вкладку",
+       "expect": "Відкривається той самий розклад",
+       "warn": false
+      },
+      {
+       "id": "ПР-6",
+       "do": "«Зберегти як мій розклад», закрий вкладку, відкрий `/` знову",
+       "expect": "Збережений розклад відкрився сам; скидання прибирає це",
+       "warn": false
+      },
+      {
+       "id": "ПР-7",
+       "do": "Перемикай «День» / «Тиждень», ‹ ›, «Сьогодні»",
+       "expect": "Вигляд і тиждень змінюються, «Сьогодні» повертає на поточний тиждень",
+       "warn": false
+      },
+      {
+       "id": "ПР-8",
+       "do": "Клік по дню на стрічці днів",
+       "expect": "Показано пари цього дня; сьогоднішній день виділений",
+       "warn": false
+      },
+      {
+       "id": "ПР-9",
+       "do": "Перейди на тиждень без пар",
+       "expect": "Підказка, а не порожнеча; якщо є найближчі пари, є перехід до них",
+       "warn": false
+      },
+      {
+       "id": "ПР-10",
+       "do": "«Додати тиждень у календар (.ics)»",
+       "expect": "Завантажився файл; відкривається в Google/Outlook-календарі з правильними парами",
+       "warn": false
+      },
+      {
+       "id": "ПР-11",
+       "do": "Відкрий адресу з `?g=1`",
+       "expect": "Одразу розклад групи ФЕІ-21",
+       "warn": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Звʼязані сценарії (від початку до кінця)",
+   "groups": [
+    {
+     "title": "Сценарій А. Новий предмет доходить до розкладу",
+     "items": [
+      {
+       "id": "СцА-1",
+       "do": "«Предмети»: створи «Тестовий предмет»",
+       "warn": false
+      },
+      {
+       "id": "СцА-2",
+       "do": "«Викладачі»: додай його викладачу «Викладач 1»",
+       "warn": false
+      },
+      {
+       "id": "СцА-3",
+       "do": "«Навчальні плани»: групі ФЕІ-21 додай рядок з цим предметом і викладачем, 2 пари",
+       "warn": false
+      },
+      {
+       "id": "СцА-4",
+       "do": "«Задачі» / «Семестр → Передперевірка»: блокерів не додалось",
+       "warn": false
+      },
+      {
+       "id": "СцА-5",
+       "do": "«Розклад»: «Згенерувати»",
+       "warn": false
+      },
+      {
+       "id": "СцА-6",
+       "do": "Публічна сторінка, ФЕІ-21: «Тестовий предмет» зʼявився в розкладі",
+       "warn": false
+      }
+     ]
+    },
+    {
+     "title": "Сценарій Б. Обмеження впливає на генерацію",
+     "items": [
+      {
+       "id": "СцБ-1",
+       "do": "«Обмеження»: «Викладач 1» має вихідний у понеділок",
+       "warn": false
+      },
+      {
+       "id": "СцБ-2",
+       "do": "«Розклад»: «Згенерувати»",
+       "warn": false
+      },
+      {
+       "id": "СцБ-3",
+       "do": "Фільтр «Викладач» → «Викладач 1»: жодної пари в понеділок",
+       "warn": false
+      }
+     ]
+    },
+    {
+     "title": "Сценарій В. Проблема видна в «Задачах» і зникає після виправлення",
+     "items": [
+      {
+       "id": "СцВ-1",
+       "do": "«Предмети»: створи предмет без викладача",
+       "warn": false
+      },
+      {
+       "id": "СцВ-2",
+       "do": "Додай його в план групи (без можливості вибрати викладача або з порожнім)",
+       "warn": false
+      },
+      {
+       "id": "СцВ-3",
+       "do": "«Задачі»: зʼявилась задача про цей предмет/план",
+       "warn": false
+      },
+      {
+       "id": "СцВ-4",
+       "do": "Виправ просто в «Задачах» (призначити викладача): задача зникла, відсоток готовності виріс",
+       "warn": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Чекліст перед здачею або перед викладанням на сервер",
+   "groups": [
+    {
+     "title": "",
+     "items": [
+      {
+       "id": "Зд-1",
+       "do": "Пройдений швидкий чекліст (розділ 3)",
+       "warn": false
+      },
+      {
+       "id": "Зд-2",
+       "do": "Пройдені кейси тих розділів, які змінювались",
+       "warn": false
+      },
+      {
+       "id": "Зд-3",
+       "do": "Автоматичні тести бекенду зелені (див. нижче): `OK`",
+       "warn": false
+      },
+      {
+       "id": "Зд-4",
+       "do": "Автоматичні тести фронтенду зелені: `PASS`",
+       "warn": false
+      },
+      {
+       "id": "Зд-5",
+       "do": "У консолі браузера немає червоних помилок",
+       "warn": false
+      },
+      {
+       "id": "Зд-6",
+       "do": "Обидві теми (світла і темна) виглядають нормально на змінених сторінках",
+       "warn": false
+      },
+      {
+       "id": "Зд-7",
+       "do": "Тестові записи («Тест Тестович», «ТЕСТ-11», «999» тощо) видалені або база повернута з копії",
+       "warn": false
+      },
+      {
+       "id": "Зд-8",
+       "do": "Поточний семестр той, що й був до тестів",
+       "warn": false
+      },
+      {
+       "id": "Зд-9",
+       "do": "Нічого не відправлено в гілку `main` без окремого рішення (це одразу викладає на сайт)",
+       "warn": false
+      }
+     ]
+    }
+   ]
+  }
+ ]
+};
+/*END DATA*/
+
+(function () {
+  var KEY = 'schedule-test-checklist-v1';
+  var state = load();
+  var editingBug = null;
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+
+  function load() {
+    try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.items) return s; } catch (e) {}
+    return { run: '', items: {}, bugs: [], nextBug: 1 };
+  }
+  function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function md(s) {
+    return esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  }
+  function toast(t) { var el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(function () { el.classList.remove('show'); }, 1800); }
+  function allItems() {
+    var out = [];
+    DATA.sections.forEach(function (s) { s.groups.forEach(function (g) { g.items.forEach(function (it) { out.push(it); }); }); });
+    return out;
+  }
+  function st(id) { return state.items[id] || {}; }
+  function bugsFor(id) { return state.bugs.filter(function (b) { return b.caseId && b.caseId.trim() === id; }); }
+
+  // ---------- Перевірки ----------
+  function renderSections() {
+    var open = {};
+    document.querySelectorAll('details.sec').forEach(function (d) { open[d.dataset.id] = d.open; });
+    var q = $('#q').value.trim().toLowerCase();
+    var flt = $('#flt').value;
+    var html = '';
+    DATA.sections.forEach(function (s, si) {
+      var body = '', shown = 0;
+      s.groups.forEach(function (g) {
+        var rows = '';
+        g.items.forEach(function (it) {
+          var x = st(it.id);
+          if (q && (it.id + ' ' + it.do + ' ' + (it.expect || '')).toLowerCase().indexOf(q) < 0) return;
+          if (flt === 'todo' && x.s) return;
+          if ((flt === 'fail' || flt === 'skip') && x.s !== flt) return;
+          if (flt === 'noted' && !x.note) return;
+          shown++;
+          var bugs = bugsFor(it.id);
+          rows += '<div class="item ' + (x.s || '') + '" data-id="' + esc(it.id) + '">' +
+            '<div class="id">' + esc(it.id) + (it.warn ? '<span class="warn" title="Змінює або видаляє дані: спершу копія бази">⚠️ дані</span>' : '') + '</div>' +
+            '<div><div>' + md(it.do) + '</div>' + (it.expect ? '<div class="exp">' + md(it.expect) + '</div>' : '') + '</div>' +
+            '<div class="acts">' +
+              '<button class="b-ok' + (x.s === 'ok' ? ' on' : '') + '" data-s="ok">✓ Ок</button>' +
+              '<button class="b-fail' + (x.s === 'fail' ? ' on' : '') + '" data-s="fail">✗ Не ок</button>' +
+              '<button class="b-skip' + (x.s === 'skip' ? ' on' : '') + '" data-s="skip">Пропустити</button>' +
+              '<button data-note title="Коментар">💬</button>' +
+              (x.s === 'fail' ? '<button data-bug title="Записати баг з цього кейсу">+ Баг</button>' : '') +
+            '</div>' +
+            '<div class="note' + (x.note || x.noteOpen ? '' : ' hide') + '"><textarea placeholder="Коментар до перевірки">' + esc(x.note || '') + '</textarea></div>' +
+            (bugs.length ? '<div class="linked">Баги: ' + bugs.map(function (b) { return '<a href="#" data-goto-bug="' + b.n + '">#' + b.n + ' ' + esc(b.title) + '</a>'; }).join(', ') + '</div>' : '') +
+            '</div>';
+        });
+        if (rows) body += '<div class="grp">' + (g.title ? '<h3>' + md(g.title) + '</h3>' : '') + rows + '</div>';
+      });
+      if (!shown && (q || flt !== 'all')) return;
+      var c = counts(s);
+      var id = 's' + si;
+      var isOpen = id in open ? open[id] : (q || flt !== 'all');
+      html += '<details class="sec" data-id="' + id + '"' + (isOpen ? ' open' : '') + '><summary>' + md(s.title) +
+        '<span class="cnt">' + c.done + ' з ' + c.total + (c.fail ? ' · <span style="color:var(--fail)">не ок: ' + c.fail + '</span>' : '') + '</span></summary>' +
+        (body || '<div class="grp empty">Нічого не знайдено</div>') + '</details>';
+    });
+    $('#sections').innerHTML = html || '<div class="empty">Нічого не знайдено</div>';
+  }
+  function counts(sec) {
+    var c = { total: 0, ok: 0, fail: 0, skip: 0, done: 0 };
+    (sec ? [sec] : DATA.sections).forEach(function (s) { s.groups.forEach(function (g) { g.items.forEach(function (it) {
+      c.total++; var v = st(it.id).s; if (v) { c[v]++; c.done++; }
+    }); }); });
+    return c;
+  }
+  function renderStats() {
+    var c = counts();
+    var pct = function (n) { return c.total ? (100 * n / c.total) : 0; };
+    $('#bar').innerHTML = '<span style="width:' + pct(c.ok) + '%;background:var(--ok)"></span>' +
+      '<span style="width:' + pct(c.fail) + '%;background:var(--fail)"></span>' +
+      '<span style="width:' + pct(c.skip) + '%;background:var(--skip)"></span>';
+    var open = state.bugs.filter(function (b) { return b.status === 'open'; }).length;
+    $('#stats').innerHTML = '<span>Перевірено: <b>' + c.done + '</b> з <b>' + c.total + '</b></span>' +
+      '<span style="color:var(--ok)">Ок: <b>' + c.ok + '</b></span>' +
+      '<span style="color:var(--fail)">Не ок: <b>' + c.fail + '</b></span>' +
+      '<span style="color:var(--skip)">Пропущено: <b>' + c.skip + '</b></span>' +
+      '<span>Відкритих багів: <b>' + open + '</b></span>';
+    $('#bug-count').textContent = state.bugs.length ? '(' + state.bugs.length + ')' : '';
+  }
+  function findItem(id) { return allItems().filter(function (i) { return i.id === id; })[0]; }
+
+  $('#sections').addEventListener('click', function (e) {
+    var row = e.target.closest('.item');
+    if (!row) return;
+    var id = row.dataset.id;
+    var x = state.items[id] = state.items[id] || {};
+    var b = e.target.closest('button[data-s]');
+    var link = e.target.closest('[data-goto-bug]');
+    if (link) { e.preventDefault(); switchTab('bugs'); var el = document.getElementById('bug-' + link.dataset.gotoBug); if (el) el.scrollIntoView({ block: 'center' }); return; }
+    if (b) {
+      x.s = x.s === b.dataset.s ? '' : b.dataset.s;
+      if (x.s === 'fail') x.noteOpen = true;
+      x.at = new Date().toISOString();
+      save(); renderSections(); renderStats();
+      if (x.s === 'fail') { var ta = document.querySelector('.item[data-id="' + CSS.escape(id) + '"] .note textarea'); if (ta) ta.focus(); }
+      return;
+    }
+    if (e.target.closest('[data-note]')) {
+      x.noteOpen = !x.noteOpen || !!x.note; save();
+      var n = row.querySelector('.note'); n.classList.toggle('hide'); if (!n.classList.contains('hide')) n.querySelector('textarea').focus();
+      return;
+    }
+    if (e.target.closest('[data-bug]')) {
+      var it = findItem(id);
+      fillBugForm({ caseId: id, title: '', steps: it.do, expected: it.expect || '', actual: x.note || '', status: 'open' });
+      editingBug = null; $('#bug-form-title').textContent = 'Новий баг';
+      switchTab('bugs'); $('#bug-form [name=title]').focus();
+    }
+  });
+  $('#sections').addEventListener('input', function (e) {
+    if (e.target.tagName !== 'TEXTAREA') return;
+    var id = e.target.closest('.item').dataset.id;
+    (state.items[id] = state.items[id] || {}).note = e.target.value;
+    save();
+  });
+  $('#q').addEventListener('input', renderSections);
+  $('#flt').addEventListener('change', renderSections);
+  $('#open-all').onclick = function () { document.querySelectorAll('details.sec').forEach(function (d) { d.open = true; }); };
+  $('#close-all').onclick = function () { document.querySelectorAll('details.sec').forEach(function (d) { d.open = false; }); };
+  $('#run-name').value = state.run || '';
+  $('#run-name').addEventListener('input', function (e) { state.run = e.target.value; save(); });
+
+  // ---------- Баги ----------
+  var FIELDS = ['caseId', 'severity', 'title', 'page', 'steps', 'expected', 'actual', 'console', 'screenshot', 'status'];
+  var LABELS = { caseId: 'Кейс', severity: 'Серйозність', page: 'Сторінка', steps: 'Що робила', expected: 'Що очікувала', actual: 'Що сталося', console: 'Консоль', screenshot: 'Скриншот' };
+  var STATUS = { open: 'Відкритий', fixed: 'Виправлено', wontfix: 'Не баг' };
+  function fillBugForm(b) {
+    var f = $('#bug-form');
+    FIELDS.forEach(function (k) { if (k in b) f.elements[k].value = b[k] || ''; });
+    if (!b.severity) f.elements.severity.selectedIndex = 1;
+    if (!b.status) f.elements.status.value = 'open';
+  }
+  function clearBugForm() {
+    $('#bug-form').reset(); editingBug = null; $('#bug-form-title').textContent = 'Новий баг';
+  }
+  $('#bug-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = e.target, b = {};
+    FIELDS.forEach(function (k) { b[k] = f.elements[k].value.trim(); });
+    if (editingBug) {
+      var old = state.bugs.filter(function (x) { return x.n === editingBug; })[0];
+      Object.assign(old, b);
+      toast('Баг #' + editingBug + ' оновлено');
+    } else {
+      b.n = state.nextBug++; b.created = new Date().toISOString();
+      state.bugs.push(b);
+      toast('Баг #' + b.n + ' записано');
+    }
+    save(); clearBugForm(); renderBugs(); renderStats(); renderSections();
+  });
+  $('#bug-cancel').onclick = clearBugForm;
+  function renderBugs() {
+    if (!state.bugs.length) { $('#bug-list').innerHTML = '<div class="empty">Поки жодного. Натисни «✗ Не ок» на перевірці, а потім «+ Баг», або заповни форму зліва.</div>'; return; }
+    var order = { open: 0, wontfix: 1, fixed: 2 };
+    var list = state.bugs.slice().sort(function (a, b) { return (order[a.status] - order[b.status]) || (b.n - a.n); });
+    $('#bug-list').innerHTML = list.map(function (b) {
+      var dl = ['caseId', 'severity', 'page', 'steps', 'expected', 'actual', 'console', 'screenshot'].filter(function (k) { return b[k]; })
+        .map(function (k) { return '<dt>' + LABELS[k] + '</dt><dd>' + esc(b[k]) + '</dd>'; }).join('');
+      return '<div class="bug" id="bug-' + b.n + '"><div class="hd"><b>#' + b.n + ' ' + esc(b.title) + '</b>' +
+        '<span class="tag ' + b.status + '">' + STATUS[b.status] + '</span></div>' +
+        '<dl>' + dl + '</dl>' +
+        '<div class="acts" style="justify-content:flex-start"><button data-edit="' + b.n + '">Редагувати</button>' +
+        (b.status !== 'fixed' ? '<button data-fixed="' + b.n + '">Виправлено</button>' : '<button data-reopen="' + b.n + '">Відкрити знову</button>') +
+        '<button data-copy="' + b.n + '">Скопіювати</button><button data-del="' + b.n + '">Видалити</button></div></div>';
+    }).join('');
+  }
+  function bugById(n) { return state.bugs.filter(function (b) { return b.n === +n; })[0]; }
+  function bugText(b) {
+    var t = '### Баг #' + b.n + ': ' + b.title + '\nСтан: ' + STATUS[b.status] + '\n';
+    ['caseId', 'severity', 'page', 'steps', 'expected', 'actual', 'console', 'screenshot'].forEach(function (k) {
+      if (b[k]) t += LABELS[k] + ': ' + (b[k].indexOf('\n') >= 0 ? '\n' + b[k] : b[k]) + '\n';
+    });
+    return t;
+  }
+  function copy(text, msg) {
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { toast(msg); }, function () {
+      var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast(msg);
+    });
+  }
+  $('#bug-list').addEventListener('click', function (e) {
+    var t = e.target, b;
+    if (t.dataset.edit) { b = bugById(t.dataset.edit); fillBugForm(b); editingBug = b.n; $('#bug-form-title').textContent = 'Редагування бага #' + b.n; window.scrollTo(0, 0); }
+    else if (t.dataset.fixed) { bugById(t.dataset.fixed).status = 'fixed'; save(); renderBugs(); renderStats(); }
+    else if (t.dataset.reopen) { bugById(t.dataset.reopen).status = 'open'; save(); renderBugs(); renderStats(); }
+    else if (t.dataset.copy) { copy(bugText(bugById(t.dataset.copy)), 'Скопійовано'); }
+    else if (t.dataset.del) {
+      if (!confirm('Видалити баг #' + t.dataset.del + '?')) return;
+      state.bugs = state.bugs.filter(function (x) { return x.n !== +t.dataset.del; });
+      save(); renderBugs(); renderStats(); renderSections();
+    }
+  });
+  $('#copy-bugs').onclick = function () {
+    if (!state.bugs.length) { toast('Багів поки немає'); return; }
+    var head = '# Баги' + (state.run ? ' — ' + state.run : '') + '\n\n';
+    copy(head + state.bugs.map(bugText).join('\n'), 'Усі баги скопійовано. Встав у чат або документ');
+  };
+
+  // ---------- Збереження / новий прогін ----------
+  $('#export').onclick = function () {
+    var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'test-run-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+  $('#import').onclick = function () { $('#import-file').click(); };
+  $('#import-file').onchange = function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    f.text().then(function (txt) {
+      var s = JSON.parse(txt);
+      if (!s.items || !s.bugs) throw new Error();
+      if (!confirm('Замінити поточні відмітки й баги вмістом файлу?')) return;
+      state = s; save(); $('#run-name').value = state.run || ''; renderAll(); toast('Відкрито');
+    }).catch(function () { alert('Це не файл копії чекліста.'); });
+    e.target.value = '';
+  };
+  $('#reset').onclick = function () {
+    if (!confirm('Почати новий прогін? Усі відмітки й коментарі зникнуть. Баги залишаться.\nПорада: спершу «Зберегти копію (файл)».')) return;
+    state.items = {}; state.run = ''; $('#run-name').value = ''; save(); renderAll();
+  };
+
+  function switchTab(name) {
+    document.querySelectorAll('.tabs button').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === name); });
+    $('#tab-checks').classList.toggle('hide', name !== 'checks');
+    $('#tab-bugs').classList.toggle('hide', name !== 'bugs');
+  }
+  document.querySelectorAll('.tabs button').forEach(function (b) { b.onclick = function () { switchTab(b.dataset.tab); }; });
+
+  function renderAll() { renderSections(); renderStats(); renderBugs(); }
+  renderAll();
+})();
+</script>
+</body>
+</html>
