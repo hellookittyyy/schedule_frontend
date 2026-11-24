@@ -44,8 +44,6 @@ Details are in `docs/design-system.md` and `docs/plans/0001-mosaic-redesign.md` 
 
 There are no automated tests. After changing a page, go through the relevant part of `docs/regression-checklist.md` in the browser against the local backend, and check the console for errors.
 
-Manual test cases for the user, in plain Ukrainian: `docs/test-cases.md` (source) → `docs/test-checklist.html` (interactive checklist + bug log, state in localStorage). After editing the cases, run `py scripts/build-test-checklist.py` to refresh the HTML; keep case IDs unique, since saved marks are keyed by them.
-
 ## Git and deploy
 
 - **A push to `main` deploys to production** (`.github/workflows/deploy.yml`: SSH, `git reset --hard`). The whole repo is served, including `design/` and `docs/`. Never push to `main` without the user's explicit go-ahead.
